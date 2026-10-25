@@ -1,0 +1,24 @@
+# dependencies
+node_modules/
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# credentials: never commit these
+auth.json
+auth.json.*
+.credentials.json
+*.token
+*oauth-token*
+.env
+.env.*
+
+# local scratch
+tmp/
+*.log
+
+# fetched third-party skills (see scripts/fetch-skill.mjs); not redistributed
+.cache/

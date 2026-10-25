@@ -1,0 +1,35 @@
+# Skill files are not stored in this repo. `node scripts/fetch-skill.mjs web-design-engineer`
+# downloads them at the pinned commit into .cache/skills/ (git-ignored).
+name: web-design-engineer
+summary: >-
+  Front-end design skill whose output is always HTML (pages, dashboards,
+  prototypes, slides, data visualization). Includes a design-direction step and
+  25 style recipes in references/. Instructions only, no scripts.
+research_id: conardli-web-design-engineer   # research/candidates.json
+
+upstream:
+  repo: https://github.com/ConardLi/garden-skills
+  commit: 2b9a89340b70f632d31c0f1c69fce94a7912423e
+  path: skills/web-design-engineer
+  skill_md: https://github.com/ConardLi/garden-skills/blob/2b9a89340b70f632d31c0f1c69fce94a7912423e/skills/web-design-engineer/SKILL.md
+
+license:
+  spdx: MIT
+  file: https://github.com/ConardLi/garden-skills/blob/2b9a89340b70f632d31c0f1c69fce94a7912423e/LICENSE
+  in_skill_folder: false
+  copyright: "Copyright (c) 2026 (no name given; attribute to ConardLi/garden-skills)"
+
+fetch:
+  method: git
+
+install:
+  claude: Copy the folder to <project>/.claude/skills/web-design-engineer/
+  codex: Copy the folder to <project>/.agents/skills/web-design-engineer/   # includes agents/openai.yaml
+
+invoke:
+  claude: "Use the web-design-engineer skill."   # interactive: /web-design-engineer <task>
+  codex: "$web-design-engineer"
+
+notes:
+  - Replaces OpenAI's frontend-skill in v0, because that skill was removed from OpenAI's official catalog and readers can no longer install it.
+  - Its React path loads React and Babel from a CDN; the default hand-written CSS path needs no network.

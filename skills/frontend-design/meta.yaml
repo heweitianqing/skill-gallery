@@ -1,0 +1,34 @@
+# Skill files are not stored in this repo. `node scripts/fetch-skill.mjs frontend-design`
+# downloads them at the pinned commit into .cache/skills/ (git-ignored).
+name: frontend-design
+summary: >-
+  Anthropic's official front-end design skill. It asks the agent to commit to a
+  design direction (palette, type, layout, principles) and check it against
+  common AI defaults before writing code. Instructions only, no scripts.
+research_id: anthropics-frontend-design   # research/candidates.json
+
+upstream:
+  repo: https://github.com/anthropics/skills
+  commit: dbd4588f9e1033efb41dad4bef2f7947c8993d44
+  path: skills/frontend-design
+  skill_md: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design/SKILL.md
+
+license:
+  spdx: Apache-2.0
+  file: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design/LICENSE.txt
+  in_skill_folder: true
+
+fetch:
+  method: git
+
+install:
+  claude: Copy the folder to <project>/.claude/skills/frontend-design/
+  codex: Copy the folder to <project>/.agents/skills/frontend-design/
+
+invoke:
+  claude: "Use the frontend-design skill."   # interactive: /frontend-design <task>
+  codex: "$frontend-design"                   # e.g. "... Use the $frontend-design skill."
+
+notes:
+  - The same SKILL.md is also published in anthropics/claude-plugins-official and anthropics/claude-code; this repo uses anthropics/skills.
+  - Upstream rewrote this skill several times in 2026, so always use the pinned commit.

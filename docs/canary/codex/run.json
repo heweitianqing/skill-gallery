@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "agent": "codex",
+  "cli": {
+    "name": "codex-cli",
+    "version": "0.164.0",
+    "path": "/opt/homebrew/bin/codex"
+  },
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "prompt": {
+    "id": "canary",
+    "file": "scripts/canary/prompts/canary.md",
+    "version": "1",
+    "file_sha256": "464f9320c6b561b7e1ae310187c9aff569721f499ce37f93e7279824280c8bae",
+    "text_sha256": "2d45ea25b25180b56c404ebfcc8e7a72a18f023cc37ab54b8b10498dc1e6734c",
+    "skill_line": "Use the $canary-marker skill."
+  },
+  "variant": "canary-marker",
+  "skill": {
+    "name": "canary-marker",
+    "source_url": "scripts/canary/skills/canary-marker",
+    "source_commit": null,
+    "source_path": "scripts/canary/skills/canary-marker",
+    "source_dirty": true,
+    "tree_sha256": "6e70849c2f1799fb1067a80d6f8b7b95c5263b7e162025434e016661ccb02341",
+    "installed_to": ".agents/skills/canary-marker"
+  },
+  "attempt": 1,
+  "previous_attempts": [],
+  "started_at": "2026-10-25T16:46:48.070Z",
+  "finished_at": "2026-10-25T16:47:06.124Z",
+  "duration_ms": 18053,
+  "exit_code": 0,
+  "timed_out": false,
+  "usage": {
+    "input_tokens": 44618,
+    "cached_input_tokens": 38528,
+    "output_tokens": 191,
+    "reasoning_output_tokens": 0,
+    "total_cost_usd": null
+  },
+  "activity": {
+    "agent_message": 2,
+    "command_execution": 2
+  },
+  "success": true,
+  "failure_reasons": [],
+  "skill_triggered": true,
+  "skill_evidence": {
+    "injected": [
+      {
+        "role": "user",
+        "name": "canary-marker",
+        "path": "$RUN/work/.agents/skills/canary-marker/SKILL.md",
+        "chars": 777
+      }
+    ],
+    "skill_md_reads": [
+      {
+        "tool": "exec",
+        "input": "text(await tools.exec_command({cmd:\"cat .agents/skills/canary-marker/SKILL.md\",\"max_output_tokens\":1000}));\n"
+      },
+      {
+        "tool": "command_execution",
+        "input": "/bin/zsh -lc 'cat .agents/skills/canary-marker/SKILL.md'"
+      }
+    ]
+  },
+  "builtin_skills_used": null,
+  "isolation": {
+    "ok": true,
+    "checks": {
+      "no_agents_md": true,
+      "no_plugins": true,
+      "no_apps": true,
+      "no_mcp_tools": true,
+      "no_managed_instructions": true,
+      "only_expected_skills": true,
+      "no_memory_sections": true,
+      "codex_home_was_minimal": true
+    },
+    "method": [
+      "env built from scratch (env -i equivalent); HOME is an empty throwaway directory",
+      "CODEX_HOME is a throwaway directory containing only auth.json (symlink to the operator login) and the config.toml below",
+      "features disabled: apps, remote_plugin, plugins, memories, tool_suggest",
+      "working directory is a fresh throwaway directory outside any git repo"
+    ],
+    "command": "/opt/homebrew/bin/codex exec --json --skip-git-repo-check --strict-config -m gpt-6.1-sol -c 'model_reasoning_effort=\"high\"' -s workspace-write -C $RUN/work -o $RUN/last-message.txt \"$(cat prompt.txt)\"",
+    "cwd": "$RUN/work",
+    "env": {
+      "HOME": "$RUN/home",
+      "USER": "$USER",
+      "LOGNAME": "$USER",
+      "PATH": "/opt/homebrew/Cellar/node@22/22.18.0/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "LANG": "en_US.UTF-8",
+      "TERM": "dumb",
+      "TMPDIR": "$RUN/tmp/",
+      "CODEX_HOME": "$RUN/codex-home"
+    },
+    "config_toml": "# Written by skill-gallery scripts/run-codex.mjs for one isolated run.\nmodel = \"gpt-6.1-sol\"\nmodel_reasoning_effort = \"high\"\ncli_auth_credentials_store = \"file\"\napproval_policy = \"never\"\nsandbox_mode = \"workspace-write\"\ncheck_for_update_on_startup = false\n\n[features]\napps = false\nremote_plugin = false\nplugins = false\nmemories = false\ntool_suggest = false\n",
+    "codex_home_before_run": [
+      "auth.json",
+      "config.toml"
+    ],
+    "auth_link_after_run": "symlink_intact",
+    "observed": {
+      "tools": [
+        "functions.exec",
+        "functions.wait",
+        "functions.request_user_input",
+        "functions.request_user_input_async",
+        "clock.sleep",
+        "collaboration.followup_task",
+        "collaboration.interrupt_agent",
+        "collaboration.list_agents",
+        "collaboration.send_message",
+        "collaboration.spawn_agent",
+        "collaboration.wait_agent"
+      ],
+      "mcp_tools": [],
+      "skills_listed": [
+        {
+          "name": "imagegen",
+          "file": "r0/imagegen/SKILL.md"
+        },
+        {
+          "name": "openai-docs",
+          "file": "r0/openai-docs/SKILL.md"
+        },
+        {
+          "name": "skill-creator",
+          "file": "r0/skill-creator/SKILL.md"
+        },
+        {
+          "name": "skill-installer",
+          "file": "r0/skill-installer/SKILL.md"
+        },
+        {
+          "name": "canary-marker",
+          "file": "r1/canary-marker/SKILL.md"
+        }
+      ],
+      "skill_roots": [
+        {
+          "id": "r0",
+          "path": "$RUN/codex-home/skills/.system"
+        },
+        {
+          "id": "r1",
+          "path": "$RUN/work/.agents/skills"
+        }
+      ],
+      "system_skills": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "agents_md": {},
+      "plugins_instructions": false,
+      "apps_instructions": false,
+      "developer_sections": [
+        "skills_instructions",
+        "permissions",
+        "collaboration_mode",
+        "multi_agent_role",
+        "payload",
+        "multi_agent_mode"
+      ],
+      "rollout_files": 1
+    }
+  },
+  "output": {
+    "index_html": true,
+    "index_html_bytes": 147,
+    "index_html_sha256": "1376ae238096aa6740f275d62ce95674c2eb039c8d6e53f8f078acfb3cb86fce",
+    "other_files": []
+  },
+  "external_refs": {
+    "count": 0,
+    "counts": {},
+    "hosts": [],
+    "refs": [],
+    "remote_images": [],
+    "violations": []
+  },
+  "rule_violations": [],
+  "host": {
+    "os": "Darwin 25.6.0",
+    "arch": "arm64",
+    "node": "v22.18.0"
+  },
+  "stderr_tail": "Reading additional input from stdin...\n2026-10-25T16:46:53.318020Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out",
+  "screenshots": null
+}

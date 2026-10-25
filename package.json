@@ -1,0 +1,20 @@
+{
+  "name": "skill-gallery",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Side-by-side gallery of web pages built by Claude Code and Codex with and without agent skills.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "run:claude": "node scripts/run-claude.mjs",
+    "run:codex": "node scripts/run-codex.mjs",
+    "screenshot": "node scripts/screenshot.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1",
+    "yaml": "2.9.1"
+  }
+}

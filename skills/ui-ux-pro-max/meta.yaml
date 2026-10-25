@@ -1,0 +1,49 @@
+# Skill files are not stored in this repo. `node scripts/fetch-skill.mjs ui-ux-pro-max --agent codex`
+# generates them with the skill's official CLI (pinned version) into .cache/skills/ (git-ignored).
+name: ui-ux-pro-max
+summary: >-
+  Community UI/UX knowledge-base skill: local CSV data (styles, palettes, font
+  pairings, UX rules, chart types, stacks) plus a Python BM25 search script
+  that produces a design system before the agent writes the page.
+research_id: nextlevelbuilder-ui-ux-pro-max   # research/candidates.json
+
+upstream:
+  repo: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+  commit: d14efff8ed1faa4187f004f79926f428c8074ec7   # reference only, see fetch below
+  path: .claude/skills/ui-ux-pro-max
+  skill_md: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/d14efff8ed1faa4187f004f79926f428c8074ec7/.claude/skills/ui-ux-pro-max/SKILL.md
+
+license:
+  spdx: MIT
+  file: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/d14efff8ed1faa4187f004f79926f428c8074ec7/LICENSE
+  in_skill_folder: false
+  copyright: Copyright (c) 2024 Next Level Builder
+
+# The SKILL.md in the repo builds script paths from ${CLAUDE_PLUGIN_ROOT}, which
+# only exists when it is loaded as a Claude Code plugin; a plain copy has broken
+# paths. The official CLI writes a per-agent copy with project-relative paths,
+# so the gallery uses the CLI output. In CLI 2.15.0, `init` generates the files
+# from templates bundled in the npm package (no GitHub download), so the
+# result depends only on the CLI version.
+fetch:
+  method: npm-cli
+  package: ui-ux-pro-max-cli
+  version: 2.15.0
+  args:
+    codex: [init, --ai, codex]
+    claude: [init, --ai, claude]
+  output_path:
+    codex: .agents/skills/ui-ux-pro-max
+    claude: .claude/skills/ui-ux-pro-max
+
+install:
+  claude: npx ui-ux-pro-max-cli@2.15.0 init --ai claude   # writes <project>/.claude/skills/ui-ux-pro-max/
+  codex: npx ui-ux-pro-max-cli@2.15.0 init --ai codex     # writes <project>/.agents/skills/ui-ux-pro-max/
+
+invoke:
+  claude: "Use the ui-ux-pro-max skill."   # interactive: /ui-ux-pro-max <task>
+  codex: "$ui-ux-pro-max"
+
+notes:
+  - Needs python3 (standard library only) to run its search scripts.
+  - The upstream README recommends `npm i -g ui-ux-pro-max-cli`; the gallery uses npx with a pinned version instead so nothing is installed globally.
