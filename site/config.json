@@ -1,0 +1,10 @@
+{
+  "site_title": "skill-gallery",
+  "repo_url": null,
+  "prompts": ["landing-saas", "dashboard", "blog-portfolio"],
+  "skills": ["frontend-design", "ui-ux-pro-max", "web-design-engineer"],
+  "agents": [
+    { "id": "codex", "label": "Codex", "cli": "Codex CLI", "model": "gpt-6.1-sol", "effort": "high" },
+    { "id": "claude", "label": "Claude Code", "cli": "Claude Code", "model": "claude-opus-5-5", "effort": "high" }
+  ]
+}

@@ -108,7 +108,7 @@ Codex `checks` (from the session rollout Codex writes into the throwaway `CODEX_
 
 ### `screenshots`
 
-`tool`, `browser`, `taken_at`, and one object per viewport (`desktop`, `mobile`) with: `file`, `viewport`, `device_scale_factor`, `is_mobile`, `page_height`, `horizontal_overflow`, `scroll_width`, `network_idle`, `fonts_loaded`, `fonts_failed`, `console_errors`, `page_errors`, `failed_requests`, `remote_requests` (every http(s) request the page made, with Playwright's resource type).
+`tool`, `browser` (name and version, e.g. `playwright-chromium 156.0.8078.4`), `browser_channel`, `taken_at`, and one object per viewport (`desktop`, `mobile`) with: `file`, `viewport`, `device_scale_factor`, `is_mobile`, `page_height`, `horizontal_overflow`, `scroll_width`, `network_idle`, `fonts_loaded`, `fonts_failed`, `console_errors`, `page_errors`, `failed_requests`, `remote_requests` (every http(s) request the page made, with Playwright's resource type).
 
 ## Other files in a cell directory
 

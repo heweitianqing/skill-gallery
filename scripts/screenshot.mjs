@@ -5,6 +5,10 @@
 //   node scripts/screenshot.mjs --force         # redo all of them
 //   node scripts/screenshot.mjs runs/landing-saas/claude__native [...]
 //
+// Browser: Playwright's own Chromium by default. SG_SCREENSHOT_CHANNEL=chrome
+// uses the installed Google Chrome instead, and SG_SCREENSHOT_EXECUTABLE=<path>
+// any Chromium binary. The browser and its version are recorded in run.json.
+//
 // Writes desktop.png (1440 wide) and mobile.png (390 wide) next to index.html
 // and records the capture details in that cell's run.json under "screenshots".
 
@@ -38,17 +42,23 @@ function findCells() {
 }
 
 // Scroll through the page so scroll-triggered content (IntersectionObserver
-// reveals, lazy sections) is rendered, then return to the top.
+// reveals, lazy sections) is rendered, then return to the top. Scrolls are
+// instant (pages often set `scroll-behavior: smooth`, which would still be
+// animating at capture time), and focus is cleared so focus-only elements such
+// as skip links stay hidden.
 async function scrollThrough(page) {
   await page.evaluate(async () => {
+    const go = (top) => window.scrollTo({ top, left: 0, behavior: 'instant' });
     const step = Math.max(200, Math.floor(window.innerHeight * 0.8));
     for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
-      window.scrollTo(0, y);
+      go(y);
       await new Promise((r) => setTimeout(r, 120));
     }
-    window.scrollTo(0, document.documentElement.scrollHeight);
+    go(document.documentElement.scrollHeight);
     await new Promise((r) => setTimeout(r, 300));
-    window.scrollTo(0, 0);
+    go(0);
+    for (let i = 0; i < 50 && window.scrollY !== 0; i++) await new Promise((r) => setTimeout(r, 50));
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
   });
 }
 
@@ -127,9 +137,12 @@ async function main() {
   }
   const require = createRequire(import.meta.url);
   const playwrightVersion = require('playwright/package.json').version;
-  // Full Chromium in new headless mode (closer to desktop Chrome than the
-  // separate headless shell; install with `npx playwright install --no-shell chromium`).
-  const browser = await chromium.launch({ channel: 'chromium' });
+  // Default: Playwright's full Chromium in new headless mode (closer to desktop
+  // Chrome than the separate headless shell; `npx playwright install --no-shell chromium`).
+  const executablePath = process.env.SG_SCREENSHOT_EXECUTABLE || undefined;
+  const channel = executablePath ? undefined : process.env.SG_SCREENSHOT_CHANNEL || 'chromium';
+  const browser = await chromium.launch(executablePath ? { executablePath } : { channel });
+  const browserName = executablePath ? `chromium (${path.basename(path.dirname(path.dirname(path.dirname(executablePath))))})` : channel === 'chrome' ? 'google-chrome' : 'playwright-chromium';
   try {
     for (const cellDir of cells) {
       if (!fs.existsSync(path.join(cellDir, 'index.html'))) {
@@ -147,7 +160,8 @@ async function main() {
         record.rule_violations = [...new Set([...(record.rule_violations || []), ...(runtimeImages.length ? ['remote_image'] : [])])];
         record.screenshots = {
           tool: `playwright ${playwrightVersion}`,
-          browser: `chromium ${browser.version()}`,
+          browser: `${browserName} ${browser.version()}`,
+          browser_channel: channel ?? null,
           taken_at: new Date().toISOString(),
           ...shots,
         };

@@ -273,6 +273,12 @@ export function makeSanitizer(dirs) {
   const pairs = [];
   const add = (from, to) => { if (from && !pairs.some(([f]) => f === from)) pairs.push([from, to]); };
   for (const d of [dirs.runDir, dirs.runDir.replace(/^\/private/, '')]) add(d, '$RUN');
+  // Agents sometimes probe parent directories of the run dir (e.g. for AGENTS.md).
+  const tmp = fs.realpathSync(os.tmpdir());
+  for (const d of [tmp, tmp.replace(/^\/private/, '')]) {
+    add(d, '$TMPDIR');
+    add(path.dirname(d), '$TMPDIR/..');
+  }
   add(os.homedir(), '~');
   pairs.sort((a, b) => b[0].length - a[0].length);
   const fix = (s) => {

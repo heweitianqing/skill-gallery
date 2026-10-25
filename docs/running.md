@@ -60,6 +60,8 @@ Options (environment variables):
 | `SKILL_GALLERY_TMP` | `$TMPDIR` | Parent of the throwaway run directories (`<it>/skill-gallery/…`) |
 | `SKILL_GALLERY_CONFIG_DIR` | `~/.config/skill-gallery` | Where the Claude token file lives |
 | `CLAUDE_BIN`, `CODEX_BIN` | auto | Override the CLI binaries |
+| `SG_SCREENSHOT_CHANNEL` | `chromium` | Screenshot browser: `chromium` (Playwright's build) or `chrome` (installed Google Chrome) |
+| `SG_SCREENSHOT_EXECUTABLE` | unset | Path to any Chromium binary for screenshots (overrides the channel) |
 
 Then take the screenshots:
 
@@ -135,6 +137,13 @@ These are properties of the stock CLIs, kept as they are:
 
 - Codex runs shell commands in its `workspace-write` sandbox (writes only in the work dir, no network). Claude runs with `bypassPermissions` and no sandbox: it can use the network, and it has `WebSearch`/`WebFetch` tools that this Codex configuration does not have. Both run in a throwaway directory with an empty `HOME`.
 - Codex ships no cost figure in its event stream, so `usage.total_cost_usd` is `null` for Codex.
+
+## Known limitations
+
+- **Isolation means "nothing loaded", not "nothing readable".** The runs see none of the operator's settings, plugins, skills, MCP servers, instructions or memories (checked from the agents' own logs). The agents can still read the file system: Codex's stock `workspace-write` sandbox has read access to `/`, and Claude's `bypassPermissions` has no sandbox at all. In the v0 Codex runs, agents looked for `AGENTS.md` in parent directories, listed `/tmp`, and one used Playwright and cheerio from the operator's `~/.npm/_npx` cache to test its page. Codex may also write scratch files to `/tmp`. Tools found this way vary between machines. Stronger isolation (a separate macOS user or a container) is future work.
+- Because of that, `transcript.jsonl` drops all command and tool output, and paths are sanitized.
+- `ui-ux-pro-max-cli init` installs seven skills (`ui-ux-pro-max`, `banner-design`, `brand`, `design`, `design-system`, `slides`, `ui-styling`). Only `ui-ux-pro-max` is cached and installed for a cell, so a cell tests that one skill. `source.json` lists the other generated files.
+- Full-page screenshots draw `position: fixed`/`sticky` elements sized `100vh` (sidebars, overlays) at the first viewport's height only; for example, a dashboard sidebar background appears to stop at 900 px. This is a capture artifact, not a page bug.
 
 ## Running the whole Codex matrix
 
