@@ -16,7 +16,8 @@ import { execFileSync } from 'node:child_process';
 import {
   REPO_ROOT, SCHEMA_VERSION, baseEnv, cleanup, collectOutput, copySkill, die, hostInfo, loadPrompt,
   log, makeRunDir, makeSanitizer, parseCellArgs, prepareOutDir, readJsonl, runProcess, shellQuote,
-  skillSourceMeta, writeRunJson, writeTranscript,
+  skillSourceMeta, writeRunJson, writeTranscript, realKeychainState, createThrowawayKeychain,
+  deleteThrowawayKeychain, listTree,
 } from './lib/common.mjs';
 import { resolveSkill } from './lib/skills.mjs';
 
@@ -167,6 +168,8 @@ async function main() {
   const skillLine = cell.skill ? `Use the $${cell.skill.name} skill.` : null;
   const prompt = loadPrompt(cell.promptId, skillLine);
   const dirs = makeRunDir(AGENT, cell.promptId, cell.variant);
+  const keychainBefore = realKeychainState();
+  const keychain = createThrowawayKeychain(dirs);
   const codexHome = path.join(dirs.runDir, 'codex-home');
   fs.mkdirSync(codexHome);
   fs.symlinkSync(authSrc, path.join(codexHome, 'auth.json'));
@@ -240,6 +243,7 @@ async function main() {
     only_expected_skills: otherSkills.every((s) => allowedOther.includes(s.name)),
     no_memory_sections: !ev.developer_sections.some((s) => /memor/i.test(s)),
     codex_home_was_minimal: preRunCodexHome.join(',') === 'auth.json,config.toml',
+    real_keychain_unchanged: JSON.stringify(realKeychainState()) === JSON.stringify(keychainBefore),
   };
   const isolationOk = Object.values(checks).every(Boolean);
 
@@ -283,6 +287,7 @@ async function main() {
         'env built from scratch (env -i equivalent); HOME is an empty throwaway directory',
         'CODEX_HOME is a throwaway directory containing only auth.json (symlink to the operator login) and the config.toml below',
         `features disabled: ${DISABLED_FEATURES.join(', ')}`,
+        'macOS: the throwaway HOME has its own new, unlocked login keychain, so programs the agent starts (e.g. Chrome) do not show keychain dialogs; the real keychain settings are compared before and after',
         'working directory is a fresh throwaway directory outside any git repo',
       ],
       command: san.fix(cmdForRecord),
@@ -312,6 +317,7 @@ async function main() {
     screenshots: null,
   };
   writeRunJson(out, record);
+  deleteThrowawayKeychain(dirs, keychain);
   cleanup(dirs);
   log(`${record.success ? 'OK' : 'FAILED'} -> ${path.relative(REPO_ROOT, out)}${failures.length ? ` (${failures.join('; ')})` : ''}`);
   process.exit(record.success ? 0 : 1);

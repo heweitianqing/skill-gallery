@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotaline: on-call scheduling and shift handoffs</title>
+<meta name="description" content="Rotaline builds fair on-call rotations, routes alerts to the right person, and turns every shift change into a written handoff.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F4F6F9;
+    --surface: #FFFFFF;
+    --ink: #172036;
+    --ink-muted: #4D5672;
+    --rule: #DCE1EA;
+    --marigold: #F0A92B;
+    --marigold-deep: #D99012;
+    --teal: #1F8A7E;
+    --violet: #6B61DE;
+    --signal: #D9443A;
+
+    --font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --wide: 115;
+    --max: 1200px;
+    --gutter: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  img, svg { display: block; }
+  a { color: inherit; }
+  button, input { font: inherit; color: inherit; }
+  p { margin: 0; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; font-stretch: 115%; font-variation-settings: "wdth" var(--wide); line-height: 1.08; letter-spacing: -0.02em; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+
+  :focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+  .section { padding: clamp(4.5rem, 9vw, 7.5rem) 0; }
+  .section-head { max-width: 40rem; margin-bottom: clamp(2.5rem, 5vw, 4rem); }
+  .section-head h2 { font-size: clamp(2rem, 3.6vw, 3rem); font-weight: 700; }
+  .section-head p { margin-top: 1rem; color: var(--ink-muted); font-size: 1.1875rem; max-width: 34rem; }
+
+  .visually-hidden {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    min-height: 2.875rem; padding: 0 1.25rem;
+    border: 2px solid transparent; border-radius: 999px;
+    font-weight: 650; font-size: 1rem; text-decoration: none; cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--marigold); color: var(--ink); }
+  .btn-primary:hover { background: var(--marigold-deep); }
+  .btn-ghost { border-color: var(--ink); color: var(--ink); background: transparent; }
+  .btn-ghost:hover { background: var(--ink); color: var(--paper); }
+  .btn-small { min-height: 2.5rem; padding: 0 1rem; font-size: .9375rem; }
+
+  /* Header */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(244, 246, 249, .92);
+    backdrop-filter: saturate(1.4) blur(10px);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s ease;
+  }
+  .site-header.is-scrolled { border-bottom-color: var(--rule); }
+  .header-inner { display: flex; align-items: center; gap: 2rem; height: 4.5rem; }
+  .wordmark {
+    display: inline-flex; align-items: center; gap: .6rem;
+    font-weight: 750; font-size: 1.3125rem; letter-spacing: -0.02em;
+    font-stretch: 120%; font-variation-settings: "wdth" 120;
+    text-decoration: none;
+  }
+  .primary-nav { display: flex; gap: 2rem; margin-left: 1.5rem; }
+  .primary-nav a, .signin { text-decoration: none; font-weight: 500; color: var(--ink-muted); }
+  .primary-nav a:hover, .signin:hover { color: var(--ink); }
+  .header-actions { display: flex; align-items: center; gap: 1.5rem; margin-left: auto; }
+  .menu-toggle {
+    display: none; width: 2.75rem; height: 2.75rem; border: 0; background: transparent;
+    border-radius: 8px; cursor: pointer; align-items: center; justify-content: center;
+  }
+  .menu-toggle span, .menu-toggle span::before, .menu-toggle span::after {
+    display: block; width: 20px; height: 2px; background: var(--ink); border-radius: 2px;
+    position: relative; transition: transform .2s ease, background-color .2s ease;
+  }
+  .menu-toggle span::before, .menu-toggle span::after { content: ""; position: absolute; left: 0; }
+  .menu-toggle span::before { top: -6px; }
+  .menu-toggle span::after { top: 6px; }
+  .menu-toggle[aria-expanded="true"] span { background: transparent; }
+  .menu-toggle[aria-expanded="true"] span::before { transform: translateY(6px) rotate(45deg); }
+  .menu-toggle[aria-expanded="true"] span::after { transform: translateY(-6px) rotate(-45deg); }
+  .mobile-menu { display: none; }
+
+  /* Hero */
+  .hero { padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(4rem, 8vw, 6rem); }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 5.25rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    max-width: 15ch;
+  }
+  .hero h1 .line { display: block; text-wrap: balance; }
+  .hero-sub {
+    display: grid; grid-template-columns: 1fr minmax(0, 30rem); gap: 2rem;
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .hero-sub > div { grid-column: 2; }
+  .hero-sub p { font-size: 1.25rem; line-height: 1.5; color: var(--ink-muted); }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+
+  /* Product illustration */
+  .product {
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    box-shadow: 0 40px 80px -40px rgba(23, 32, 54, .35), 0 2px 4px rgba(23, 32, 54, .04);
+    overflow: hidden;
+  }
+  .product-bar {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding: .875rem 1.25rem; border-bottom: 1px solid var(--rule);
+    font-size: .875rem;
+  }
+  .product-bar strong { font-weight: 650; font-size: .9375rem; }
+  .product-bar .muted { color: var(--ink-muted); }
+  .seg { display: inline-flex; margin-left: auto; background: var(--paper); border-radius: 8px; padding: 3px; }
+  .seg span { padding: .2rem .7rem; border-radius: 6px; color: var(--ink-muted); }
+  .seg span.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(23,32,54,.12); font-weight: 600; }
+  .oncall-now {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .25rem .7rem .25rem .5rem; border-radius: 999px;
+    background: #FBEDEB; color: #9C2A22; font-weight: 600;
+  }
+  .oncall-now i { width: 8px; height: 8px; border-radius: 50%; background: var(--signal); }
+
+  .product-body { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; }
+  .sched-scroll { overflow-x: auto; }
+  .sched { --label: 9.5rem; min-width: 760px; position: relative; padding: 0 0 1.25rem; }
+  .sched-head, .sched-row { display: grid; grid-template-columns: var(--label) 1fr; }
+  .sched-head { border-bottom: 1px solid var(--rule); }
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .days span {
+    padding: .7rem .6rem; font-size: .8125rem; color: var(--ink-muted);
+    border-left: 1px solid var(--rule); font-variant-numeric: tabular-nums;
+  }
+  .days span b { color: var(--ink); font-weight: 650; }
+  .days span.today b { color: var(--signal); }
+  .row-label { padding: 1rem 1rem 1rem 1.25rem; font-size: .875rem; line-height: 1.3; }
+  .row-label strong { display: block; font-weight: 650; }
+  .row-label span { color: var(--ink-muted); font-size: .75rem; }
+  .track {
+    position: relative; height: 4.25rem;
+    background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px);
+    background-size: calc(100% / 7) 100%;
+  }
+  .shift {
+    position: absolute; top: 50%; height: 2.25rem; margin-top: -1.125rem;
+    left: calc(var(--s) / 168 * 100% + 2px);
+    width: calc((var(--e) - var(--s)) / 168 * 100% - 4px);
+    border-radius: 8px;
+    display: flex; align-items: center; padding: 0 .6rem;
+    font-size: .8125rem; font-weight: 600; white-space: nowrap; overflow: hidden;
+    transform-origin: left center;
+  }
+  .shift.cut { border-top-left-radius: 0; border-bottom-left-radius: 0; left: calc(var(--s) / 168 * 100%); width: calc((var(--e) - var(--s)) / 168 * 100% - 2px); }
+  .p-marcus { background: #E4E2FA; color: #3A31A3; box-shadow: inset 3px 0 0 var(--violet); }
+  .p-jun    { background: #D7EEEA; color: #12584F; box-shadow: inset 3px 0 0 var(--teal); }
+  .p-priya  { background: #FCEBCB; color: #7A4F05; box-shadow: inset 3px 0 0 var(--marigold); }
+  .p-elena  { background: #E8EBF1; color: var(--ink); box-shadow: inset 3px 0 0 var(--ink); }
+  .fts .shift { height: 1.75rem; margin-top: -.875rem; padding: 0; justify-content: center; font-size: .75rem; border-radius: 5px; }
+  .o-sg  { background: #E8EBF1; color: var(--ink-muted); }
+  .o-lon { background: #D9DEE8; color: var(--ink); }
+  .o-aus { background: #C5CCDA; color: var(--ink); }
+  .knot {
+    position: absolute; top: 50%; left: calc(var(--t) / 168 * 100%);
+    width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+    background: var(--surface); border: 3px solid var(--ink); z-index: 2;
+  }
+  .now-layer { position: absolute; top: 0; bottom: 0; left: var(--label); right: 0; pointer-events: none; }
+  .now {
+    position: absolute; top: 2.6rem; bottom: 2.75rem; left: calc(var(--t) / 168 * 100%);
+    width: 2px; margin-left: -1px; background: var(--signal); z-index: 3;
+  }
+  .now::before {
+    content: ""; position: absolute; top: -4px; left: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--signal);
+  }
+  .now span {
+    position: absolute; bottom: -1.5rem; left: 0; margin-left: -1px;
+    background: var(--signal); color: #fff; font-size: .6875rem; font-weight: 650;
+    padding: .1rem .4rem; border-radius: 4px; white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  .sched-legend {
+    display: flex; gap: 1.25rem; flex-wrap: wrap; padding: 1.5rem 1.25rem 0; justify-content: flex-end;
+    font-size: .75rem; color: var(--ink-muted);
+  }
+  .sched-legend span { display: inline-flex; align-items: center; gap: .4rem; }
+  .sched-legend i { width: 10px; height: 10px; border-radius: 3px; }
+
+  .handoff {
+    border-left: 1px solid var(--rule); padding: 1.25rem; background: #FAFBFC;
+    font-size: .875rem;
+  }
+  .handoff h3 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+  .handoff .when { color: var(--ink-muted); margin-top: .15rem; font-variant-numeric: tabular-nums; }
+  .pass { display: flex; align-items: center; gap: .5rem; margin: 1rem 0 1.1rem; }
+  .avatar {
+    width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center;
+    font-size: .75rem; font-weight: 700; flex: none;
+  }
+  .avatar.marcus { background: var(--violet); color: #fff; }
+  .avatar.jun { background: var(--teal); color: #fff; }
+  .pass svg { flex: none; color: var(--ink-muted); }
+  .pass .names { line-height: 1.25; margin-left: .25rem; }
+  .pass .names span { display: block; color: var(--ink-muted); font-size: .75rem; }
+  .note-items { display: grid; gap: .5rem; }
+  .note-items li { padding: .6rem .75rem; border-radius: 10px; background: var(--surface); border: 1px solid var(--rule); line-height: 1.4; }
+  .note-items li small { display: block; color: var(--ink-muted); font-size: .75rem; margin-bottom: .15rem; }
+  .note-items li.incident { border-color: #F2C3BE; }
+  .note-items li.incident small { color: #A3332A; }
+  .tag { display: inline-block; margin-top: .35rem; font-size: .6875rem; font-weight: 650; padding: .05rem .4rem; border-radius: 4px; background: #FBEDEB; color: #9C2A22; }
+  .ack { display: flex; align-items: center; gap: .45rem; margin-top: 1rem; color: var(--teal); font-weight: 600; font-size: .8125rem; }
+
+  /* Hero load sequence */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .product .shift { animation: draw .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.35s + var(--row, 0) * .12s + var(--s) * .004s); }
+    .js .product .knot, .js .product .now { animation: fade .4s ease both; animation-delay: 1.35s; }
+    .js .product .handoff { animation: settle .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: 1.45s; }
+    @keyframes draw { from { transform: scaleX(0); opacity: .2; } to { transform: scaleX(1); opacity: 1; } }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes settle { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+  }
+
+  /* Customers */
+  .customers { padding: 2.5rem 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .customers-inner { display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap; }
+  .customers p { font-size: .9375rem; color: var(--ink-muted); max-width: 15rem; line-height: 1.4; }
+  .logos { display: flex; flex: 1; justify-content: space-between; align-items: center; gap: 1.5rem 2.5rem; flex-wrap: wrap; color: #5A6380; }
+  .logo { display: inline-flex; align-items: center; gap: .45rem; font-size: 1.25rem; line-height: 1; white-space: nowrap; }
+  .logo-northgate { font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125; letter-spacing: -0.03em; font-size: 1.125rem; }
+  .logo-plinth { font-weight: 900; font-stretch: 70%; font-variation-settings: "wdth" 70; font-size: 1.5rem; letter-spacing: 0.01em; }
+  .logo-corvid { font-weight: 600; letter-spacing: -0.01em; }
+  .logo-halden { font-weight: 300; font-stretch: 120%; font-variation-settings: "wdth" 120; letter-spacing: 0.08em; font-size: 1.0625rem; }
+  .logo-murmur { font-style: italic; font-weight: 700; font-size: 1.375rem; letter-spacing: -0.03em; }
+
+  /* Features */
+  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.5rem 3rem; }
+  .feature svg { width: 40px; height: 40px; margin-bottom: 1.25rem; }
+  .feature h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.015em; font-stretch: 108%; font-variation-settings: "wdth" 108; }
+  .feature p { margin-top: .6rem; color: var(--ink-muted); max-width: 34ch; }
+
+  /* How it works */
+  .how { background: var(--surface); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; position: relative; counter-reset: step; }
+  .steps::before {
+    content: ""; position: absolute; top: 1.375rem; left: 1.375rem; right: 0; height: 3px; border-radius: 2px;
+    background: linear-gradient(to right, var(--violet) 0 33.3%, var(--teal) 33.3% 66.6%, var(--marigold) 66.6% 100%);
+  }
+  .step { position: relative; padding-right: 1rem; }
+  .step-num {
+    position: relative; z-index: 1;
+    display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%;
+    background: var(--surface); border: 3px solid var(--ink); font-weight: 750; font-size: 1.0625rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .step h3 { margin-top: 1.5rem; font-size: 1.375rem; font-weight: 700; }
+  .step p { margin-top: .6rem; color: var(--ink-muted); max-width: 32ch; }
+
+  /* Results */
+  .results { background: var(--ink); color: #E9ECF3; }
+  .results .section-head h2 { color: #fff; }
+  .results .section-head p { color: #A9B1C6; }
+  .figures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+  .figure { border-top: 1px solid rgba(255,255,255,.18); padding-top: 1.5rem; }
+  .figure-value {
+    display: block; font-size: clamp(3.25rem, 6vw, 5rem); font-weight: 700; line-height: 1;
+    letter-spacing: -0.04em; color: #fff; font-variant-numeric: tabular-nums;
+    font-stretch: 115%; font-variation-settings: "wdth" 115;
+  }
+  .figure-value small { font-size: .45em; letter-spacing: -0.01em; margin-left: .15em; font-weight: 600; }
+  .figure-label { display: block; margin-top: .75rem; font-size: 1.125rem; color: #C9CFDD; }
+  .results .footnote { margin-top: 3rem; font-size: .8125rem; color: #8790A8; max-width: 40rem; }
+
+  /* Testimonials */
+  .quotes { display: grid; grid-template-columns: 1.35fr 1fr; grid-template-rows: auto auto; gap: 1.5rem; }
+  .quote { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
+  .quote blockquote { margin: 0; font-size: 1.1875rem; line-height: 1.5; }
+  .quote.lead { grid-row: span 2; padding: clamp(2rem, 4vw, 3rem); }
+  .quote.lead blockquote { font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.3; font-weight: 500; letter-spacing: -0.015em; }
+  .quote figcaption { display: flex; align-items: center; gap: .85rem; font-size: .9375rem; line-height: 1.35; }
+  .quote figcaption strong { display: block; font-weight: 650; }
+  .quote figcaption span { color: var(--ink-muted); }
+  .quote .avatar { width: 2.75rem; height: 2.75rem; font-size: .9375rem; }
+
+  /* Pricing */
+  .pricing-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; flex-wrap: wrap; margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+  .pricing-top .section-head { margin-bottom: 0; }
+  .billing { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--rule); }
+  .billing button {
+    border: 0; background: transparent; padding: .55rem 1.1rem; border-radius: 999px; cursor: pointer;
+    font-weight: 600; font-size: .9375rem; color: var(--ink-muted);
+  }
+  .billing button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .billing button span { font-weight: 500; opacity: .8; }
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: stretch; }
+  .plan {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 14px;
+    padding: 2rem; display: flex; flex-direction: column;
+  }
+  .plan h3 { font-size: 1.375rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .plan .plan-for { margin-top: .4rem; color: var(--ink-muted); font-size: .9375rem; }
+  .price { display: flex; align-items: baseline; gap: .1rem; margin-top: 1.75rem; font-variant-numeric: tabular-nums; }
+  .price .currency { font-size: 1.5rem; font-weight: 600; align-self: flex-start; margin-top: .35rem; }
+  .price .amount { font-size: 3.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.04em; font-stretch: 115%; font-variation-settings: "wdth" 115; }
+  .price-note { margin-top: .5rem; font-size: .875rem; color: var(--ink-muted); min-height: 2.6em; }
+  .plan .btn { margin-top: 1.5rem; width: 100%; }
+  .plan ul { margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); display: grid; gap: .7rem; font-size: .9375rem; }
+  .plan li { display: flex; gap: .65rem; align-items: flex-start; line-height: 1.4; }
+  .plan li svg { flex: none; margin-top: .15rem; color: var(--teal); }
+  .plan li.lead-in { color: var(--ink-muted); }
+  .plan.featured { background: var(--ink); color: #fff; border-color: var(--ink); box-shadow: 0 30px 60px -30px rgba(23,32,54,.55); }
+  .plan.featured .plan-for, .plan.featured .price-note { color: #AEB6CA; }
+  .plan.featured ul { border-top-color: rgba(255,255,255,.16); }
+  .plan.featured li svg { color: var(--marigold); }
+  .badge { font-size: .75rem; font-weight: 650; letter-spacing: 0; padding: .25rem .6rem; border-radius: 999px; background: var(--marigold); color: var(--ink); font-stretch: 100%; font-variation-settings: "wdth" 100; }
+  .plan.featured .btn-ghost { border-color: #fff; color: #fff; }
+  .pricing-foot { margin-top: 1.5rem; font-size: .875rem; color: var(--ink-muted); }
+
+  /* FAQ */
+  .faq { background: var(--surface); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .faq-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 3rem; }
+  .faq-layout .section-head { margin-bottom: 0; }
+  .faq-list { border-top: 1px solid var(--rule); }
+  .faq-list details { border-bottom: 1px solid var(--rule); }
+  .faq-list summary {
+    list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1.5rem;
+    padding: 1.4rem 0; font-size: 1.1875rem; font-weight: 600; letter-spacing: -0.01em;
+  }
+  .faq-list summary::-webkit-details-marker { display: none; }
+  .faq-list summary:hover { color: var(--violet); }
+  .faq-icon { flex: none; width: 1.75rem; height: 1.75rem; border-radius: 50%; border: 2px solid currentColor; position: relative; }
+  .faq-icon::before, .faq-icon::after { content: ""; position: absolute; top: 50%; left: 50%; width: 10px; height: 2px; margin: -1px 0 0 -5px; background: currentColor; transition: transform .2s ease; }
+  .faq-icon::after { transform: rotate(90deg); }
+  details[open] .faq-icon::after { transform: rotate(0deg); }
+  .faq-answer { padding: 0 3.5rem 1.6rem 0; color: var(--ink-muted); max-width: 60ch; }
+  @media (prefers-reduced-motion: no-preference) {
+    details[open] .faq-answer { animation: fade .25s ease; }
+  }
+
+  /* Final CTA */
+  .final { text-align: left; }
+  .final-inner { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 3rem; align-items: end; }
+  .final h2 { font-size: clamp(2.25rem, 4.6vw, 3.75rem); font-weight: 700; letter-spacing: -0.03em; max-width: 16ch; }
+  .rota-line { display: flex; gap: 4px; height: 6px; margin-bottom: 2.5rem; max-width: 22rem; }
+  .rota-line i { flex: 1; border-radius: 3px; }
+  .signup label { display: block; font-weight: 600; margin-bottom: .5rem; font-size: .9375rem; }
+  .signup-row { display: flex; gap: .5rem; }
+  .signup input {
+    flex: 1; min-width: 0; min-height: 3.25rem; padding: 0 1.1rem; border-radius: 999px;
+    border: 2px solid var(--rule); background: var(--surface); font-size: 1rem;
+  }
+  .signup input:focus-visible { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(107,97,222,.25); }
+  .signup input[aria-invalid="true"] { border-color: var(--signal); }
+  .signup .btn { min-height: 3.25rem; padding: 0 1.5rem; }
+  .signup-msg { margin-top: .7rem; font-size: .875rem; color: var(--ink-muted); min-height: 1.4em; }
+  .signup-msg.error { color: #B3362D; }
+  .signup-msg.ok { color: var(--teal); font-weight: 600; }
+
+  /* Footer */
+  .site-footer { border-top: 1px solid var(--rule); padding: 4rem 0 2.5rem; font-size: .9375rem; }
+  .footer-grid { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: 2rem; }
+  .footer-brand p { margin-top: 1rem; color: var(--ink-muted); max-width: 22rem; }
+  .footer-col h3 { font-size: .9375rem; font-weight: 650; letter-spacing: 0; font-stretch: 100%; font-variation-settings: "wdth" 100; margin-bottom: 1rem; }
+  .footer-col ul { display: grid; gap: .6rem; }
+  .footer-col a { color: var(--ink-muted); text-decoration: none; }
+  .footer-col a:hover { color: var(--ink); text-decoration: underline; }
+  .copyright { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); color: var(--ink-muted); font-size: .875rem; }
+
+  /* Responsive */
+  @media (max-width: 1080px) {
+    .product-body { grid-template-columns: 1fr; }
+    .handoff { border-left: 0; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 1fr 1.4fr; gap: 0 2rem; }
+    .handoff .note-items { grid-column: 2; grid-row: 1 / span 4; }
+    .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .primary-nav, .header-actions .signin { display: none; }
+    .menu-toggle { display: inline-flex; }
+    .header-inner { gap: 1rem; }
+    .header-actions { gap: .5rem; }
+    .mobile-menu {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--paper); border-bottom: 1px solid var(--rule);
+      padding: .5rem var(--gutter) 1.5rem;
+      box-shadow: 0 20px 30px -20px rgba(23,32,54,.25);
+    }
+    .mobile-menu.is-open { display: block; }
+    .mobile-menu a { display: block; padding: .85rem 0; text-decoration: none; font-weight: 600; font-size: 1.125rem; border-bottom: 1px solid var(--rule); }
+    .mobile-menu a.signin-m { border-bottom: 0; color: var(--ink-muted); font-weight: 500; }
+    .hero-sub { grid-template-columns: 1fr; }
+    .hero-sub > div { grid-column: 1; }
+    .steps { grid-template-columns: 1fr; gap: 2.5rem; }
+    .steps::before { top: 1.375rem; bottom: 1.375rem; left: 1.3rem; right: auto; width: 3px; height: auto;
+      background: linear-gradient(to bottom, var(--violet) 0 33.3%, var(--teal) 33.3% 66.6%, var(--marigold) 66.6% 100%); }
+    .step { display: grid; grid-template-columns: 2.75rem 1fr; gap: 0 1.25rem; }
+    .step h3 { margin-top: .4rem; }
+    .step p { grid-column: 2; }
+    .figures { grid-template-columns: 1fr; gap: 2.5rem; }
+    .quotes { grid-template-columns: 1fr; }
+    .quote.lead { grid-row: auto; }
+    .plans { grid-template-columns: 1fr; max-width: 30rem; }
+    .faq-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .final-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 2.5rem 2rem; }
+    .footer-brand { grid-column: 1 / -1; }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 1rem; }
+    .header-actions .btn { padding: 0 .9rem; font-size: .875rem; min-height: 2.375rem; }
+    .wordmark { font-size: 1.1875rem; }
+    .hero-sub p { font-size: 1.125rem; }
+    .hero-ctas .btn { flex: 1 1 auto; }
+    .product { border-radius: 12px; margin-left: calc(var(--gutter) * -0.5); margin-right: calc(var(--gutter) * -0.5); }
+    .product-bar .seg { display: none; }
+    .handoff { display: block; }
+    .feature-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .customers-inner { gap: 1.5rem; }
+    .logos { justify-content: flex-start; gap: 1.25rem 2rem; }
+    .signup-row { flex-direction: column; }
+    .signup .btn { width: 100%; }
+    .faq-answer { padding-right: 0; }
+    .pricing-top { align-items: flex-start; }
+    .quote { padding: 1.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js');</script>
+
+<header class="site-header" id="top">
+  <div class="wrap header-inner">
+    <a class="wordmark" href="#top" aria-label="Rotaline home">
+      <svg width="30" height="18" viewBox="0 0 30 18" aria-hidden="true">
+        <rect x="0" y="7" width="9" height="4" rx="2" fill="#6B61DE"/>
+        <rect x="10.5" y="7" width="9" height="4" rx="2" fill="#1F8A7E"/>
+        <rect x="21" y="7" width="9" height="4" rx="2" fill="#F0A92B"/>
+        <circle cx="9.75" cy="9" r="3.5" fill="#F4F6F9" stroke="#172036" stroke-width="2"/>
+      </svg>
+      Rotaline
+    </a>
+    <nav class="primary-nav" aria-label="Main">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <a class="signin" href="#">Sign in</a>
+      <a class="btn btn-primary btn-small" href="#start">Start free trial</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><span></span></button>
+    </div>
+  </div>
+  <nav class="mobile-menu" id="mobile-menu" aria-label="Main mobile">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a class="signin-m" href="#">Sign in</a>
+  </nav>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <h1 id="hero-title"><span class="line">Know who's on call.</span> <span class="line">Hand off without losing the thread.</span></h1>
+      <div class="hero-sub">
+        <div>
+          <p>Rotaline builds fair on-call rotations, routes alerts to the right person, and turns every shift change into a written handoff.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-primary" href="#start">Start free trial</a>
+            <a class="btn btn-ghost" href="#how-it-works">See how it works</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product" role="img" aria-label="Rotaline schedule view for the Platform team, week of October 26. Primary and secondary rotations hand off every two days at 17:00, and a database rotation follows the sun across Singapore, London and Austin. Marcus is on call now. A handoff panel shows Marcus handing off to Jun at 17:00 today, with one open incident carried over.">
+        <div class="product-bar" aria-hidden="true">
+          <strong>Platform team</strong>
+          <span class="muted">Week of Oct 26, times in UTC</span>
+          <span class="oncall-now"><i></i>Marcus is on call</span>
+          <span class="seg"><span>Day</span><span class="on">Week</span><span>Month</span></span>
+        </div>
+        <div class="product-body" aria-hidden="true">
+          <div class="sched-scroll">
+            <div class="sched">
+              <div class="sched-head">
+                <div class="row-label"></div>
+                <div class="days">
+                  <span class="today"><b>Mon</b> 26</span>
+                  <span><b>Tue</b> 27</span>
+                  <span><b>Wed</b> 28</span>
+                  <span><b>Thu</b> 29</span>
+                  <span><b>Fri</b> 30</span>
+                  <span><b>Sat</b> 31</span>
+                  <span><b>Sun</b> 1</span>
+                </div>
+              </div>
+              <div class="sched-row" style="--row:0">
+                <div class="row-label"><strong>Primary</strong><span>Every 2 days, 17:00</span></div>
+                <div class="track">
+                  <span class="shift cut p-marcus" style="--s:0;--e:17">Marcus</span>
+                  <span class="shift p-jun" style="--s:17;--e:65">Jun Park</span>
+                  <span class="shift p-priya" style="--s:65;--e:113">Priya Shah</span>
+                  <span class="shift p-elena" style="--s:113;--e:168">Elena Ruiz</span>
+                  <span class="knot" style="--t:17"></span>
+                </div>
+              </div>
+              <div class="sched-row" style="--row:1">
+                <div class="row-label"><strong>Secondary</strong><span>Every 2 days, 17:00</span></div>
+                <div class="track">
+                  <span class="shift cut p-elena" style="--s:0;--e:41">Elena Ruiz</span>
+                  <span class="shift p-priya" style="--s:41;--e:89">Priya Shah</span>
+                  <span class="shift p-marcus" style="--s:89;--e:137">Marcus Lee</span>
+                  <span class="shift p-jun" style="--s:137;--e:168">Jun Park</span>
+                </div>
+              </div>
+              <div class="sched-row fts" style="--row:2">
+                <div class="row-label"><strong>Database</strong><span>Follow the sun, 3 offices</span></div>
+                <div class="track">
+                  <span class="shift o-sg"  style="--s:0;--e:8">Wei</span>
+                  <span class="shift o-lon" style="--s:8;--e:16">Ana</span>
+                  <span class="shift o-aus" style="--s:16;--e:24">Tom</span>
+                  <span class="shift o-sg"  style="--s:24;--e:32">Wei</span>
+                  <span class="shift o-lon" style="--s:32;--e:40">Ana</span>
+                  <span class="shift o-aus" style="--s:40;--e:48">Tom</span>
+                  <span class="shift o-sg"  style="--s:48;--e:56">Wei</span>
+                  <span class="shift o-lon" style="--s:56;--e:64">Ana</span>
+                  <span class="shift o-aus" style="--s:64;--e:72">Tom</span>
+                  <span class="shift o-sg"  style="--s:72;--e:80">Wei</span>
+                  <span class="shift o-lon" style="--s:80;--e:88">Ana</span>
+                  <span class="shift o-aus" style="--s:88;--e:96">Tom</span>
+                  <span class="shift o-sg"  style="--s:96;--e:104">Wei</span>
+                  <span class="shift o-lon" style="--s:104;--e:112">Ana</span>
+                  <span class="shift o-aus" style="--s:112;--e:120">Tom</span>
+                  <span class="shift o-sg"  style="--s:120;--e:128">Wei</span>
+                  <span class="shift o-lon" style="--s:128;--e:136">Ana</span>
+                  <span class="shift o-aus" style="--s:136;--e:144">Tom</span>
+                  <span class="shift o-sg"  style="--s:144;--e:152">Wei</span>
+                  <span class="shift o-lon" style="--s:152;--e:160">Ana</span>
+                  <span class="shift o-aus" style="--s:160;--e:168">Tom</span>
+                </div>
+              </div>
+              <div class="sched-row" style="--row:3">
+                <div class="row-label"><strong>Payments</strong><span>Weekly, Mon 09:00</span></div>
+                <div class="track">
+                  <span class="shift cut p-priya" style="--s:0;--e:9">PS</span>
+                  <span class="shift p-marcus" style="--s:9;--e:168">Marcus Lee</span>
+                </div>
+              </div>
+              <div class="now-layer"><div class="now" style="--t:14"><span>Now 14:00</span></div></div>
+              <div class="sched-legend">
+                <span><i style="background:#E8EBF1"></i>Singapore</span>
+                <span><i style="background:#D9DEE8"></i>London</span>
+                <span><i style="background:#C5CCDA"></i>Austin</span>
+              </div>
+            </div>
+          </div>
+
+          <aside class="handoff">
+            <div>
+              <h3>Next handoff</h3>
+              <p class="when">Today at 17:00, in 3 hours</p>
+            </div>
+            <div class="pass">
+              <span class="avatar marcus">ML</span>
+              <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h15M11 1l5 5-5 5"/></svg>
+              <span class="avatar jun">JP</span>
+              <span class="names">Marcus to Jun<span>Primary, Platform</span></span>
+            </div>
+            <ul class="note-items">
+              <li class="incident"><small>Open incident, carried over</small>INC-482 Checkout latency above 800 ms<br><span class="tag">Investigating</span></li>
+              <li><small>Silenced</small>Disk usage alert on db-3 until Tue 09:00</li>
+              <li><small>Heads-up</small>Deploy freeze lifts Wednesday at noon.</li>
+            </ul>
+            <p class="ack">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>
+              Jun has read the note
+            </p>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Customers -->
+  <section class="customers" aria-labelledby="customers-label">
+    <div class="wrap customers-inner">
+      <p id="customers-label">On-call teams at these companies use Rotaline</p>
+      <ul class="logos">
+        <li class="logo logo-northgate">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1l8 16H1z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>
+          Northgate Labs
+        </li>
+        <li class="logo logo-plinth">plinth</li>
+        <li class="logo logo-corvid">
+          <svg width="20" height="16" viewBox="0 0 20 16" aria-hidden="true"><path d="M1 13c4-1 7-4 9-9 1.5-3 5-3 7-1l2 1-3 1c0 5-4 9-11 9z" fill="currentColor"/></svg>
+          Corvid Systems
+        </li>
+        <li class="logo logo-halden">HALDEN BANK</li>
+        <li class="logo logo-murmur">murmur</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="features-title">Scheduling, alerting and handoffs in one place</h2>
+        <p>Retire the spreadsheet and the pinned chat message. Everything about who's on call, and what they need to know, lives here.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature">
+          <svg viewBox="0 0 40 40" fill="none" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+            <path d="M20 5a15 15 0 0 1 13 7.5" stroke="#6B61DE"/>
+            <path d="M34.5 17a15 15 0 0 1-7 15.5" stroke="#1F8A7E"/>
+            <path d="M22.5 34.8A15 15 0 0 1 5.4 23" stroke="#F0A92B"/>
+            <path d="M5.2 17.5A15 15 0 0 1 15 6" stroke="#172036"/>
+            <circle cx="20" cy="20" r="3" fill="#172036"/>
+          </svg>
+          <h3>Rotation builder</h3>
+          <p>Set up daily, weekly or follow-the-sun rotations across time zones. Rotaline shows each shift in the local time of whoever is covering it.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 40 40" fill="none" stroke="#172036" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 14h24M24 8l6 6-6 6" stroke="#6B61DE"/>
+            <path d="M34 26H10M16 20l-6 6 6 6" stroke="#1F8A7E"/>
+          </svg>
+          <h3>Swaps and overrides</h3>
+          <p>Request a swap in two clicks. Your team lead approves it from email or chat, and the schedule updates for everyone.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 40 40" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 33h9v-8h9v-8h9V7" stroke="#172036"/>
+            <circle cx="9.5" cy="29" r="2" fill="#F0A92B" stroke="none"/>
+            <circle cx="18.5" cy="21" r="2" fill="#F0A92B" stroke="none"/>
+            <circle cx="27.5" cy="13" r="2" fill="#D9443A" stroke="none"/>
+          </svg>
+          <h3>Escalation policies</h3>
+          <p>Build multi-step escalation by push notification, SMS and phone call. If the first person doesn't answer, the next one hears about it.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 40 40" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 5h15l7 7v23H10z" stroke="#172036"/>
+            <path d="M25 5v7h7" stroke="#172036"/>
+            <path d="M15 19h12M15 24h12M15 29h7" stroke="#1F8A7E"/>
+          </svg>
+          <h3>Handoff notes</h3>
+          <p>Every shift change gets a structured note. Open incidents carry over automatically, so nothing waits on someone's memory.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 40 40" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="6" y="9" width="28" height="25" rx="3" stroke="#172036"/>
+            <path d="M6 16h28M13 5v7M27 5v7" stroke="#172036"/>
+            <rect x="11" y="21" width="12" height="4" rx="1.5" fill="#6B61DE" stroke="none"/>
+            <rect x="19" y="27" width="10" height="3" rx="1.5" fill="#F0A92B" stroke="none"/>
+          </svg>
+          <h3>Calendar sync</h3>
+          <p>Your shifts show up in Google Calendar, Outlook or any iCal client, and they update when the rota changes.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 40 40" fill="none" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+            <path d="M5 34h30" stroke="#172036"/>
+            <rect x="8" y="16" width="5" height="18" rx="1.5" fill="#6B61DE" stroke="none"/>
+            <rect x="17.5" y="14" width="5" height="20" rx="1.5" fill="#1F8A7E" stroke="none"/>
+            <rect x="27" y="15" width="5" height="19" rx="1.5" fill="#F0A92B" stroke="none"/>
+            <path d="M5 11h30" stroke="#172036" stroke-dasharray="2 3"/>
+          </svg>
+          <h3>Fairness report</h3>
+          <p>See on-call hours per person, with nights and weekends counted separately, so the load stays even.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section how" id="how-it-works" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="how-title">Set up in an afternoon</h2>
+        <p>Most teams have their first rotation live on the day they sign up.</p>
+      </div>
+      <ol class="steps">
+        <li class="step">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3>Connect your alerts</h3>
+          <p>Connect your alerting tools with a webhook or one of 40 built-in integrations.</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3>Build your rotations</h3>
+          <p>Build a rotation and an escalation policy for each service.</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3>Hand off</h3>
+          <p>Hand off at the end of each shift. Rotaline reminds the outgoing person and notifies the incoming one.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="section results" aria-labelledby="results-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="results-title">Quieter nights, faster answers</h2>
+        <p>When every alert reaches someone who knows they're on call, fewer pages slip through.</p>
+      </div>
+      <div class="figures">
+        <p class="figure"><span class="figure-value">38%</span><span class="figure-label">fewer missed pages</span></p>
+        <p class="figure"><span class="figure-value">4<small>min</small></span><span class="figure-label">median time to acknowledge</span></p>
+        <p class="figure"><span class="figure-value">2,100</span><span class="figure-label">teams on Rotaline</span></p>
+      </div>
+      <p class="footnote">Missed pages and time to acknowledge compare each team's first 90 days on Rotaline with the 90 days before they switched.</p>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" aria-labelledby="quotes-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="quotes-title">From the people carrying the pager</h2>
+      </div>
+      <div class="quotes">
+        <figure class="quote lead">
+          <blockquote><p>“We used to argue about who covered the holidays. Now the fairness report settles it before anyone asks.”</p></blockquote>
+          <figcaption><span class="avatar" style="background:#F0A92B;color:#172036" aria-hidden="true">DW</span><span><strong>Dana Whitfield</strong><span>Engineering Manager, Plinth</span></span></figcaption>
+        </figure>
+        <figure class="quote">
+          <blockquote><p>“The handoff note is the feature I didn't know I needed. I start every shift knowing what's still burning.”</p></blockquote>
+          <figcaption><span class="avatar" style="background:#1F8A7E;color:#fff" aria-hidden="true">RM</span><span><strong>Ravi Menon</strong><span>Site Reliability Engineer, Halden Bank</span></span></figcaption>
+        </figure>
+        <figure class="quote">
+          <blockquote><p>“Setting up follow-the-sun across three offices took one afternoon.”</p></blockquote>
+          <figcaption><span class="avatar" style="background:#6B61DE;color:#fff" aria-hidden="true">SB</span><span><strong>Sofia Brandt</strong><span>Head of Infrastructure, Corvid Systems</span></span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing" aria-labelledby="pricing-title" style="padding-top:0">
+    <div class="wrap">
+      <div class="pricing-top">
+        <div class="section-head">
+          <h2 id="pricing-title">Pay for the people on call</h2>
+          <p>Every plan includes unlimited alerts. SMS and phone calls are included on paid plans.</p>
+        </div>
+        <div class="billing" role="group" aria-label="Billing period">
+          <button type="button" data-period="monthly" aria-pressed="true">Monthly</button>
+          <button type="button" data-period="annual" aria-pressed="false">Annual <span>save up to 22%</span></button>
+        </div>
+      </div>
+      <p class="visually-hidden" id="billing-status" aria-live="polite"></p>
+
+      <div class="plans">
+        <article class="plan">
+          <h3>Free</h3>
+          <p class="plan-for">For small teams getting off the spreadsheet.</p>
+          <p class="price"><span class="currency">$</span><span class="amount">0</span></p>
+          <p class="price-note">Free forever for up to 5 users</p>
+          <a class="btn btn-ghost" href="#start">Create free account</a>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>Up to 5 users</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>1 rotation</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>Push and email alerts</li>
+          </ul>
+        </article>
+
+        <article class="plan featured" aria-label="Team plan, most popular">
+          <h3>Team <span class="badge">Most popular</span></h3>
+          <p class="plan-for">For teams running several services.</p>
+          <p class="price"><span class="currency">$</span><span class="amount" data-monthly="9" data-annual="7">9</span></p>
+          <p class="price-note" data-monthly="per user per month, billed monthly" data-annual="per user per month, billed annually">per user per month, billed monthly</p>
+          <a class="btn btn-primary" href="#start">Start free trial</a>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>Unlimited rotations</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>SMS and phone alerts</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>Handoff notes</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>Calendar sync</li>
+          </ul>
+        </article>
+
+        <article class="plan">
+          <h3>Business</h3>
+          <p class="plan-for">For organizations with compliance needs.</p>
+          <p class="price"><span class="currency">$</span><span class="amount" data-monthly="16" data-annual="13">16</span></p>
+          <p class="price-note" data-monthly="per user per month, billed monthly" data-annual="per user per month, billed annually">per user per month, billed monthly</p>
+          <a class="btn btn-ghost" href="#start">Start free trial</a>
+          <ul>
+            <li class="lead-in">Everything in Team, plus:</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>SSO/SAML</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>Audit log</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>Fairness report</li>
+            <li><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>99.95% uptime SLA</li>
+          </ul>
+        </article>
+      </div>
+      <p class="pricing-foot">Prices in US dollars. You're only charged for people who are on at least one rotation.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section faq" id="faq" aria-labelledby="faq-title">
+    <div class="wrap faq-layout">
+      <div class="section-head">
+        <h2 id="faq-title">Questions before you switch</h2>
+        <p>Something else on your mind? Email <a href="#">help@rotaline.example</a> and a person on our support rotation will reply.</p>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>Can I import my existing schedule from a spreadsheet?<span class="faq-icon" aria-hidden="true"></span></summary>
+          <p class="faq-answer">Yes. Upload a CSV or paste rows from Google Sheets or Excel, and Rotaline matches names and dates to a rotation. You can check every shift before the schedule goes live.</p>
+        </details>
+        <details>
+          <summary>What happens if nobody acknowledges an alert?<span class="faq-icon" aria-hidden="true"></span></summary>
+          <p class="faq-answer">The alert moves to the next step of your escalation policy, such as the secondary or the team lead, after the wait time you set. If it reaches the last step, Rotaline repeats the policy until someone acknowledges.</p>
+        </details>
+        <details>
+          <summary>Do you charge for SMS and phone calls?<span class="faq-icon" aria-hidden="true"></span></summary>
+          <p class="faq-answer">No. SMS and phone alerts are included in the Team and Business plans with no per-message fees, in every country we support.</p>
+        </details>
+        <details>
+          <summary>Can contractors or people outside my company be on a rotation?<span class="faq-icon" aria-hidden="true"></span></summary>
+          <p class="faq-answer">Yes. Invite anyone with an email address as a guest. Guests count as users on your plan and can only see the rotations they're part of.</p>
+        </details>
+        <details>
+          <summary>How does the free trial work?<span class="faq-icon" aria-hidden="true"></span></summary>
+          <p class="faq-answer">You get every Business feature for 14 days, and you don't need a credit card to start. When the trial ends, pick a plan or move to Free. Your schedules are kept either way.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section final" id="start" aria-labelledby="start-title">
+    <div class="wrap final-inner">
+      <div>
+        <div class="rota-line" aria-hidden="true"><i style="background:#6B61DE"></i><i style="background:#1F8A7E"></i><i style="background:#F0A92B"></i><i style="background:#172036"></i></div>
+        <h2 id="start-title">Start a 14-day free trial. No credit card required.</h2>
+      </div>
+      <form class="signup" novalidate>
+        <label for="email">Work email</label>
+        <div class="signup-row">
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="signup-msg" required>
+          <button class="btn btn-primary" type="submit">Start free trial</button>
+        </div>
+        <p class="signup-msg" id="signup-msg" aria-live="polite">We'll email you a link to set up your first rotation.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="wordmark" href="#top" aria-label="Rotaline home">
+          <svg width="30" height="18" viewBox="0 0 30 18" aria-hidden="true">
+            <rect x="0" y="7" width="9" height="4" rx="2" fill="#6B61DE"/>
+            <rect x="10.5" y="7" width="9" height="4" rx="2" fill="#1F8A7E"/>
+            <rect x="21" y="7" width="9" height="4" rx="2" fill="#F0A92B"/>
+            <circle cx="9.75" cy="9" r="3.5" fill="#F4F6F9" stroke="#172036" stroke-width="2"/>
+          </svg>
+          Rotaline
+        </a>
+        <p>On-call scheduling and shift handoffs for engineering teams.</p>
+      </div>
+      <nav class="footer-col" aria-labelledby="f-product">
+        <h3 id="f-product">Product</h3>
+        <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Integrations</a></li><li><a href="#">Changelog</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-company">
+        <h3 id="f-company">Company</h3>
+        <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-resources">
+        <h3 id="f-resources">Resources</h3>
+        <ul><li><a href="#">Docs</a></li><li><a href="#">Status</a></li><li><a href="#">Blog</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-legal">
+        <h3 id="f-legal">Legal</h3>
+        <ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul>
+      </nav>
+    </div>
+    <p class="copyright">© 2026 Rotaline, Inc.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Header border on scroll
+  var header = document.querySelector('.site-header');
+  function onScroll() { header.classList.toggle('is-scrolled', window.scrollY > 8); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Mobile menu
+  var toggle = document.querySelector('.menu-toggle');
+  var menu = document.getElementById('mobile-menu');
+  function setMenu(open) {
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    menu.classList.toggle('is-open', open);
+  }
+  toggle.addEventListener('click', function () {
+    setMenu(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+  menu.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && menu.classList.contains('is-open')) { setMenu(false); toggle.focus(); }
+  });
+  window.addEventListener('resize', function () { if (window.innerWidth > 900) setMenu(false); });
+
+  // Billing toggle
+  var buttons = document.querySelectorAll('.billing button');
+  var status = document.getElementById('billing-status');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var period = btn.dataset.period;
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+      document.querySelectorAll('.plans [data-monthly]').forEach(function (el) {
+        el.textContent = el.dataset[period];
+      });
+      status.textContent = period === 'annual'
+        ? 'Showing annual prices: Team $7 and Business $13 per user per month.'
+        : 'Showing monthly prices: Team $9 and Business $16 per user per month.';
+    });
+  });
+
+  // Signup form
+  var form = document.querySelector('.signup');
+  var input = document.getElementById('email');
+  var msg = document.getElementById('signup-msg');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var value = input.value.trim();
+    if (!value) {
+      input.setAttribute('aria-invalid', 'true');
+      msg.className = 'signup-msg error';
+      msg.textContent = 'Enter your work email to start the trial.';
+      input.focus();
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      input.setAttribute('aria-invalid', 'true');
+      msg.className = 'signup-msg error';
+      msg.textContent = 'Enter an email address like name@company.com.';
+      input.focus();
+      return;
+    }
+    input.removeAttribute('aria-invalid');
+    msg.className = 'signup-msg ok';
+    msg.textContent = 'Trial started. Check ' + value + ' for a link to set up your first rotation.';
+    form.reset();
+  });
+  input.addEventListener('input', function () {
+    if (input.getAttribute('aria-invalid')) {
+      input.removeAttribute('aria-invalid');
+      msg.className = 'signup-msg';
+      msg.textContent = "We'll email you a link to set up your first rotation.";
+    }
+  });
+})();
+</script>
+</body>
+</html>

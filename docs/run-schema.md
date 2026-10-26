@@ -40,6 +40,7 @@ Paths are sanitized before they are written: the throwaway run directory becomes
 | `timed_out` | bool | Killed by the runner's timeout (`SG_TIMEOUT_MIN`, default 60) |
 | `usage` | object \| null | Token usage as reported by the CLI. Claude: `input_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`, `output_tokens`, `total_cost_usd`, `num_turns`, `model_usage`. Codex: `input_tokens`, `cached_input_tokens`, `output_tokens`, `reasoning_output_tokens` (summed over turns), `total_cost_usd` is always `null` |
 | `activity` | object | Counts of tool calls (Claude, by tool name) or completed items (Codex, by item type) |
+| `rate_limits` | object \| absent | Claude only: `events` (number of `rate_limit_event`s in the stream), `not_allowed` (any with a status other than `allowed`), `last` (`status`, `rateLimitType`, `unifiedWindows` utilization of the last event) |
 | `success` | bool | `true` only if every check passed (see below) |
 | `failure_reasons` | string[] | Why `success` is false |
 | `skill_triggered` | bool \| null | `null` for native cells. For skill cells: whether the log proves the skill was used |
@@ -54,6 +55,7 @@ Paths are sanitized before they are written: the throwaway run directory becomes
 | `runtime_remote_images` | string[] \| absent | Added by `scripts/screenshot.mjs`: image URLs the page requested over http(s) while being captured |
 | `host` | object | `os`, `arch`, `node` of the machine that ran the cell |
 | `stderr_tail` | string | Last lines of the CLI's stderr |
+| `notes` | string[] \| absent | Free-text remarks added after the run (for example, that it ran before a runner fix). Never used to change `success` |
 | `screenshots` | object \| null | Filled by `scripts/screenshot.mjs` (see below) |
 
 ### `success`
@@ -94,9 +96,9 @@ Codex:
 | `env` | The complete environment passed to the CLI (secrets redacted) |
 | `observed` | What the agent actually saw, taken from its own logs |
 
-Claude `checks` (from the `system/init` event of `--output-format stream-json`): `init_event_present`, `only_builtin_plugins`, `no_mcp_servers`, `no_plugin_skills` (no `plugin:skill` names), `config_dir_was_empty`, `home_was_empty`, `auto_memory_disabled`, and for skill cells `skill_listed`. `observed` holds the init event's `tools`, `mcp_servers`, `skills`, `plugins`, `agents`, `slash_commands`, `model`, `permission_mode`, `api_key_source`, `output_style`, `cwd`.
+Claude `checks` (from the `system/init` event of `--output-format stream-json`): `init_event_present`, `only_builtin_plugins`, `no_synced_plugins` (no account-synced `@synced` plugins), `no_mcp_servers`, `no_plugin_skills` (no `plugin:skill` names), `config_dir_was_empty`, `home_had_only_throwaway_keychain` (older runs: `home_was_empty`), `real_keychain_unchanged` (macOS: the operator's default keychain, user keychain list and login keychain were identical before and after the run), `auto_memory_disabled`, and for skill cells `skill_listed`. `observed` holds the init event's `tools`, `mcp_servers`, `skills`, `plugins`, `agents`, `slash_commands`, `model`, `permission_mode`, `api_key_source`, `output_style`, `cwd`.
 
-Codex `checks` (from the session rollout Codex writes into the throwaway `CODEX_HOME`; the rollout itself is not committed because it carries account ids): `no_agents_md`, `no_plugins`, `no_apps`, `no_mcp_tools`, `no_managed_instructions`, `only_expected_skills` (only the bundled `.system` skills plus the skill under test), `no_memory_sections`, `codex_home_was_minimal` (only `auth.json` and `config.toml` before the run). `observed` holds the model-visible tool list, the skills list and skill roots, the AGENTS.md / plugins / apps instruction state, and the developer-message sections. Codex runs also record `config_toml`, `codex_home_before_run`, and `auth_link_after_run` (whether the `auth.json` symlink survived the run).
+Codex `checks` (from the session rollout Codex writes into the throwaway `CODEX_HOME`; the rollout itself is not committed because it carries account ids): `no_agents_md`, `no_plugins`, `no_apps`, `no_mcp_tools`, `no_managed_instructions`, `only_expected_skills` (only the bundled `.system` skills plus the skill under test), `no_memory_sections`, `codex_home_was_minimal` (only `auth.json` and `config.toml` before the run), and since 2026-10-26 `real_keychain_unchanged`. `observed` holds the model-visible tool list, the skills list and skill roots, the AGENTS.md / plugins / apps instruction state, and the developer-message sections. Codex runs also record `config_toml`, `codex_home_before_run`, and `auth_link_after_run` (whether the `auth.json` symlink survived the run).
 
 ### `external_refs`
 
@@ -115,6 +117,6 @@ Codex `checks` (from the session rollout Codex writes into the throwaway `CODEX_
 | File | Content |
 | --- | --- |
 | `index.html` | The page the agent wrote, unmodified |
-| `transcript.jsonl` | The CLI's JSON event stream (Claude `stream-json`, Codex `exec --json`), sanitized, with strings longer than 4,000 characters cut |
+| `transcript.jsonl` | The CLI's JSON event stream (Claude `stream-json`, Codex `exec --json`), sanitized: command and tool output is replaced by `[output omitted: N chars]`, the SKILL.md text Claude injects after a `Skill` call is replaced by `[skill content omitted: N chars]` (its `Base directory for this skill` line is kept), and other strings longer than 4,000 characters are cut |
 | `desktop.png`, `mobile.png` | Full-page screenshots at 1440 and 390 CSS px wide |
 | `run.json` | This record |

@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales &amp; Operations · Kestrel Coffee Roasters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ───────────────────────── Tokens ───────────────────────── */
+:root {
+  --bg:        oklch(96.8% 0.010 75);
+  --surface:   oklch(99.4% 0.004 75);
+  --sunken:    oklch(94.2% 0.012 72);
+  --ink:       oklch(24% 0.022 50);
+  --ink-2:     oklch(40% 0.020 52);
+  --muted:     oklch(54% 0.018 58);
+  --line:      oklch(89.5% 0.012 70);
+  --line-2:    oklch(93% 0.010 70);
+
+  --accent:    oklch(58% 0.150 42);   /* kestrel rust */
+  --accent-ink:oklch(46% 0.130 40);
+  --accent-wash:oklch(93% 0.035 50);
+
+  --s-cafe:    oklch(60% 0.145 42);   /* Cafés series */
+  --s-online:  oklch(36% 0.045 48);   /* Online series */
+
+  --good:      oklch(50% 0.110 152);
+  --good-wash: oklch(94% 0.040 152);
+  --bad:       oklch(53% 0.170 27);
+  --bad-wash:  oklch(94.5% 0.035 27);
+
+  --st-shipped: oklch(50% 0.100 245);
+  --st-shipped-wash: oklch(94.5% 0.025 245);
+  --st-paid:    oklch(48% 0.105 152);
+  --st-paid-wash: oklch(94.5% 0.035 152);
+  --st-pending: oklch(52% 0.110 75);
+  --st-pending-wash: oklch(95% 0.055 85);
+  --st-refund:  oklch(52% 0.165 27);
+  --st-refund-wash: oklch(94.5% 0.035 27);
+
+  --cat-1: oklch(40% 0.110 40);
+  --cat-2: oklch(52% 0.140 42);
+  --cat-3: oklch(63% 0.135 48);
+  --cat-4: oklch(73% 0.105 58);
+  --cat-5: oklch(82% 0.070 66);
+  --cat-6: oklch(89% 0.040 72);
+
+  --font-display: "Bricolage Grotesque", ui-serif, Georgia, serif;
+  --font-body: "Instrument Sans", ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
+  --shadow-1: 0 1px 0 oklch(30% 0.02 50 / .04), 0 1px 2px oklch(30% 0.02 50 / .05);
+  --shadow-2: 0 12px 32px -12px oklch(30% 0.03 50 / .28), 0 2px 6px oklch(30% 0.02 50 / .08);
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --sidebar-w: 248px;
+}
+[data-theme="dark"] {
+  --bg:        oklch(19% 0.012 55);
+  --surface:   oklch(23% 0.013 55);
+  --sunken:    oklch(27% 0.014 55);
+  --ink:       oklch(94% 0.012 75);
+  --ink-2:     oklch(82% 0.014 72);
+  --muted:     oklch(68% 0.016 68);
+  --line:      oklch(33% 0.014 55);
+  --line-2:    oklch(29% 0.013 55);
+  --accent:    oklch(70% 0.140 48);
+  --accent-ink:oklch(78% 0.120 52);
+  --accent-wash:oklch(31% 0.050 45);
+  --s-cafe:    oklch(68% 0.140 46);
+  --s-online:  oklch(84% 0.045 75);
+  --good:      oklch(76% 0.130 152);
+  --good-wash: oklch(30% 0.045 152);
+  --bad:       oklch(73% 0.150 27);
+  --bad-wash:  oklch(31% 0.055 27);
+  --st-shipped: oklch(78% 0.090 245);
+  --st-shipped-wash: oklch(30% 0.040 245);
+  --st-paid:    oklch(78% 0.120 152);
+  --st-paid-wash: oklch(30% 0.045 152);
+  --st-pending: oklch(84% 0.120 85);
+  --st-pending-wash: oklch(32% 0.050 80);
+  --st-refund:  oklch(76% 0.140 27);
+  --st-refund-wash: oklch(31% 0.055 27);
+  --cat-1: oklch(84% 0.060 70);
+  --cat-2: oklch(74% 0.120 52);
+  --cat-3: oklch(64% 0.140 44);
+  --cat-4: oklch(54% 0.125 40);
+  --cat-5: oklch(45% 0.090 40);
+  --cat-6: oklch(37% 0.055 45);
+  --shadow-1: 0 1px 0 oklch(0% 0 0 / .2);
+  --shadow-2: 0 16px 40px -12px oklch(0% 0 0 / .6), 0 2px 6px oklch(0% 0 0 / .3);
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 15px/1.5 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .3s var(--ease), color .3s var(--ease);
+}
+h1, h2, h3, p { margin: 0; text-wrap: pretty; }
+button, input { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); font-size: .86em; letter-spacing: -.01em; }
+
+/* ───────────────────────── Shell ───────────────────────── */
+.app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+.sidebar {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; gap: 28px;
+  padding: 22px 16px 20px;
+  border-right: 1px solid var(--line);
+  background: var(--bg);
+}
+.brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px; text-decoration: none; }
+.brand-mark { width: 34px; height: 34px; flex: none; }
+.brand-name { font-family: var(--font-display); font-weight: 650; font-size: 16px; line-height: 1.1; letter-spacing: -.01em; }
+.brand-name small { display: block; font: 500 11px/1.4 var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 10px 8px; font-weight: 600; }
+.nav a {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 40px; padding: 8px 10px; border-radius: var(--r-sm);
+  text-decoration: none; color: var(--ink-2); font-weight: 500;
+  transition: background-color .15s, color .15s;
+}
+.nav a svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+.nav a:hover { background: var(--sunken); color: var(--ink); }
+.nav a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line); }
+.nav a[aria-current="page"] svg { stroke: var(--accent); opacity: 1; }
+.nav a[aria-current="page"]::after { content: ""; margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+.sidebar-foot { margin-top: auto; padding: 14px 12px; border-radius: var(--r-md); background: var(--sunken); font-size: 13px; color: var(--ink-2); }
+.sidebar-foot strong { display: block; color: var(--ink); font-weight: 600; margin-bottom: 2px; }
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+
+/* Top bar */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: grid; grid-template-columns: 1fr minmax(240px, 380px) auto auto; align-items: center; gap: 16px;
+  padding: 14px 32px;
+  background: color-mix(in oklch, var(--bg) 82%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.icon-btn.menu-btn { display: none; }
+.title-block { display: flex; align-items: baseline; gap: 14px; min-width: 0; flex-wrap: wrap; }
+.title-block h1 { font-family: var(--font-display); font-weight: 650; font-size: 22px; letter-spacing: -.02em; line-height: 1.2; }
+.period { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+.period b { font-weight: 600; color: var(--ink); padding: 3px 9px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+
+.search { position: relative; }
+.search svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 1.8; pointer-events: none; }
+.search input {
+  width: 100%; height: 40px; padding: 0 40px 0 36px;
+  border: 1px solid var(--line); border-radius: var(--r-md);
+  background: var(--surface); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.search input::placeholder { color: var(--muted); }
+.search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 22%, transparent); }
+.search kbd { position: absolute; right: 10px; top: 50%; translate: 0 -50%; font: 500 11px var(--font-mono); color: var(--muted); padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); }
+.search input:not(:placeholder-shown) + kbd, .search input:focus + kbd { display: none; }
+
+.icon-btn {
+  display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface); cursor: pointer;
+  transition: background-color .15s, transform .1s;
+}
+.icon-btn:hover { background: var(--sunken); }
+.icon-btn:active { transform: scale(.96); }
+.icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.theme-btn .moon { display: none; }
+[data-theme="dark"] .theme-btn .sun { display: none; }
+[data-theme="dark"] .theme-btn .moon { display: block; }
+
+.user { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: var(--s-online); color: var(--bg); font: 600 13px var(--font-body); letter-spacing: .04em;
+}
+.user-text { line-height: 1.25; font-size: 13px; }
+.user-text strong { display: block; font-weight: 600; font-size: 14px; }
+.user-text span { color: var(--muted); }
+
+/* Content */
+.content { padding: 28px 32px 56px; display: flex; flex-direction: column; gap: 20px; max-width: 1480px; width: 100%; }
+
+.brief { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.brief h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(26px, 2.6vw, 34px); letter-spacing: -.025em; line-height: 1.1; }
+.brief h2 em { font-style: normal; color: var(--accent-ink); }
+.brief p { color: var(--ink-2); margin-top: 6px; max-width: 60ch; }
+.flags { display: flex; gap: 8px; flex-wrap: wrap; }
+.flag {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px 7px 10px; border-radius: 999px;
+  font-size: 13px; font-weight: 500; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  text-decoration: none; transition: box-shadow .15s;
+}
+.flag:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
+.flag i { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); flex: none; }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.kpi {
+  position: relative; padding: 18px 18px 16px; border-radius: var(--r-lg);
+  background: var(--surface); box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line);
+  display: flex; flex-direction: column; gap: 10px; min-width: 0;
+  animation: rise .6s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms);
+}
+.kpi-label { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.kpi-value { font-family: var(--font-display); font-weight: 600; font-size: clamp(26px, 2.3vw, 34px); letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.delta {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 6px; border-radius: 999px;
+  font-weight: 600; font-size: 12.5px; white-space: nowrap;
+}
+.delta svg { width: 12px; height: 12px; fill: currentColor; }
+.delta.good { color: var(--good); background: var(--good-wash); }
+.delta.bad  { color: var(--bad);  background: var(--bad-wash); }
+.kpi--hero { background: var(--s-online); box-shadow: var(--shadow-2); color: var(--bg); }
+.kpi--hero .kpi-label, .kpi--hero .kpi-foot { color: color-mix(in oklch, var(--bg) 75%, transparent); }
+.kpi--hero .delta.good { background: color-mix(in oklch, var(--bg) 16%, transparent); color: var(--bg); }
+
+/* Panels grid */
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; }
+.span-8 { grid-column: span 8; } .span-4 { grid-column: span 4; }
+.span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; }
+
+.panel {
+  background: var(--surface); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line);
+  padding: 20px 22px 22px; min-width: 0;
+  display: flex; flex-direction: column; gap: 16px;
+  animation: rise .7s var(--ease) both; animation-delay: .15s;
+  scroll-margin-top: 130px;
+}
+.panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.panel-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 18px; letter-spacing: -.015em; line-height: 1.25; }
+.panel-head p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* Segmented control */
+.seg { display: inline-flex; padding: 3px; border-radius: var(--r-md); background: var(--sunken); gap: 2px; }
+.seg button {
+  border: 0; background: transparent; padding: 0 12px; height: 32px; border-radius: 7px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--ink-2); display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+  transition: background-color .15s, color .15s, box-shadow .15s;
+}
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line); }
+.swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.sw-online { background: var(--s-online); } .sw-cafe { background: var(--s-cafe); }
+.sw-split { background: linear-gradient(180deg, var(--s-online) 0 45%, var(--s-cafe) 45%); }
+
+/* Revenue chart */
+.chart-summary { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: -4px; }
+.chart-summary .big { font-family: var(--font-display); font-weight: 600; font-size: 28px; letter-spacing: -.03em; }
+.chart-summary .note { font-size: 13px; color: var(--muted); }
+.chart-wrap { position: relative; width: 100%; touch-action: pan-y; }
+.chart-wrap svg { display: block; width: 100%; overflow: visible; }
+.chart-wrap .grid-line { stroke: var(--line-2); stroke-width: 1; }
+.chart-wrap .grid-line.base { stroke: var(--line); }
+.chart-wrap .tick { fill: var(--muted); font-size: 11.5px; font-family: var(--font-body); }
+.chart-wrap .tick.now { fill: var(--ink); font-weight: 600; }
+.chart-wrap .tick.year { fill: var(--muted); font-size: 10.5px; letter-spacing: .04em; }
+.chart-wrap .bar-online { fill: var(--s-online); }
+.chart-wrap .bar-cafe { fill: var(--s-cafe); }
+.chart-wrap .col { transition: opacity .2s; }
+.chart-wrap.hovering .col:not(.active) { opacity: .38; }
+.chart-wrap .val-label { fill: var(--ink); font: 600 12px var(--font-body); }
+.chart-wrap .hit { fill: transparent; cursor: pointer; outline: none; }
+.chart-wrap .hit:focus-visible { fill: color-mix(in oklch, var(--accent) 10%, transparent); stroke: var(--accent); stroke-width: 1.5; }
+.chart-wrap .grow { transform-box: fill-box; transform-origin: 50% 100%; animation: grow .55s var(--ease) both; }
+.tooltip {
+  position: absolute; z-index: 5; pointer-events: none; min-width: 168px;
+  padding: 10px 12px; border-radius: var(--r-md);
+  background: var(--ink); color: var(--bg); box-shadow: var(--shadow-2);
+  font-size: 13px; line-height: 1.45;
+  opacity: 0; transform: translateY(4px); transition: opacity .12s, transform .12s;
+}
+.tooltip.show { opacity: 1; transform: none; }
+.tooltip .t-month { font-weight: 600; margin-bottom: 6px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
+.tooltip .t-row { display: flex; align-items: center; gap: 8px; }
+.tooltip .t-row b { margin-left: auto; font-weight: 600; padding-left: 16px; }
+.tooltip .t-row.total { margin-top: 6px; padding-top: 6px; border-top: 1px solid color-mix(in oklch, var(--bg) 22%, transparent); }
+[data-theme="dark"] .tooltip .sw-online { box-shadow: 0 0 0 1px oklch(40% 0.02 50); }
+
+/* Category */
+.strip { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.strip span { height: 100%; animation: widen .8s var(--ease) both; transform-origin: left; }
+.cat-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.cat-list li { display: grid; grid-template-columns: 12px 1fr auto; align-items: center; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--line-2); }
+.cat-list li:first-child { border-top: 0; }
+.cat-list .swatch { width: 12px; height: 12px; }
+.cat-name { font-weight: 500; }
+.cat-pct { font-family: var(--font-display); font-weight: 600; font-size: 17px; letter-spacing: -.02em; }
+.cat-bar { grid-column: 2 / 4; height: 4px; border-radius: 4px; background: var(--sunken); overflow: hidden; }
+.cat-bar span { display: block; height: 100%; border-radius: 4px; background: var(--c); transform-origin: left; animation: widen .8s var(--ease) both; }
+
+/* Tables */
+.table-scroll { overflow-x: auto; margin: 0 -22px; padding: 0 22px; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 11px 12px; text-align: left; white-space: nowrap; }
+th:first-child, td:first-child { padding-left: 0; }
+th:last-child, td:last-child { padding-right: 0; }
+thead th { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; border-bottom: 1px solid var(--line); padding-top: 4px; padding-bottom: 9px; }
+tbody tr { border-bottom: 1px solid var(--line-2); transition: background-color .15s; }
+tbody tr:last-child { border-bottom: 0; }
+tbody tr:hover { background: color-mix(in oklch, var(--sunken) 55%, transparent); }
+.r { text-align: right; }
+.sort-btn {
+  all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px;
+  font: inherit; color: inherit; padding: 4px 0; min-height: 28px;
+}
+.sort-btn:hover { color: var(--ink); }
+.sort-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sort-btn svg { width: 10px; height: 12px; fill: currentColor; opacity: .35; transition: opacity .15s, transform .2s var(--ease); }
+th[aria-sort] .sort-btn { color: var(--ink); }
+th[aria-sort] .sort-btn svg { opacity: 1; color: var(--accent); }
+th[aria-sort="ascending"] .sort-btn svg { transform: rotate(180deg); }
+th.r .sort-btn { flex-direction: row-reverse; }
+.cafe-name { font-weight: 600; }
+.tag { display: table; margin-top: 3px; padding: 1px 7px; border-radius: 999px; font-size: 11.5px; font-weight: 500; color: var(--accent-ink); background: var(--accent-wash); vertical-align: 1px; }
+.chg { font-weight: 600; }
+.chg.up { color: var(--good); } .chg.down { color: var(--bad); }
+.empty-row td { text-align: center; color: var(--muted); padding: 24px 0; white-space: normal; }
+tfoot td { font-weight: 600; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 13px; padding-top: 12px; }
+
+.product-cell { display: flex; flex-direction: column; gap: 6px; white-space: normal; min-width: 180px; }
+.product-cell .pbar { height: 4px; border-radius: 4px; background: var(--sunken); overflow: hidden; max-width: 260px; }
+.product-cell .pbar span { display: block; height: 100%; background: var(--s-online); border-radius: 4px; transform-origin: left; animation: widen .8s var(--ease) both; }
+.rank { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--sunken); font-size: 12px; font-weight: 600; color: var(--ink-2); margin-right: 10px; flex: none; }
+.prod-name { display: flex; align-items: center; font-weight: 500; }
+
+/* Status */
+.status {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 7px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; color: var(--c); background: var(--w);
+}
+.status svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.status--shipped { --c: var(--st-shipped); --w: var(--st-shipped-wash); }
+.status--paid    { --c: var(--st-paid);    --w: var(--st-paid-wash); }
+.status--pending { --c: var(--st-pending); --w: var(--st-pending-wash); box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--st-pending) 35%, transparent); }
+.status--refunded{ --c: var(--st-refund);  --w: var(--st-refund-wash); }
+.amount-refunded { text-decoration: line-through; text-decoration-color: color-mix(in oklch, var(--st-refund) 70%, transparent); color: var(--muted); }
+.channel { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-2); }
+.channel i { width: 7px; height: 7px; border-radius: 2px; background: var(--s-cafe); }
+.channel.online i { background: var(--s-online); border-radius: 50%; }
+.order-id { color: var(--ink-2); }
+
+/* Inventory */
+.inv { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.inv li { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; align-items: center; }
+.inv-name { font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.inv-days { font-family: var(--font-display); font-weight: 600; font-size: 17px; letter-spacing: -.02em; text-align: right; }
+.inv-days small { font: 500 12.5px var(--font-body); color: var(--muted); margin-left: 3px; letter-spacing: 0; }
+.inv-track { grid-column: 1 / -1; position: relative; height: 10px; border-radius: 10px; background: var(--sunken); }
+.inv-track .fill { position: absolute; inset: 0 auto 0 0; border-radius: 10px; background: var(--s-online); transform-origin: left; animation: widen .9s var(--ease) both; }
+.inv li.low .fill { background: var(--bad); }
+.inv li.low .inv-days { color: var(--bad); }
+.inv-track .threshold { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 1.5px dashed var(--ink-2); opacity: .55; }
+.reorder { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; letter-spacing: .02em; padding: 2px 8px 2px 6px; border-radius: 999px; color: var(--bad); background: var(--bad-wash); }
+.reorder svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.inv-ok { font-size: 12px; color: var(--muted); font-weight: 500; }
+.inv-legend { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); padding-top: 12px; border-top: 1px solid var(--line-2); flex-wrap: wrap; }
+.inv-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.inv-legend .dash { width: 0; height: 12px; border-left: 1.5px dashed var(--ink-2); opacity: .6; }
+
+.foot-note { font-size: 12.5px; color: var(--muted); }
+.result-count { font-size: 12.5px; color: var(--accent-ink); font-weight: 500; min-height: 1em; }
+
+/* Status legend */
+.status-legend { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ───────────────────────── Motion ───────────────────────── */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes widen { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ───────────────────────── Responsive ───────────────────────── */
+@media (max-width: 1280px) {
+  .kpis { grid-template-columns: repeat(6, 1fr); }
+  .kpi { grid-column: span 2; }
+  .kpi:nth-child(4), .kpi:nth-child(5) { grid-column: span 3; }
+  .topbar { grid-template-columns: 1fr minmax(220px, 320px) auto auto; }
+  .user-text { display: none; }
+}
+@media (max-width: 1100px) {
+  .span-8, .span-4, .span-7, .span-5 { grid-column: 1 / -1; }
+}
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 50; width: min(300px, 84vw);
+    background: var(--surface); box-shadow: var(--shadow-2);
+    transform: translateX(-102%); transition: transform .3s var(--ease), visibility 0s .3s; visibility: hidden;
+  }
+  .sidebar.open { transform: none; visibility: visible; transition: transform .3s var(--ease), visibility 0s; }
+  .scrim { position: fixed; inset: 0; z-index: 40; background: oklch(20% 0.02 50 / .4); opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .icon-btn.menu-btn { display: inline-grid; }
+  .close-nav { display: inline-grid !important; }
+  .topbar {
+    grid-template-columns: auto 1fr auto auto; grid-template-areas: "menu title theme user" "search search search search";
+    padding: 12px 20px; gap: 10px 12px;
+  }
+  .menu-btn { grid-area: menu; } .title-block { grid-area: title; } .search { grid-area: search; }
+  .theme-btn { grid-area: theme; } .user { grid-area: user; }
+  .content { padding: 20px 20px 48px; }
+}
+@media (max-width: 640px) {
+  body { font-size: 14.5px; }
+  .topbar { padding: 10px 16px; }
+  .title-block { flex-direction: column; gap: 0; }
+  .title-block h1 { font-size: 18px; }
+  .period { font-size: 12px; }
+  .period b { padding: 0; background: none; box-shadow: none; }
+  .period .vs { display: none; }
+  .search kbd { display: none; }
+  .content { padding: 16px 14px 40px; gap: 14px; }
+  .grid { gap: 14px; }
+  .kpis { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi, .kpi:nth-child(4), .kpi:nth-child(5) { grid-column: auto; padding: 14px; }
+  .kpi--hero { grid-column: 1 / -1 !important; }
+  .kpi-foot .vs-text { display: none; }
+  .panel { padding: 16px 16px 18px; border-radius: 14px; }
+  .table-scroll { margin: 0 -16px; padding: 0 16px; }
+  .panel-head .seg { width: 100%; }
+  .seg button { flex: 1; justify-content: center; padding: 0 6px; }
+  .brief h2 { font-size: 24px; }
+
+  /* Orders become stacked cards */
+  #orders-table thead { display: none; }
+  #orders-table, #orders-table tbody { display: block; }
+  #orders-table tbody tr {
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 12px;
+    grid-template-areas: "cust total" "meta status";
+    padding: 12px 0;
+  }
+  #orders-table td { padding: 0; }
+  #orders-table td.c-order { display: none; }
+  #orders-table td.c-cust { grid-area: cust; font-weight: 600; }
+  #orders-table td.c-total { grid-area: total; text-align: right; font-weight: 600; }
+  #orders-table td.c-meta { grid-area: meta; display: flex !important; gap: 10px; align-items: center; color: var(--muted); font-size: 13px; }
+  #orders-table td.c-channel, #orders-table td.c-items { display: none; }
+  #orders-table td.c-status { grid-area: status; text-align: right; }
+  #orders-table tr.empty-row { display: block; }
+  #orders-table tr.empty-row td { display: block; }
+}
+.c-meta { display: none; }
+.close-nav { display: none !important; margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ───────────── Sidebar ───────────── -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div style="display:flex;align-items:center;gap:8px">
+      <a class="brand" href="#" aria-label="Kestrel Coffee Roasters, Overview">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <rect width="40" height="40" rx="11" fill="var(--s-online)"/>
+          <ellipse cx="20" cy="20.5" rx="9.5" ry="12.5" transform="rotate(32 20 20.5)" fill="var(--s-cafe)"/>
+          <path d="M13.8 29.4c3.8-3.6 4.4-6.6 4.6-9.4.3-3.4 2-6.5 6.6-9.6" fill="none" stroke="var(--s-online)" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M27 11.5l4.5-2.2-1.6 4.4" fill="var(--bg)" opacity=".9"/>
+        </svg>
+        <span class="brand-name">Kestrel Coffee Roasters<small>Operations</small></span>
+      </a>
+      <button class="icon-btn close-nav" id="close-nav" aria-label="Close navigation">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" aria-label="Sections">
+      <div class="nav-label">Workspace</div>
+      <a href="#" aria-current="page">
+        <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="5" rx="1.5"/><rect x="13.5" y="11.5" width="7" height="9" rx="1.5"/><rect x="3.5" y="15.5" width="7" height="5" rx="1.5"/></svg>
+        Overview
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24"><path d="M6 3.5h12v17l-2.5-1.6L13 20.5l-2.5-1.6L8 20.5l-2-1.3z"/><path d="M9 8.5h6M9 12h6"/></svg>
+        Orders
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24"><path d="M6.5 8h11l-1 12.5h-9z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+        Products
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.3 7.5-5.3s6.3 1.7 7.5 5.3"/></svg>
+        Customers
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24"><path d="M3.5 7.5L12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5L12 11.5l8.5-4M12 11.5v9"/></svg>
+        Inventory
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24"><path d="M4 20.5h16"/><path d="M7 16.5v-5M12 16.5v-9M17 16.5v-3"/></svg>
+        Reports
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+        Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <strong>Reporting period</strong>
+      October 1–31, 2026, compared with September 2026.
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <!-- ───────────── Main ───────────── -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      </button>
+      <div class="title-block">
+        <h1>Sales &amp; Operations</h1>
+        <span class="period"><b>October 2026</b><span class="vs">vs September 2026</span></span>
+      </div>
+      <div class="search" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2" stroke-linecap="round"/></svg>
+        <label for="search" class="sr-only">Search orders, products, customers</label>
+        <input id="search" type="search" placeholder="Search orders, products, customers" autocomplete="off">
+        <kbd aria-hidden="true">/</kbd>
+      </div>
+      <button class="icon-btn theme-btn" id="theme-btn" aria-label="Switch to dark theme">
+        <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24"><path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/></svg>
+      </button>
+      <div class="user" aria-label="Signed in as Mara Kim, Operations lead">
+        <span class="avatar" aria-hidden="true">MK</span>
+        <span class="user-text"><strong>Mara Kim</strong><span>Operations lead</span></span>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+      <!-- Brief -->
+      <section class="brief" aria-label="Morning summary">
+        <div>
+          <h2>Good morning, Mara. October closed <em>up 6.4%</em>.</h2>
+          <p>Both channels grew on September. Cafés added more revenue than online, and refunds are down. Two green coffees need reordering.</p>
+        </div>
+        <div class="flags">
+          <a class="flag" href="#inventory-panel" style="--c: var(--bad)"><i></i>2 coffees to reorder</a>
+          <a class="flag" href="#orders-panel" style="--c: var(--st-pending)"><i></i>1 order pending</a>
+          <a class="flag" href="#orders-panel" style="--c: var(--st-refund)"><i></i>1 refund in recent orders</a>
+        </div>
+      </section>
+
+      <!-- KPIs -->
+      <section class="kpis" aria-label="Key figures for October 2026">
+        <article class="kpi kpi--hero" style="--i:0">
+          <h3 class="kpi-label">Revenue</h3>
+          <div class="kpi-value">$184,320</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z"/></svg>+6.4%</span><span class="vs-text">vs September</span></div>
+        </article>
+        <article class="kpi" style="--i:1">
+          <h3 class="kpi-label">Orders</h3>
+          <div class="kpi-value">9,412</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z"/></svg>+3.1%</span><span class="vs-text">vs September</span></div>
+        </article>
+        <article class="kpi" style="--i:2">
+          <h3 class="kpi-label">Average order value</h3>
+          <div class="kpi-value">$19.58</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z"/></svg>+3.2%</span><span class="vs-text">vs September</span></div>
+        </article>
+        <article class="kpi" style="--i:3">
+          <h3 class="kpi-label">Subscription customers</h3>
+          <div class="kpi-value">1,286</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z"/></svg>+48 net</span><span class="vs-text">vs September</span></div>
+        </article>
+        <article class="kpi" style="--i:4">
+          <h3 class="kpi-label">Refund rate</h3>
+          <div class="kpi-value">1.9%</div>
+          <div class="kpi-foot">
+            <span class="delta good" title="A decrease is good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10L2 4h8z"/></svg>−0.3 pp</span>
+            <span>Lower is better</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- Row: revenue + categories -->
+      <div class="grid">
+        <section class="panel span-8" aria-labelledby="rev-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="rev-title">Monthly revenue</h2>
+              <p>November 2025 – October 2026 · thousands of US dollars</p>
+            </div>
+            <div class="seg" role="group" aria-label="Channel">
+              <button type="button" data-mode="all" aria-pressed="true"><span class="swatch sw-split"></span>All channels</button>
+              <button type="button" data-mode="online" aria-pressed="false"><span class="swatch sw-online"></span>Online</button>
+              <button type="button" data-mode="cafe" aria-pressed="false"><span class="swatch sw-cafe"></span>Cafés</button>
+            </div>
+          </div>
+          <div class="chart-summary" aria-live="polite">
+            <span class="big" id="sum-big">$184K</span>
+            <span class="delta good" id="sum-delta"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z"/></svg><span>+6.4%</span></span>
+            <span class="note" id="sum-note">All channels, October vs September</span>
+          </div>
+          <div class="chart-wrap" id="chart">
+            <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+          </div>
+          <table class="sr-only">
+            <caption>Monthly revenue by channel, thousands of US dollars</caption>
+            <thead><tr><th>Month</th><th>Online</th><th>Cafés</th></tr></thead>
+            <tbody id="sr-rev"></tbody>
+          </table>
+        </section>
+
+        <section class="panel span-4" aria-labelledby="cat-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="cat-title">Revenue by category</h2>
+              <p>October 2026 · share of revenue</p>
+            </div>
+          </div>
+          <div class="strip" id="cat-strip" aria-hidden="true"></div>
+          <ul class="cat-list" id="cat-list"></ul>
+        </section>
+      </div>
+
+      <!-- Row: cafés + inventory -->
+      <div class="grid">
+        <section class="panel span-8" aria-labelledby="cafe-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="cafe-title">Café performance</h2>
+              <p>October 2026 · click a column header to sort</p>
+            </div>
+            <span class="result-count" id="cafe-count"></span>
+          </div>
+          <div class="table-scroll">
+            <table id="cafe-table">
+              <caption class="sr-only">Café performance, October 2026. Column headers are sortable buttons.</caption>
+              <thead>
+                <tr>
+                  <th scope="col" data-key="name"><button class="sort-btn">Café<svg viewBox="0 0 10 12"><path d="M5 12L1 7h8z"/><path d="M5 0l4 5H1z" opacity=".35"/></svg></button></th>
+                  <th scope="col" class="r" data-key="revenue" aria-sort="descending"><button class="sort-btn">Revenue<svg viewBox="0 0 10 12"><path d="M5 12L1 7h8z"/><path d="M5 0l4 5H1z" opacity=".35"/></svg></button></th>
+                  <th scope="col" class="r" data-key="orders"><button class="sort-btn">Orders<svg viewBox="0 0 10 12"><path d="M5 12L1 7h8z"/><path d="M5 0l4 5H1z" opacity=".35"/></svg></button></th>
+                  <th scope="col" class="r" data-key="ticket"><button class="sort-btn">Average ticket<svg viewBox="0 0 10 12"><path d="M5 12L1 7h8z"/><path d="M5 0l4 5H1z" opacity=".35"/></svg></button></th>
+                  <th scope="col" class="r" data-key="change"><button class="sort-btn">Change vs Sep<svg viewBox="0 0 10 12"><path d="M5 12L1 7h8z"/><path d="M5 0l4 5H1z" opacity=".35"/></svg></button></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel span-4" id="inventory-panel" aria-labelledby="inv-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="inv-title">Green coffee inventory</h2>
+              <p>Days of stock left at the current roasting rate</p>
+            </div>
+          </div>
+          <ul class="inv" id="inv-list"></ul>
+          <div class="inv-legend">
+            <span><span class="dash"></span>7-day reorder threshold</span>
+            <span>Under 7 days is flagged for reorder</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- Row: orders + products -->
+      <div class="grid">
+        <section class="panel span-7" id="orders-panel" aria-labelledby="orders-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="orders-title">Recent orders</h2>
+              <p>Latest six orders across all channels</p>
+            </div>
+            <span class="result-count" id="orders-count"></span>
+          </div>
+          <div class="table-scroll">
+            <table id="orders-table">
+              <caption class="sr-only">Recent orders</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Order</th>
+                  <th scope="col">Customer</th>
+                  <th scope="col">Channel</th>
+                  <th scope="col" class="r">Items</th>
+                  <th scope="col" class="r">Total</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel span-5" aria-labelledby="prod-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="prod-title">Top online products</h2>
+              <p>October 2026 · ranked by revenue</p>
+            </div>
+            <span class="result-count" id="prod-count"></span>
+          </div>
+          <div class="table-scroll">
+            <table id="prod-table">
+              <caption class="sr-only">Top online products, October 2026</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Product</th>
+                  <th scope="col" class="r">Units</th>
+                  <th scope="col" class="r">Revenue</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <p class="foot-note">Kestrel Coffee Roasters · Online store and four cafés: Harbor Street, Mill Lane, Station Square and Riverside.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+(() => {
+  /* ───────────── Data (from brief only) ───────────── */
+  const months = [
+    ["Nov", 2025, 61, 88], ["Dec", 2025, 74, 102], ["Jan", 2026, 58, 81], ["Feb", 2026, 60, 84],
+    ["Mar", 2026, 63, 89], ["Apr", 2026, 66, 93], ["May", 2026, 68, 97], ["Jun", 2026, 70, 99],
+    ["Jul", 2026, 72, 96], ["Aug", 2026, 75, 95], ["Sep", 2026, 79, 94], ["Oct", 2026, 83, 101]
+  ].map(([m, y, online, cafe]) => ({ m, y, online, cafe, total: online + cafe }));
+  const fullMonth = { Nov:"November", Dec:"December", Jan:"January", Feb:"February", Mar:"March", Apr:"April", May:"May", Jun:"June", Jul:"July", Aug:"August", Sep:"September", Oct:"October" };
+
+  const categories = [
+    ["Whole bean", 38], ["Espresso drinks", 27], ["Filter & cold brew", 14],
+    ["Pastries", 12], ["Equipment", 6], ["Gift cards", 3]
+  ];
+
+  const cafes = [
+    { name: "Harbor Street",  revenue: 31420, orders: 1812, ticket: 17.34, change: 4.8 },
+    { name: "Mill Lane",      revenue: 27960, orders: 1655, ticket: 16.89, change: 2.1 },
+    { name: "Station Square", revenue: 24310, orders: 1498, ticket: 16.23, change: -1.7 },
+    { name: "Riverside",      revenue: 17630, orders: 1127, ticket: 15.64, change: 9.6, note: "Opened June 2026" }
+  ];
+
+  const products = [
+    ["Morning Tide blend, 340 g", 1104, 16008],
+    ["Ridgeback espresso, 1 kg", 412, 14420],
+    ["Cold brew concentrate, 1 L", 655, 9170],
+    ["Ceramic pour-over set", 138, 6210],
+    ["Single-origin sampler", 291, 5529]
+  ];
+
+  const orders = [
+    ["#48213", "Ana Ruiz", "Online", 2, "$41.00", "Shipped"],
+    ["#48212", "Tomás Berg", "Harbor Street", 3, "$14.75", "Paid"],
+    ["#48211", "Priya Nair", "Online", 1, "$35.00", "Pending"],
+    ["#48210", "Jonah Weiss", "Mill Lane", 2, "$9.40", "Paid"],
+    ["#48209", "Lena Okafor", "Online", 4, "$63.50", "Refunded"],
+    ["#48208", "Sam Choi", "Riverside", 1, "$5.25", "Paid"]
+  ];
+
+  const inventory = [
+    ["Ethiopia Guji", 6], ["Colombia Huila", 14], ["Brazil Cerrado", 3], ["Kenya Nyeri", 21]
+  ];
+
+  const usd = n => "$" + n.toLocaleString("en-US");
+  const usd2 = n => "$" + n.toFixed(2);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+  const minus = "−";
+  const signed = (n, d = 1) => (n > 0 ? "+" : n < 0 ? minus : "") + Math.abs(n).toFixed(d) + "%";
+
+  /* ───────────── Theme ───────────── */
+  const root = document.documentElement;
+  const themeBtn = document.getElementById("theme-btn");
+  const storedTheme = (() => { try { return localStorage.getItem("kestrel-theme"); } catch { return null; } })();
+  const setTheme = t => {
+    root.setAttribute("data-theme", t);
+    themeBtn.setAttribute("aria-label", t === "dark" ? "Switch to light theme" : "Switch to dark theme");
+    try { localStorage.setItem("kestrel-theme", t); } catch {}
+  };
+  setTheme(storedTheme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  themeBtn.addEventListener("click", () => setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+
+  /* ───────────── Mobile navigation ───────────── */
+  const sidebar = document.getElementById("sidebar");
+  const scrim = document.getElementById("scrim");
+  const menuBtn = document.getElementById("menu-btn");
+  const closeBtn = document.getElementById("close-nav");
+  const openNav = () => {
+    scrim.hidden = false;
+    requestAnimationFrame(() => { sidebar.classList.add("open"); scrim.classList.add("show"); });
+    menuBtn.setAttribute("aria-expanded", "true");
+    setTimeout(() => sidebar.querySelector('[aria-current="page"]').focus(), 50);
+  };
+  const closeNav = (refocus = true) => {
+    sidebar.classList.remove("open"); scrim.classList.remove("show");
+    menuBtn.setAttribute("aria-expanded", "false");
+    setTimeout(() => { scrim.hidden = true; }, 300);
+    if (refocus) menuBtn.focus();
+  };
+  menuBtn.addEventListener("click", openNav);
+  closeBtn.addEventListener("click", () => closeNav());
+  scrim.addEventListener("click", () => closeNav());
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && sidebar.classList.contains("open")) closeNav();
+  });
+  sidebar.querySelectorAll(".nav a").forEach(a => a.addEventListener("click", e => {
+    e.preventDefault();
+    if (sidebar.classList.contains("open")) closeNav(false);
+  }));
+  matchMedia("(min-width: 961px)").addEventListener("change", e => { if (e.matches) closeNav(false); });
+
+  /* ───────────── Revenue chart ───────────── */
+  const chart = document.getElementById("chart");
+  const tooltip = document.getElementById("tooltip");
+  const NS = "http://www.w3.org/2000/svg";
+  let mode = "all";
+  let activeIdx = null;
+  let geom = null;
+
+  document.getElementById("sr-rev").innerHTML = months.map(d =>
+    `<tr><th scope="row">${fullMonth[d.m]} ${d.y}</th><td>$${d.online}K</td><td>$${d.cafe}K</td></tr>`).join("");
+
+  const el = (tag, attrs = {}, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+  const topRounded = (x, y, w, h, r) => {
+    r = Math.min(r, h, w / 2);
+    return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  };
+
+  function renderChart(animate) {
+    chart.querySelector("svg")?.remove();
+    const W = chart.clientWidth;
+    const compact = W < 560;
+    const H = compact ? 236 : 300;
+    const m = { t: 22, r: 4, b: compact ? 34 : 38, l: compact ? 34 : 42 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const yMax = mode === "all" ? 200 : 120;
+    const step = mode === "all" ? 50 : 40;
+    const y = v => m.t + ih - (v / yMax) * ih;
+    const band = iw / months.length;
+    const bw = Math.min(band * 0.58, 38);
+
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "group", "aria-label": "Monthly revenue bar chart. Use arrow keys to move between months." });
+    for (let v = 0; v <= yMax; v += step) {
+      el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: "grid-line" + (v === 0 ? " base" : "") }, svg);
+      const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end", class: "tick" }, svg);
+      t.textContent = v === 0 ? "$0" : `$${v}K`;
+    }
+
+    const cols = [];
+    months.forEach((d, i) => {
+      const cx = m.l + band * i + band / 2;
+      const x = cx - bw / 2;
+      const g = el("g", { class: "col" }, svg);
+      const delay = animate ? `animation-delay:${i * 28}ms` : "";
+      const cls = animate ? " grow" : "";
+      let topY;
+      if (mode === "all") {
+        const yc = y(d.cafe), yt = y(d.total);
+        el("rect", { x, y: yc, width: bw, height: y(0) - yc, class: "bar-cafe" + cls, style: delay }, g);
+        el("path", { d: topRounded(x, yt, bw, yc - yt - 1.5, 4), class: "bar-online" + cls, style: delay }, g);
+        topY = yt;
+      } else {
+        const v = d[mode];
+        topY = y(v);
+        el("path", { d: topRounded(x, topY, bw, y(0) - topY, 4), class: (mode === "online" ? "bar-online" : "bar-cafe") + cls, style: delay }, g);
+      }
+      const isNow = i === months.length - 1;
+      if (isNow) {
+        const lbl = el("text", { x: cx, y: topY - 7, "text-anchor": "middle", class: "val-label" }, g);
+        lbl.textContent = `$${mode === "all" ? d.total : d[mode]}K`;
+      }
+      const tl = el("text", { x: cx, y: H - m.b + 17, "text-anchor": "middle", class: "tick" + (isNow ? " now" : "") }, svg);
+      tl.textContent = compact ? d.m[0] : d.m;
+      if (i === 0 || d.m === "Jan") {
+        const yl = el("text", { x: cx, y: H - m.b + 31, "text-anchor": "middle", class: "tick year" }, svg);
+        yl.textContent = d.y;
+      }
+      const label = mode === "all"
+        ? `${fullMonth[d.m]} ${d.y}: Online $${d.online}K, Cafés $${d.cafe}K, total $${d.total}K`
+        : `${fullMonth[d.m]} ${d.y}: ${mode === "online" ? "Online" : "Cafés"} $${d[mode]}K`;
+      const hit = el("rect", { x: m.l + band * i, y: m.t, width: band, height: ih, class: "hit", tabindex: i === (activeIdx ?? months.length - 1) ? 0 : -1, "aria-label": label, "data-i": i }, svg);
+      cols.push({ g, cx, topY, hit });
+    });
+    chart.appendChild(svg);
+    geom = { cols, W };
+
+    svg.addEventListener("pointermove", onPointer);
+    svg.addEventListener("pointerdown", onPointer);
+    svg.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") hideTip(); });
+    svg.addEventListener("focusin", e => { const i = +e.target.dataset.i; if (!isNaN(i)) showTip(i); });
+    svg.addEventListener("focusout", () => hideTip());
+    svg.addEventListener("keydown", onKey);
+    if (activeIdx !== null && chart.classList.contains("hovering")) showTip(activeIdx);
+  }
+
+  function onPointer(e) {
+    const t = e.target.closest(".hit");
+    if (t) showTip(+t.dataset.i);
+  }
+  function onKey(e) {
+    const cur = +(e.target.dataset?.i ?? -1);
+    if (cur < 0) return;
+    let next = cur;
+    if (e.key === "ArrowRight") next = Math.min(months.length - 1, cur + 1);
+    else if (e.key === "ArrowLeft") next = Math.max(0, cur - 1);
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = months.length - 1;
+    else return;
+    e.preventDefault();
+    geom.cols.forEach((c, i) => c.hit.setAttribute("tabindex", i === next ? 0 : -1));
+    geom.cols[next].hit.focus();
+  }
+  function showTip(i) {
+    activeIdx = i;
+    const d = months[i];
+    const c = geom.cols[i];
+    geom.cols.forEach((col, j) => col.g.classList.toggle("active", j === i));
+    chart.classList.add("hovering");
+    const prev = months[i - 1];
+    const row = (cls, name, v) => `<div class="t-row"><span class="swatch ${cls}"></span>${name}<b>$${v}K</b></div>`;
+    let html = `<div class="t-month">${fullMonth[d.m]} ${d.y}</div>`;
+    if (mode === "all") {
+      html += row("sw-online", "Online", d.online) + row("sw-cafe", "Cafés", d.cafe) +
+        `<div class="t-row total">Total<b>$${d.total}K</b></div>`;
+    } else {
+      html += row(mode === "online" ? "sw-online" : "sw-cafe", mode === "online" ? "Online" : "Cafés", d[mode]);
+    }
+    if (prev) {
+      const a = mode === "all" ? d.total : d[mode], b = mode === "all" ? prev.total : prev[mode];
+      html += `<div class="t-row" style="opacity:.7;font-size:12px;margin-top:4px">vs ${prev.m}<b style="font-weight:500">${signed((a - b) / b * 100)}</b></div>`;
+    }
+    tooltip.innerHTML = html;
+    tooltip.classList.add("show");
+    const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+    let left = c.cx - tw / 2;
+    left = Math.max(0, Math.min(geom.W - tw, left));
+    let top = c.topY - th - 14;
+    if (top < -10) top = -10;
+    tooltip.style.left = left + "px";
+    tooltip.style.top = top + "px";
+  }
+  function hideTip() {
+    activeIdx = null;
+    tooltip.classList.remove("show");
+    chart.classList.remove("hovering");
+    geom?.cols.forEach(col => col.g.classList.remove("active"));
+  }
+  document.addEventListener("pointerdown", e => { if (!chart.contains(e.target)) hideTip(); });
+
+  const summary = () => {
+    const now = months.at(-1), prev = months.at(-2);
+    const key = mode === "all" ? "total" : mode;
+    const big = document.getElementById("sum-big");
+    const delta = document.getElementById("sum-delta");
+    const note = document.getElementById("sum-note");
+    // Headline "All" uses the reported KPI (+6.4%); channel splits are derived from the chart values.
+    big.textContent = mode === "all" ? "$184K" : `$${now[key]}K`;
+    delta.querySelector("span").textContent = mode === "all" ? "+6.4%" : signed((now[key] - prev[key]) / prev[key] * 100);
+    note.textContent = (mode === "all" ? "All channels" : mode === "online" ? "Online only" : "Cafés only") + ", October vs September";
+  };
+
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    hideTip();
+    summary();
+    renderChart(true);
+  }));
+
+  let rw = 0;
+  new ResizeObserver(entries => {
+    const w = Math.round(entries[0].contentRect.width);
+    if (w !== rw) { const first = rw === 0; rw = w; renderChart(first); }
+  }).observe(chart);
+
+  /* ───────────── Categories ───────────── */
+  document.getElementById("cat-strip").innerHTML = categories.map(([n, p], i) =>
+    `<span style="flex:${p};background:var(--cat-${i + 1});animation-delay:${i * 60}ms" title="${esc(n)} ${p}%"></span>`).join("");
+  const maxCat = categories[0][1];
+  document.getElementById("cat-list").innerHTML = categories.map(([n, p], i) => `
+    <li>
+      <span class="swatch" style="background:var(--cat-${i + 1})"></span>
+      <span class="cat-name">${esc(n)}</span>
+      <span class="cat-pct">${p}%</span>
+      <span class="cat-bar" aria-hidden="true"><span style="--c:var(--cat-${Math.min(i + 1, 4)});width:${p / maxCat * 100}%;animation-delay:${200 + i * 60}ms"></span></span>
+    </li>`).join("");
+
+  /* ───────────── Café table (sortable) ───────────── */
+  const cafeTable = document.getElementById("cafe-table");
+  const cafeBody = cafeTable.querySelector("tbody");
+  let sort = { key: "revenue", dir: "desc" };
+  let query = "";
+
+  function renderCafes() {
+    const rows = cafes
+      .filter(c => !query || (c.name + " " + (c.note || "")).toLowerCase().includes(query))
+      .sort((a, b) => {
+        const va = a[sort.key], vb = b[sort.key];
+        const r = typeof va === "string" ? va.localeCompare(vb) : va - vb;
+        return sort.dir === "asc" ? r : -r;
+      });
+    cafeBody.innerHTML = rows.length ? rows.map(c => `
+      <tr>
+        <th scope="row" style="font-weight:inherit;padding-left:0"><span class="cafe-name">${esc(c.name)}</span>${c.note ? `<span class="tag">${esc(c.note)}</span>` : ""}</th>
+        <td class="r" style="font-weight:600">${usd(c.revenue)}</td>
+        <td class="r">${c.orders.toLocaleString("en-US")}</td>
+        <td class="r">${usd2(c.ticket)}</td>
+        <td class="r"><span class="chg ${c.change >= 0 ? "up" : "down"}">${signed(c.change)}</span></td>
+      </tr>`).join("")
+      : `<tr class="empty-row"><td colspan="5">No cafés match “${esc(query)}”.</td></tr>`;
+    cafeTable.querySelectorAll("thead th").forEach(th => {
+      if (th.dataset.key === sort.key) th.setAttribute("aria-sort", sort.dir === "asc" ? "ascending" : "descending");
+      else th.removeAttribute("aria-sort");
+    });
+  }
+  cafeTable.querySelectorAll("thead th").forEach(th => th.querySelector("button").addEventListener("click", () => {
+    const key = th.dataset.key;
+    if (sort.key === key) sort.dir = sort.dir === "asc" ? "desc" : "asc";
+    else sort = { key, dir: key === "name" ? "asc" : "desc" };
+    renderCafes();
+  }));
+
+  /* ───────────── Inventory ───────────── */
+  const SCALE = 28, THRESH = 7;
+  document.getElementById("inv-list").innerHTML = inventory
+    .slice().sort((a, b) => a[1] - b[1])
+    .map(([n, d], i) => {
+      const low = d < THRESH;
+      return `
+      <li class="${low ? "low" : ""}">
+        <span class="inv-name">${esc(n)}${low
+          ? `<span class="reorder"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.5v4M6 9v.2"/></svg>Reorder</span>`
+          : `<span class="inv-ok">In stock</span>`}</span>
+        <span class="inv-days">${d}<small>days</small></span>
+        <span class="inv-track" role="img" aria-label="${esc(n)}: ${d} days of stock left${low ? ", below the 7-day threshold, reorder needed" : ""}">
+          <span class="fill" style="width:${d / SCALE * 100}%;animation-delay:${150 + i * 80}ms"></span>
+          <span class="threshold" style="left:${THRESH / SCALE * 100}%"></span>
+        </span>
+      </li>`;
+    }).join("");
+
+  /* ───────────── Orders ───────────── */
+  const statusIcon = {
+    Shipped:  '<svg viewBox="0 0 16 16"><path d="M1.5 4.5h8v6h-8zM9.5 7h3l2 2v1.5h-5"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/></svg>',
+    Paid:     '<svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+    Pending:  '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.8"/><path d="M8 5v3.2l2 1.3"/></svg>',
+    Refunded: '<svg viewBox="0 0 16 16"><path d="M5.5 3.5L2.5 6.5l3 3"/><path d="M2.5 6.5h7a4 4 0 0 1 0 8H7"/></svg>'
+  };
+  const statusChip = s => `<span class="status status--${s.toLowerCase()}">${statusIcon[s]}${s}</span>`;
+  const ordersBody = document.querySelector("#orders-table tbody");
+  function renderOrders() {
+    const rows = orders.filter(o => !query || o.join(" ").toLowerCase().includes(query));
+    ordersBody.innerHTML = rows.length ? rows.map(([id, cust, ch, items, total, st]) => `
+      <tr>
+        <td class="c-order"><span class="mono order-id">${id}</span></td>
+        <td class="c-cust">${esc(cust)}</td>
+        <td class="c-channel"><span class="channel ${ch === "Online" ? "online" : ""}"><i></i>${esc(ch)}</span></td>
+        <td class="c-items r">${items}</td>
+        <td class="c-total r"><span class="${st === "Refunded" ? "amount-refunded" : ""}">${total}</span></td>
+        <td class="c-status">${statusChip(st)}</td>
+        <td class="c-meta"><span class="mono">${id}</span><span class="channel ${ch === "Online" ? "online" : ""}"><i></i>${esc(ch)}</span><span>${items} item${items > 1 ? "s" : ""}</span></td>
+      </tr>`).join("")
+      : `<tr class="empty-row"><td colspan="6">No recent orders match “${esc(query)}”.</td></tr>`;
+    document.getElementById("orders-count").textContent = query ? `${rows.length} of ${orders.length} orders` : "";
+  }
+
+  /* ───────────── Products ───────────── */
+  const prodBody = document.querySelector("#prod-table tbody");
+  const maxProd = products[0][2];
+  function renderProducts() {
+    const rows = products.map((p, i) => [...p, i + 1]).filter(p => !query || p[0].toLowerCase().includes(query));
+    prodBody.innerHTML = rows.length ? rows.map(([n, u, r, rank]) => `
+      <tr>
+        <td><div class="product-cell"><span class="prod-name"><span class="rank" aria-label="Rank ${rank}">${rank}</span>${esc(n)}</span><span class="pbar" aria-hidden="true"><span style="width:${r / maxProd * 100}%;animation-delay:${rank * 60}ms"></span></span></div></td>
+        <td class="r">${u.toLocaleString("en-US")}</td>
+        <td class="r" style="font-weight:600">${usd(r)}</td>
+      </tr>`).join("")
+      : `<tr class="empty-row"><td colspan="3">No products match “${esc(query)}”.</td></tr>`;
+    document.getElementById("prod-count").textContent = query ? `${rows.length} of ${products.length} products` : "";
+  }
+
+  /* ───────────── Search ───────────── */
+  const search = document.getElementById("search");
+  search.addEventListener("input", () => {
+    query = search.value.trim().toLowerCase();
+    renderCafes(); renderOrders(); renderProducts();
+    document.getElementById("cafe-count").textContent = query ? `${cafeBody.querySelectorAll("tr:not(.empty-row)").length} of ${cafes.length} cafés` : "";
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "/" && !/input|textarea/i.test(document.activeElement.tagName)) { e.preventDefault(); search.focus(); }
+    if (e.key === "Escape" && document.activeElement === search && search.value) { search.value = ""; search.dispatchEvent(new Event("input")); }
+  });
+
+  renderCafes(); renderOrders(); renderProducts(); summary();
+})();
+</script>
+</body>
+</html>

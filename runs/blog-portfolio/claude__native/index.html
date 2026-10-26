@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maya Lindqvist — Product designer and writer</title>
+<meta name="description" content="Maya Lindqvist is a freelance product designer and writer in Gothenburg, Sweden, designing tools for people who work with data.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f6e6a'/%3E%3Cpath d='M5 19c3.5-4 7.5-4 11 0s7.5 4 11 0' stroke='%23f6f3ec' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+  (function () {
+    var t;
+    try { t = localStorage.getItem('ml-theme'); } catch (e) {}
+    if (t !== 'light' && t !== 'dark') {
+      t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root,
+  [data-theme="light"] {
+    color-scheme: light;
+    --bg: #f6f3ec;
+    --surface: #fffdf8;
+    --surface-2: #efeadf;
+    --ink: #1b1f24;
+    --muted: #5a6067;
+    --line: #ddd5c6;
+    --accent: #0f6e6a;
+    --accent-ink: #ffffff;
+    --accent-soft: #d8e9e3;
+    --accent-2: #c9531f;
+    --ill-bg: #e7eee8;
+    --ill-water: #b9d8d1;
+    --ill-line: #cfd9d2;
+    --term: #18241f;
+    --term-ink: #7fd1a6;
+    --news-bg: #0f3f3d;
+    --news-ink: #f3efe6;
+    --news-muted: #b9d3cd;
+    --shadow: 0 1px 2px rgba(27, 31, 36, .05), 0 12px 32px -16px rgba(27, 31, 36, .18);
+  }
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #10151a;
+    --surface: #171f26;
+    --surface-2: #1b252d;
+    --ink: #ebe7df;
+    --muted: #9ea7af;
+    --line: #2b3640;
+    --accent: #5cc3b8;
+    --accent-ink: #0c1a19;
+    --accent-soft: #1c3434;
+    --accent-2: #f08a5a;
+    --ill-bg: #1a2a2e;
+    --ill-water: #22464b;
+    --ill-line: #29393e;
+    --term: #0b1210;
+    --term-ink: #6fc69a;
+    --news-bg: #15312f;
+    --news-ink: #ebe7df;
+    --news-muted: #a8c6c0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 32px -16px rgba(0, 0, 0, .6);
+  }
+
+  :root {
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --maxw: 1200px;
+    --pad: clamp(20px, 4vw, 48px);
+    --radius: 14px;
+    --header-h: 68px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color .25s ease, color .25s ease;
+  }
+  img, svg { display: block; max-width: 100%; }
+  a { color: inherit; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: .2em; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-color: currentColor; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 450; line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
+  p { margin: 0; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  button { font: inherit; color: inherit; }
+
+  .visually-hidden {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .skip-link {
+    position: absolute; left: 12px; top: -60px; z-index: 100;
+    background: var(--accent); color: var(--accent-ink); padding: 10px 16px; border-radius: 8px; text-decoration: none; font-weight: 500;
+  }
+  .skip-link:focus { top: 12px; }
+
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad); }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: var(--header-h); }
+  .site-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 550; text-decoration: none; letter-spacing: -0.01em; display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; }
+  .site-title svg { width: 26px; height: 26px; flex: none; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .site-nav ul { display: flex; gap: 4px; }
+  .site-nav a {
+    display: block; padding: 8px 14px; border-radius: 999px; text-decoration: none; font-size: .975rem; color: var(--muted);
+    transition: color .15s ease, background-color .15s ease;
+  }
+  .site-nav a:hover, .site-nav a[aria-current="true"] { color: var(--ink); background: var(--surface-2); }
+
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 40px; min-width: 40px; padding: 0 10px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease;
+  }
+  .icon-btn:hover { border-color: var(--muted); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .theme-toggle .icon-sun { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+  .nav-toggle { display: none; font-size: .95rem; padding: 0 14px; }
+  .nav-toggle .bars { position: relative; width: 16px; height: 10px; }
+  .nav-toggle .bars::before, .nav-toggle .bars::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 1.5px; background: currentColor; border-radius: 2px; transition: transform .2s ease, top .2s ease;
+  }
+  .nav-toggle .bars::before { top: 1px; }
+  .nav-toggle .bars::after { top: 7.5px; }
+  .nav-toggle[aria-expanded="true"] .bars::before { top: 4.25px; transform: rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] .bars::after { top: 4.25px; transform: rotate(-45deg); }
+
+  @media (max-width: 760px) {
+    .nav-toggle { display: inline-flex; }
+    .site-nav {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--bg); border-bottom: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 8px var(--pad) 20px;
+    }
+    .site-nav.is-open { display: block; }
+    .site-nav ul { flex-direction: column; gap: 0; }
+    .site-nav li + li { border-top: 1px solid var(--line); }
+    .site-nav a { padding: 16px 4px; border-radius: 0; font-family: var(--font-display); font-size: 1.5rem; color: var(--ink); }
+    .site-nav a:hover { background: transparent; color: var(--accent); }
+  }
+
+  /* ---------- Sections ---------- */
+  section { padding: clamp(72px, 10vw, 128px) 0; }
+  .section-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: clamp(32px, 5vw, 56px); }
+  .eyebrow { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .eyebrow .num { color: var(--accent); }
+  .section-title { font-size: clamp(2rem, 4vw, 3rem); }
+  .section-lede { color: var(--muted); max-width: 44ch; }
+
+  /* ---------- Intro ---------- */
+  .intro { padding-top: clamp(64px, 11vw, 140px); padding-bottom: clamp(56px, 8vw, 96px); position: relative; overflow: hidden; }
+  .intro h1 {
+    font-size: clamp(2.35rem, 6vw, 5.25rem); font-weight: 380; line-height: 1.04; letter-spacing: -0.025em;
+    max-width: 19ch; font-variation-settings: "opsz" 144;
+  }
+  .intro h1 em { font-style: italic; color: var(--accent); font-weight: 350; }
+  .status {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 36px;
+    padding: 8px 16px 8px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: .95rem;
+  }
+  .status-dot { position: relative; width: 10px; height: 10px; border-radius: 50%; background: #2fa36b; flex: none; }
+  .status-dot::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid #2fa36b; opacity: 0;
+    animation: ping 2.4s ease-out infinite;
+  }
+  @keyframes ping { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.6); opacity: 0; } }
+  .intro-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: clamp(48px, 7vw, 88px); padding-top: 24px; border-top: 1px solid var(--line); }
+  .intro-meta dt { font-family: var(--font-mono); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .intro-meta dd { margin: 0; }
+  .intro-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 20px; border-radius: 999px;
+    font-weight: 500; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: 1rem;
+    transition: transform .15s ease, background-color .15s ease, border-color .15s ease;
+  }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-ghost { border-color: var(--line); background: transparent; }
+  .btn-ghost:hover { border-color: var(--muted); }
+  .tide-line { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 60px; pointer-events: none; opacity: .9; }
+  .tide-line path { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 3 7; opacity: .45; }
+  @media (max-width: 760px) {
+    .intro-meta { grid-template-columns: 1fr; gap: 16px; }
+    .intro h1 { max-width: none; }
+  }
+
+  /* ---------- Work ---------- */
+  .work { border-top: 1px solid var(--line); }
+  .work-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(20px, 3vw, 36px); }
+  .case {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+    display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .case:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .case-art { margin: 0; aspect-ratio: 8 / 5; background: var(--ill-bg); border-bottom: 1px solid var(--line); }
+  .case-art svg { width: 100%; height: 100%; }
+  .case-body { padding: clamp(20px, 2.4vw, 28px); display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .case-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .case h3 { font-size: clamp(1.5rem, 2.4vw, 1.85rem); }
+  .year { font-family: var(--font-mono); font-size: .85rem; color: var(--muted); }
+  .case-summary { color: var(--ink); }
+  .case-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; margin: 0; padding: 14px 0; border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line); font-size: .95rem; }
+  .case-meta dt { font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .case-meta dd { margin: 2px 0 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+  .tag {
+    display: inline-block; font-family: var(--font-mono); font-size: .76rem; padding: 4px 10px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--ink); white-space: nowrap;
+  }
+  @media (max-width: 760px) { .work-grid { grid-template-columns: 1fr; } }
+
+  /* SVG illustration classes */
+  .i-bg { fill: var(--ill-bg); }
+  .i-water { fill: var(--ill-water); }
+  .i-surface { fill: var(--surface); }
+  .i-page { fill: var(--bg); }
+  .i-ink { fill: var(--ink); }
+  .i-muted { fill: var(--muted); }
+  .i-accent { fill: var(--accent); }
+  .i-accent2 { fill: var(--accent-2); }
+  .i-soft { fill: var(--accent-soft); }
+  .s-ink { stroke: var(--ink); }
+  .s-line { stroke: var(--line); }
+  .s-grid { stroke: var(--ill-line); }
+  .s-accent { stroke: var(--accent); }
+  .s-accent2 { stroke: var(--accent-2); }
+  .s-bg { stroke: var(--bg); }
+  .s-surface { stroke: var(--surface); }
+  .i-term { fill: var(--term); }
+  .i-term-ink { fill: var(--term-ink); }
+  .svg-mono { font-family: var(--font-mono); }
+
+  /* ---------- Writing ---------- */
+  .writing { border-top: 1px solid var(--line); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filter {
+    display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: .92rem; color: var(--muted);
+    transition: all .15s ease;
+  }
+  .filter:hover { color: var(--ink); border-color: var(--muted); }
+  .filter[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .filter .count { font-family: var(--font-mono); font-size: .75rem; opacity: .7; }
+  .filter-status { font-family: var(--font-mono); font-size: .8rem; color: var(--muted); margin: 20px 0 0; }
+  .post-list { margin-top: 12px; border-bottom: 1px solid var(--line); }
+  .post { border-top: 1px solid var(--line); animation: fadeIn .3s ease both; }
+  .post[hidden] { display: none; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .post article { display: grid; grid-template-columns: 180px minmax(0, 1fr) 170px; gap: 28px; padding: 28px 0; align-items: baseline; }
+  .post time { font-family: var(--font-mono); font-size: .85rem; color: var(--muted); }
+  .post h3 { font-size: clamp(1.3rem, 2vw, 1.6rem); margin-bottom: 8px; }
+  .post h3 a { text-decoration: none; }
+  .post h3 a:hover { color: var(--accent); }
+  .post p { color: var(--muted); max-width: 62ch; }
+  .post-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-size: .9rem; color: var(--muted); }
+  .read-link { font-size: .92rem; color: var(--accent); font-weight: 500; display: inline-block; margin-top: 10px; }
+  .badge-new { font-family: var(--font-mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent-2); margin-left: 10px; vertical-align: middle; }
+  @media (max-width: 900px) {
+    .post article { grid-template-columns: 1fr; gap: 8px; padding: 24px 0; }
+    .post-side { flex-direction: row; align-items: center; gap: 12px; margin-top: 6px; }
+  }
+
+  /* ---------- Featured post ---------- */
+  .featured { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .featured-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: clamp(32px, 6vw, 96px); }
+  .featured-aside { position: sticky; top: calc(var(--header-h) + 32px); align-self: start; }
+  .featured-aside dl { margin: 20px 0 0; display: grid; gap: 14px; }
+  .featured-aside dt { font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .featured-aside dd { margin: 2px 0 0; }
+  .featured-aside .back { display: inline-block; margin-top: 28px; font-size: .92rem; color: var(--muted); }
+  .post-full { max-width: 680px; }
+  .post-full > header h2 { font-size: clamp(2.1rem, 4.6vw, 3.6rem); font-weight: 400; letter-spacing: -0.02em; line-height: 1.06; }
+  .post-full > header .byline { margin-top: 20px; color: var(--muted); font-size: .95rem; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .post-full > header .byline span + span::before { content: "·"; margin-right: 14px; color: var(--line); }
+  .prose { margin-top: 44px; font-size: 1.125rem; line-height: 1.75; }
+  .prose > * + * { margin-top: 1.2em; }
+  .prose h3 { font-size: 1.6rem; margin-top: 2em; }
+  .prose > p:first-child::first-letter {
+    font-family: var(--font-display); float: left; font-size: 4.4em; line-height: .82; margin: .06em .1em 0 0; color: var(--accent); font-weight: 400;
+  }
+  .pullquote {
+    margin: 2em 0; padding: 4px 0 4px 28px; border-left: 3px solid var(--accent-2);
+    font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.25; font-style: italic; font-weight: 350;
+  }
+  .pullquote p { margin: 0; }
+  .snippet { margin: 1.8em 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--bg); }
+  .snippet figcaption {
+    display: flex; justify-content: space-between; gap: 12px; padding: 8px 14px; border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono); font-size: .75rem; color: var(--muted); background: var(--surface-2);
+  }
+  .snippet pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-family: var(--font-mono); font-size: .88rem; line-height: 1.7; }
+  .snippet .k { color: var(--muted); }
+  .snippet .v { color: var(--accent); }
+  .snippet .c { color: var(--muted); font-style: italic; }
+  .prose code:not(pre code) { font-family: var(--font-mono); font-size: .88em; background: var(--surface-2); padding: 2px 6px; border-radius: 5px; }
+  .post-end { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: .95rem; }
+  @media (max-width: 900px) {
+    .featured-grid { grid-template-columns: minmax(0, 1fr); }
+    .featured-aside { position: static; }
+    .featured-aside dl { grid-template-columns: repeat(3, auto); justify-content: start; gap: 12px 28px; }
+  }
+  @media (max-width: 480px) {
+    .featured-aside dl { grid-template-columns: repeat(2, auto); }
+    .prose { font-size: 1.0625rem; }
+  }
+
+  /* ---------- About ---------- */
+  .about-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(40px, 7vw, 112px); }
+  .bio p { font-size: clamp(1.15rem, 1.6vw, 1.3rem); line-height: 1.65; }
+  .bio p + p { margin-top: 1em; }
+  .portrait {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+  }
+  .portrait svg { width: 72px; height: 72px; border-radius: 50%; flex: none; }
+  .portrait small { display: block; color: var(--muted); font-size: .9rem; }
+  .sub-title { font-family: var(--font-mono); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 400; margin-bottom: 18px; }
+  .timeline { position: relative; }
+  .timeline li { position: relative; padding: 0 0 26px 28px; }
+  .timeline li::before { content: ""; position: absolute; left: 4px; top: 10px; bottom: -10px; width: 1px; background: var(--line); }
+  .timeline li:last-child::before { display: none; }
+  .timeline li::after { content: ""; position: absolute; left: 0; top: 7px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--muted); }
+  .timeline li:last-child::after { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .timeline .when { font-family: var(--font-mono); font-size: .82rem; color: var(--muted); }
+  .timeline .what { font-size: 1.05rem; }
+  .timeline .what strong { font-weight: 600; }
+  .about-lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: clamp(48px, 6vw, 72px); padding-top: 40px; border-top: 1px solid var(--line); }
+  .skills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .skills li { padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: .95rem; }
+  .talks li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .talks li:last-child { border-bottom: 1px solid var(--line); }
+  .talks .t { font-family: var(--font-display); font-size: 1.25rem; }
+  .talks .e { color: var(--muted); font-size: .95rem; grid-column: 1; }
+  .talks .y { font-family: var(--font-mono); font-size: .85rem; color: var(--muted); grid-row: 1; grid-column: 2; align-self: center; }
+  @media (max-width: 900px) {
+    .about-grid, .about-lists { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* ---------- Newsletter ---------- */
+  .newsletter { padding-top: 0; }
+  .news-card {
+    position: relative; overflow: hidden; background: var(--news-bg); color: var(--news-ink); border-radius: calc(var(--radius) + 6px);
+    padding: clamp(32px, 5vw, 64px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px 56px; align-items: center;
+  }
+  .news-card .eyebrow { color: var(--news-muted); }
+  .news-card h2 { font-size: clamp(2.2rem, 4.4vw, 3.4rem); font-weight: 400; }
+  .news-card p.desc { color: var(--news-muted); margin-top: 12px; font-size: 1.1rem; max-width: 36ch; }
+  .news-form { position: relative; z-index: 1; }
+  .news-row { display: flex; gap: 10px; }
+  .news-row input {
+    flex: 1; min-width: 0; height: 52px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 1rem;
+    border: 1px solid color-mix(in srgb, var(--news-ink) 30%, transparent); background: color-mix(in srgb, var(--news-ink) 8%, transparent); color: var(--news-ink);
+  }
+  .news-row input::placeholder { color: color-mix(in srgb, var(--news-ink) 55%, transparent); }
+  .news-row input:focus-visible { outline: 2px solid var(--news-ink); outline-offset: 2px; }
+  .news-row input[aria-invalid="true"] { border-color: #f5a37f; }
+  .news-row button {
+    height: 52px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--news-ink); color: var(--news-bg);
+    font-weight: 600; cursor: pointer; transition: transform .15s ease;
+  }
+  .news-row button:hover { transform: translateY(-1px); }
+  .news-row button:focus-visible { outline: 2px solid var(--news-ink); outline-offset: 3px; }
+  .news-note { margin-top: 12px; font-size: .88rem; color: var(--news-muted); min-height: 1.5em; }
+  .news-note.ok { color: var(--news-ink); }
+  .news-note.err { color: #f5b394; }
+  .news-waves { position: absolute; right: -20px; top: -10px; width: 340px; opacity: .14; pointer-events: none; }
+  .news-waves path { fill: none; stroke: var(--news-ink); stroke-width: 1.5; }
+  @media (max-width: 860px) { .news-card { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) {
+    .news-row { flex-direction: column; }
+    .news-row button { width: 100%; }
+  }
+
+  /* ---------- Contact & footer ---------- */
+  .contact { border-top: 1px solid var(--line); }
+  .contact-lede { color: var(--muted); max-width: 48ch; font-size: 1.1rem; margin-top: 16px; }
+  .email-link {
+    display: inline-block; margin-top: 36px; font-family: var(--font-display); font-weight: 380;
+    font-size: clamp(1.7rem, 6.2vw, 4.6rem); letter-spacing: -0.02em; line-height: 1.1; text-decoration: none;
+    background-image: linear-gradient(var(--accent), var(--accent)); background-size: 0% 2px; background-repeat: no-repeat; background-position: 0 100%;
+    transition: background-size .35s ease, color .2s ease; overflow-wrap: anywhere; padding-bottom: 4px;
+  }
+  .email-link:hover, .email-link:focus-visible { background-size: 100% 2px; color: var(--accent); }
+  .social { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 40px; }
+  .social a { font-size: 1.05rem; display: inline-flex; align-items: center; gap: 6px; }
+  .social a span[aria-hidden] { color: var(--muted); transition: transform .15s ease; }
+  .social a:hover span[aria-hidden] { transform: translate(2px, -2px); color: var(--accent); }
+  .site-footer { border-top: 1px solid var(--line); padding: 28px 0 36px; font-size: .9rem; color: var(--muted); }
+  .footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; }
+  .footer-inner a { color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+<noscript>
+  <style>
+    .nav-toggle, .theme-toggle { display: none !important; }
+    @media (max-width: 760px) { .site-nav { display: block; position: static; box-shadow: none; border: 0; padding: 0; } .header-inner { height: auto; flex-wrap: wrap; padding: 12px 0; } .site-nav ul { flex-direction: row; flex-wrap: wrap; } .site-nav li + li { border: 0; } .site-nav a { font-size: 1rem; padding: 6px 10px; } }
+  </style>
+</noscript>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="#top" aria-label="Maya Lindqvist, back to top">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" class="i-accent"/><path d="M5 19c3.5-4 7.5-4 11 0s7.5 4 11 0" fill="none" stroke-width="2.6" stroke-linecap="round" class="s-bg"/></svg>
+      Maya Lindqvist
+    </a>
+    <div class="header-right">
+      <nav id="site-nav" class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#writing">Writing</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <button class="icon-btn theme-toggle" type="button" id="theme-toggle" aria-label="Switch to dark color scheme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+      </button>
+      <button class="icon-btn nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">
+        <span class="bars" aria-hidden="true"></span>
+        <span>Menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Introduction -->
+  <section class="intro" id="top" aria-labelledby="intro-title">
+    <div class="container">
+      <p class="eyebrow">Product designer &amp; writer · Gothenburg, Sweden</p>
+      <h1 id="intro-title">I design tools for people who <em>work with data</em>, and I write about how they get made.</h1>
+      <p class="status"><span class="status-dot" aria-hidden="true"></span>Available for new projects from January 2027.</p>
+      <div class="intro-actions">
+        <a class="btn btn-primary" href="#work">See selected work <span aria-hidden="true">↓</span></a>
+        <a class="btn btn-ghost" href="#writing">Read the writing</a>
+      </div>
+      <dl class="intro-meta">
+        <div><dt>Focus</dt><dd>Data tools, complex forms, maps and dashboards</dd></div>
+        <div><dt>Working with</dt><dd>Research groups, public sector and small product teams</dd></div>
+        <div><dt>Currently</dt><dd>Writing about field research and empty states</dd></div>
+      </dl>
+    </div>
+    <svg class="tide-line" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C 120 6, 240 6, 360 30 S 600 54, 720 30 S 960 6, 1080 30 S 1320 54, 1440 30"/></svg>
+  </section>
+
+  <!-- Selected work -->
+  <section class="work" id="work" aria-labelledby="work-title">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow"><span class="num">01</span> Selected work</p>
+          <h2 class="section-title" id="work-title">Case studies</h2>
+        </div>
+        <p class="section-lede">Four recent projects, from a boat in the Skagerrak to the back office of a credit union.</p>
+      </div>
+
+      <div class="work-grid">
+
+        <!-- Tidepool -->
+        <article class="case">
+          <figure class="case-art">
+            <svg viewBox="0 0 400 250" role="img" aria-label="Illustration: a phone showing a sampling chart and an offline badge, floating on waves">
+              <rect class="i-bg" width="400" height="250"/>
+              <circle class="i-accent2" cx="332" cy="56" r="18" opacity=".85"/>
+              <path d="M-10 96 C 40 62, 90 62, 140 96 S 240 130, 290 96 S 390 62, 420 84" fill="none" class="s-accent" stroke-width="2" stroke-dasharray="4 6"/>
+              <circle class="i-accent" cx="140" cy="96" r="4"/>
+              <circle class="i-accent" cx="290" cy="96" r="4"/>
+              <rect x="148" y="34" width="104" height="178" rx="16" class="i-surface s-ink" stroke-width="2.5"/>
+              <rect x="158" y="52" width="84" height="142" rx="6" class="i-page"/>
+              <rect x="166" y="62" width="40" height="6" rx="3" class="i-ink" opacity=".85"/>
+              <rect x="166" y="74" width="58" height="4" rx="2" class="i-muted" opacity=".5"/>
+              <rect x="168" y="130" width="8" height="20" rx="2" class="i-accent"/>
+              <rect x="180" y="116" width="8" height="34" rx="2" class="i-accent"/>
+              <rect x="192" y="124" width="8" height="26" rx="2" class="i-accent"/>
+              <rect x="204" y="106" width="8" height="44" rx="2" class="i-accent"/>
+              <rect x="216" y="120" width="8" height="30" rx="2" class="i-accent" opacity=".45"/>
+              <rect x="228" y="112" width="8" height="38" rx="2" class="i-accent" opacity=".45"/>
+              <rect x="166" y="160" width="68" height="20" rx="10" class="i-ink"/>
+              <rect x="182" y="168" width="36" height="4" rx="2" class="i-page"/>
+              <circle cx="248" cy="40" r="17" class="i-accent2 s-bg" stroke-width="3"/>
+              <g fill="none" class="s-surface" stroke-width="2" stroke-linecap="round">
+                <path d="M239 38 q9 -8 18 0"/>
+                <path d="M243 42 q5 -4.5 10 0"/>
+                <path d="M240 31 l16 18"/>
+              </g>
+              <circle cx="248" cy="46.5" r="1.8" class="i-surface"/>
+              <path class="i-water" d="M0 196 Q 25 186 50 196 T 100 196 T 150 196 T 200 196 T 250 196 T 300 196 T 350 196 T 400 196 V250 H0Z"/>
+              <path class="i-accent" opacity=".3" d="M0 216 Q 30 206 60 216 T 120 216 T 180 216 T 240 216 T 300 216 T 360 216 T 420 216 V250 H0Z"/>
+            </svg>
+          </figure>
+          <div class="case-body">
+            <div class="case-top">
+              <h3>Tidepool</h3>
+              <span class="year">2026</span>
+            </div>
+            <p class="case-summary">A field app that lets marine biologists log samples offline on a research boat and sync them when the signal comes back.</p>
+            <dl class="case-meta">
+              <div><dt>Client</dt><dd>Nordic Ocean Institute</dd></div>
+              <div><dt>Role</dt><dd>Lead designer</dd></div>
+            </dl>
+            <ul class="tags" aria-label="Tags">
+              <li class="tag">Mobile</li><li class="tag">Offline</li><li class="tag">Research</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Ledger rewrite -->
+        <article class="case">
+          <figure class="case-art">
+            <svg viewBox="0 0 400 250" role="img" aria-label="Illustration: an old green-on-black terminal screen behind a clean, modern form">
+              <rect class="i-bg" width="400" height="250"/>
+              <rect x="34" y="50" width="176" height="134" rx="8" class="i-term"/>
+              <text x="48" y="72" class="i-term-ink svg-mono" font-size="9" letter-spacing="1">MEMBER 004213</text>
+              <g class="i-term-ink" opacity=".75">
+                <rect x="48" y="84" width="60" height="5" rx="1"/><rect x="116" y="84" width="40" height="5" rx="1"/>
+                <rect x="48" y="98" width="44" height="5" rx="1"/><rect x="100" y="98" width="76" height="5" rx="1"/>
+                <rect x="48" y="112" width="70" height="5" rx="1"/><rect x="126" y="112" width="30" height="5" rx="1"/>
+                <rect x="48" y="126" width="36" height="5" rx="1"/><rect x="92" y="126" width="58" height="5" rx="1"/>
+                <rect x="48" y="140" width="64" height="5" rx="1"/>
+                <rect x="48" y="160" width="8" height="10" rx="1"/>
+              </g>
+              <path d="M110 40 C 150 14, 236 14, 270 58" fill="none" class="s-accent" stroke-width="2" stroke-dasharray="3 5"/>
+              <path d="M262 52 l9 8 l2 -12" fill="none" class="s-accent" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="176" y="72" width="190" height="152" rx="12" class="i-surface s-line" stroke-width="1.5"/>
+              <rect x="194" y="90" width="52" height="5" rx="2.5" class="i-muted" opacity=".7"/>
+              <rect x="194" y="101" width="154" height="24" rx="5" class="i-page s-line" stroke-width="1.5"/>
+              <rect x="204" y="110" width="70" height="6" rx="3" class="i-ink" opacity=".75"/>
+              <rect x="194" y="137" width="74" height="5" rx="2.5" class="i-muted" opacity=".7"/>
+              <rect x="194" y="148" width="154" height="24" rx="5" class="i-page s-accent" stroke-width="2"/>
+              <rect x="204" y="157" width="46" height="6" rx="3" class="i-ink" opacity=".75"/>
+              <rect x="254" y="154" width="1.8" height="12" class="i-accent"/>
+              <rect x="194" y="186" width="78" height="24" rx="12" class="i-accent"/>
+              <rect x="212" y="196" width="42" height="4" rx="2" class="i-surface"/>
+              <circle cx="336" cy="198" r="11" class="i-soft"/>
+              <path d="M331 198 l3.5 3.5 l6.5 -7" fill="none" class="s-accent" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </figure>
+          <div class="case-body">
+            <div class="case-top">
+              <h3>Ledger rewrite</h3>
+              <span class="year">2025</span>
+            </div>
+            <p class="case-summary">Replacing a 20-year-old member banking system for a community credit union without losing a single edge case staff relied on.</p>
+            <dl class="case-meta">
+              <div><dt>Client</dt><dd>Västkust Credit Union</dd></div>
+              <div><dt>Role</dt><dd>Product designer</dd></div>
+            </dl>
+            <ul class="tags" aria-label="Tags">
+              <li class="tag">Finance</li><li class="tag">Forms</li><li class="tag">Accessibility</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Delay map -->
+        <article class="case">
+          <figure class="case-art">
+            <svg viewBox="0 0 400 250" role="img" aria-label="Illustration: a transit map with two routes, a river and orange delay markers">
+              <rect class="i-bg" width="400" height="250"/>
+              <g class="s-grid" stroke-width="1">
+                <path d="M0 40 H400 M0 90 H400 M0 140 H400 M0 230 H400"/>
+                <path d="M40 0 V250 M100 0 V250 M160 0 V250 M220 0 V250 M280 0 V250 M340 0 V250"/>
+              </g>
+              <path class="i-water" d="M0 168 C 80 148, 140 198, 220 178 S 340 148, 400 162 V 198 C 340 184, 262 214, 210 204 S 80 180, 0 196Z"/>
+              <polyline points="26,62 120,62 170,110 260,110 300,70 376,70" fill="none" class="s-accent" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="50,222 110,150 226,150 260,116 260,30" fill="none" class="s-ink" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+              <g class="i-surface s-ink" stroke-width="3">
+                <circle cx="26" cy="62" r="6"/><circle cx="120" cy="62" r="6"/><circle cx="376" cy="70" r="6"/>
+                <circle cx="110" cy="150" r="6"/><circle cx="50" cy="222" r="6"/><circle cx="260" cy="30" r="6"/>
+                <circle cx="190" cy="150" r="6"/>
+              </g>
+              <rect x="248" y="100" width="24" height="24" rx="7" class="i-surface s-ink" stroke-width="3"/>
+              <circle cx="170" cy="110" r="22" fill="none" class="s-accent2" stroke-width="2" opacity=".35"/>
+              <circle cx="170" cy="110" r="13" class="i-accent2"/>
+              <text x="170" y="114" text-anchor="middle" class="svg-mono i-surface" font-size="10" font-weight="600">+4</text>
+              <circle cx="300" cy="70" r="11" class="i-accent2"/>
+              <text x="300" y="74" text-anchor="middle" class="svg-mono i-surface" font-size="9" font-weight="600">+2</text>
+              <rect x="288" y="200" width="98" height="38" rx="7" class="i-surface s-line" stroke-width="1"/>
+              <circle cx="302" cy="213" r="4" class="i-accent2"/>
+              <text x="312" y="216" class="svg-mono i-ink" font-size="8.5">delay, min</text>
+              <rect x="297" y="225" width="10" height="3" rx="1.5" class="i-accent"/>
+              <text x="312" y="229" class="svg-mono i-ink" font-size="8.5">tram 11</text>
+            </svg>
+          </figure>
+          <div class="case-body">
+            <div class="case-top">
+              <h3>Delay map</h3>
+              <span class="year">2025</span>
+            </div>
+            <p class="case-summary">A live map of tram and bus delays that gives commuters a quick answer and dispatchers the full picture.</p>
+            <dl class="case-meta">
+              <div><dt>Client</dt><dd>Region Väst Transit</dd></div>
+              <div><dt>Role</dt><dd>Design and front-end</dd></div>
+            </dl>
+            <ul class="tags" aria-label="Tags">
+              <li class="tag">Maps</li><li class="tag">Data visualization</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Open Data Handbook -->
+        <article class="case">
+          <figure class="case-art">
+            <svg viewBox="0 0 400 250" role="img" aria-label="Illustration: an open book with text on one page and a data table on the other">
+              <rect class="i-bg" width="400" height="250"/>
+              <ellipse cx="200" cy="216" rx="150" ry="10" class="i-ink" opacity=".08"/>
+              <rect x="38" y="28" width="46" height="22" rx="5" class="i-accent" transform="rotate(-8 61 39)"/>
+              <text x="61" y="43" text-anchor="middle" class="svg-mono" font-size="10" font-weight="600" fill="#fff" transform="rotate(-8 61 39)" style="fill: var(--accent-ink)">CSV</text>
+              <rect x="320" y="20" width="44" height="22" rx="5" class="i-surface s-ink" stroke-width="1.5" transform="rotate(7 342 31)"/>
+              <text x="342" y="35" text-anchor="middle" class="svg-mono i-ink" font-size="10" font-weight="600" transform="rotate(7 342 31)">{ }</text>
+              <path d="M200 66 C 160 52, 110 52, 66 62 V 206 C 110 196, 160 196, 200 210 Z" class="i-surface s-line" stroke-width="1.5"/>
+              <path d="M200 66 C 240 52, 290 52, 334 62 V 206 C 290 196, 240 196, 200 210 Z" class="i-surface s-line" stroke-width="1.5"/>
+              <path d="M200 66 V210" class="s-line" stroke-width="1.5"/>
+              <rect x="86" y="80" width="64" height="8" rx="3" class="i-accent"/>
+              <g class="i-muted" opacity=".55">
+                <rect x="86" y="100" width="96" height="4" rx="2"/>
+                <rect x="86" y="111" width="90" height="4" rx="2"/>
+                <rect x="86" y="122" width="96" height="4" rx="2"/>
+                <rect x="86" y="133" width="60" height="4" rx="2"/>
+                <rect x="86" y="152" width="94" height="4" rx="2"/>
+                <rect x="86" y="163" width="96" height="4" rx="2"/>
+                <rect x="86" y="174" width="72" height="4" rx="2"/>
+              </g>
+              <rect x="218" y="80" width="98" height="16" rx="3" class="i-soft"/>
+              <g class="s-line" stroke-width="1">
+                <path d="M218 112 H316 M218 128 H316 M218 144 H316 M218 160 H316"/>
+                <path d="M252 80 V176 M284 80 V176"/>
+                <rect x="218" y="80" width="98" height="96" fill="none"/>
+              </g>
+              <g class="i-ink" opacity=".7">
+                <rect x="224" y="86" width="20" height="4" rx="2"/><rect x="258" y="86" width="18" height="4" rx="2"/><rect x="290" y="86" width="20" height="4" rx="2"/>
+              </g>
+              <g class="i-muted" opacity=".55">
+                <rect x="224" y="102" width="22" height="3" rx="1.5"/><rect x="224" y="118" width="16" height="3" rx="1.5"/><rect x="224" y="134" width="20" height="3" rx="1.5"/><rect x="224" y="150" width="14" height="3" rx="1.5"/><rect x="224" y="166" width="22" height="3" rx="1.5"/>
+              </g>
+              <g class="i-accent">
+                <rect x="258" y="101" width="20" height="5" rx="1"/><rect x="258" y="117" width="12" height="5" rx="1"/><rect x="258" y="133" width="24" height="5" rx="1"/><rect x="258" y="149" width="8" height="5" rx="1"/><rect x="258" y="165" width="16" height="5" rx="1"/>
+              </g>
+              <path d="M292 50 V 96 L 300 88 L 308 96 V 50 Z" class="i-accent2"/>
+            </svg>
+          </figure>
+          <div class="case-body">
+            <div class="case-top">
+              <h3>Open Data Handbook</h3>
+              <span class="year">2024</span>
+            </div>
+            <p class="case-summary">A free, plain-language guide that walks municipalities through publishing their first datasets, from spreadsheet to portal.</p>
+            <dl class="case-meta">
+              <div><dt>Client</dt><dd>Self-initiated</dd></div>
+              <div><dt>Role</dt><dd>Author and designer</dd></div>
+            </dl>
+            <ul class="tags" aria-label="Tags">
+              <li class="tag">Writing</li><li class="tag">Open data</li>
+            </ul>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Writing -->
+  <section class="writing" id="writing" aria-labelledby="writing-title">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow"><span class="num">02</span> Writing</p>
+          <h2 class="section-title" id="writing-title">Notes from the work</h2>
+        </div>
+        <div class="filters" role="group" aria-label="Filter posts by tag">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">All <span class="count"></span></button>
+          <button class="filter" type="button" data-filter="design" aria-pressed="false">Design <span class="count"></span></button>
+          <button class="filter" type="button" data-filter="data" aria-pressed="false">Data <span class="count"></span></button>
+          <button class="filter" type="button" data-filter="freelancing" aria-pressed="false">Freelancing <span class="count"></span></button>
+          <button class="filter" type="button" data-filter="field-notes" aria-pressed="false">Field notes <span class="count"></span></button>
+        </div>
+      </div>
+
+      <p class="filter-status" id="filter-status" aria-live="polite">Showing all 6 posts</p>
+
+      <ul class="post-list" id="post-list">
+        <li class="post" data-tag="design">
+          <article>
+            <time datetime="2026-10-02">2 October 2026</time>
+            <div>
+              <h3><a href="#featured">What a tide table taught me about empty states</a><span class="badge-new">Latest</span></h3>
+              <p>A printed tide table is never blank, and it changed how I design the moment before data arrives.</p>
+              <a class="read-link" href="#featured">Read it below <span aria-hidden="true">↓</span></a>
+            </div>
+            <div class="post-side"><span class="tag">Design</span><span>7 min read</span></div>
+          </article>
+        </li>
+        <li class="post" data-tag="field-notes">
+          <article>
+            <time datetime="2026-09-11">11 September 2026</time>
+            <div>
+              <h3>Designing for gloves: touch targets in the field</h3>
+              <p>What I learned watching biologists tap a tablet with wet neoprene fingers on a rolling deck.</p>
+            </div>
+            <div class="post-side"><span class="tag">Field notes</span><span>5 min read</span></div>
+          </article>
+        </li>
+        <li class="post" data-tag="design">
+          <article>
+            <time datetime="2026-08-20">20 August 2026</time>
+            <div>
+              <h3>Notes from rebuilding a 20-year-old banking form</h3>
+              <p>Two decades of edge cases lived in one screen, and we had to find every one of them before we could replace it.</p>
+            </div>
+            <div class="post-side"><span class="tag">Design</span><span>9 min read</span></div>
+          </article>
+        </li>
+        <li class="post" data-tag="data">
+          <article>
+            <time datetime="2026-07-03">3 July 2026</time>
+            <div>
+              <h3>Why I stopped using pie charts in client reports</h3>
+              <p>Clients kept misreading them, so I swapped every pie for a sorted bar chart and the questions in meetings got better.</p>
+            </div>
+            <div class="post-side"><span class="tag">Data</span><span>4 min read</span></div>
+          </article>
+        </li>
+        <li class="post" data-tag="field-notes">
+          <article>
+            <time datetime="2026-05-28">28 May 2026</time>
+            <div>
+              <h3>A month of sketching on the tram</h3>
+              <p>Thirty days, one pocket notebook and line 11, plus what I noticed about how people actually read departure boards.</p>
+            </div>
+            <div class="post-side"><span class="tag">Field notes</span><span>6 min read</span></div>
+          </article>
+        </li>
+        <li class="post" data-tag="freelancing">
+          <article>
+            <time datetime="2026-04-15">15 April 2026</time>
+            <div>
+              <h3>Pricing freelance work by the problem, not the hour</h3>
+              <p>Hourly rates punished me for getting faster, and pricing the problem instead made scoping conversations more honest.</p>
+            </div>
+            <div class="post-side"><span class="tag">Freelancing</span><span>8 min read</span></div>
+          </article>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Featured post -->
+  <section class="featured" id="featured" aria-labelledby="featured-title">
+    <div class="container featured-grid">
+      <aside class="featured-aside" aria-label="Post details">
+        <p class="eyebrow"><span class="num">03</span> Featured post</p>
+        <dl>
+          <div><dt>Published</dt><dd><time datetime="2026-10-02">2 October 2026</time></dd></div>
+          <div><dt>Reading time</dt><dd>7 min</dd></div>
+          <div><dt>Tag</dt><dd><span class="tag">Design</span></dd></div>
+        </dl>
+        <a class="back" href="#writing"><span aria-hidden="true">↑</span> Back to all posts</a>
+      </aside>
+
+      <article class="post-full">
+        <header>
+          <h2 id="featured-title">What a tide table taught me about empty states</h2>
+          <p class="byline"><span>By Maya Lindqvist</span><span><time datetime="2026-10-02">2 October 2026</time></span><span>7 min read</span></p>
+        </header>
+        <div class="prose">
+          <p>On the second morning of fieldwork for Tidepool, somewhere off the coast near Lysekil, the ship’s mate handed me a folded paper tide table. It had no loading spinner. No “nothing here yet” message. No illustration of a sad, empty box. It simply listed the tides for the whole year, printed months before anyone needed them.</p>
+          <p>That little booklet changed how I think about empty states.</p>
+
+          <h3>An empty state is a promise</h3>
+          <p>Most software treats the moment before data arrives as an awkward gap, and fills it with an apology. But the biologists on that boat weren’t waiting for nothing. They were waiting for something specific: the next sample, the next sync, the next low tide. The tide table answered that question before anyone asked it.</p>
+          <p>So we stopped designing empty screens. In Tidepool, every view that could be empty now shows what is expected to arrive, and when. A sampling station with no readings shows its planned schedule. An upload queue with nothing in it shows the last successful sync and the next window when the vessel is likely to have signal.</p>
+
+          <blockquote class="pullquote"><p>An empty screen should tell you what will be here, not apologize that nothing is.</p></blockquote>
+
+          <h3>Expected data is still data</h3>
+          <p>The catch is that <code>expected</code> has to be a real state in the data model, not a design flourish. Here is a simplified version of the station record we ended up with:</p>
+          <figure class="snippet">
+            <figcaption><span>station.yaml</span><span>simplified</span></figcaption>
+<pre><code><span class="k">station:</span> <span class="v">VS-04 Gullmarsfjorden</span>
+<span class="k">state:</span>   <span class="v">expected</span>
+<span class="k">next:</span>    <span class="v">2026-06-14 05:40</span>  <span class="c"># low tide, 0.21 m</span>
+<span class="k">last:</span>    <span class="v">2026-06-13 17:52</span>  <span class="c"># synced over 4G</span></code></pre>
+          </figure>
+          <p>Once the expected state existed in the data, the interface could be honest without anyone writing cheerful filler copy. The content was already there; we just had to stop hiding it.</p>
+
+          <h3>What changed</h3>
+          <p>Two things surprised me. Questions to the support channel about “missing” readings fell by more than half in the first month, because people could see that nothing was missing, only not yet due. And the screens we used to call empty became some of the most visited in the app. Crews opened them in the harbour each morning to plan their day.</p>
+          <p>A tide table is a humble object. But it treats the future as content, and it is still the best empty state I have ever seen.</p>
+        </div>
+        <footer class="post-end">
+          <span>Filed under Design</span>
+          <a href="#newsletter">Get posts like this by email <span aria-hidden="true">→</span></a>
+        </footer>
+      </article>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about" id="about" aria-labelledby="about-title">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow"><span class="num">04</span> About</p>
+          <h2 class="section-title" id="about-title">Hej, I’m Maya</h2>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <div class="bio">
+          <div class="portrait">
+            <svg viewBox="0 0 72 72" aria-hidden="true">
+              <rect width="72" height="72" class="i-soft"/>
+              <circle cx="36" cy="30" r="12" class="i-accent"/>
+              <path d="M12 72 C 14 52, 58 52, 60 72 Z" class="i-accent"/>
+              <path d="M0 56 C 12 50, 24 50, 36 56 S 60 62, 72 56 V72 H0Z" class="i-water" opacity=".7"/>
+            </svg>
+            <div>
+              <strong>Maya Lindqvist</strong>
+              <small>Independent product designer, Gothenburg</small>
+            </div>
+          </div>
+          <p>I’m a product designer and writer based in Gothenburg. For the past seven years I’ve designed software for people whose work depends on data: marine biologists logging samples at sea, credit union staff moving members between systems, dispatchers watching a whole city’s trams in real time.</p>
+          <p>I care most about the unglamorous parts, like forms, empty states, error messages and the moment a chart is either understood or misread. I prototype in code because real data rarely behaves the way a mockup expects. Today I take on a few projects a year, run workshops for teams, and write about what I learn along the way, usually on the tram.</p>
+        </div>
+
+        <div>
+          <h3 class="sub-title">Experience</h3>
+          <ol class="timeline">
+            <li><div class="when">2019 – 2021</div><div class="what"><strong>Designer</strong>, Kartverk Studio</div></li>
+            <li><div class="when">2021 – 2024</div><div class="what"><strong>Senior product designer</strong>, Norrsken Analytics</div></li>
+            <li><div class="when">2024 – now</div><div class="what"><strong>Independent</strong></div></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="about-lists">
+        <div>
+          <h3 class="sub-title">Skills</h3>
+          <ul class="skills">
+            <li>Interaction design</li>
+            <li>Information design</li>
+            <li>Prototyping in code</li>
+            <li>Design systems</li>
+            <li>Workshop facilitation</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="sub-title">Talks</h3>
+          <ul class="talks">
+            <li><span class="t">Empty states are content</span><span class="e">Nordic Design Days</span><span class="y">2026</span></li>
+            <li><span class="t">Forms that survive a migration</span><span class="e">Front-end Gothenburg</span><span class="y">2025</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section class="newsletter" id="newsletter" aria-labelledby="news-title">
+    <div class="container">
+      <div class="news-card">
+        <svg class="news-waves" viewBox="0 0 340 200" aria-hidden="true">
+          <path d="M0 40 C 40 20, 80 20, 120 40 S 200 60, 240 40 S 320 20, 360 40"/>
+          <path d="M0 70 C 40 50, 80 50, 120 70 S 200 90, 240 70 S 320 50, 360 70"/>
+          <path d="M0 100 C 40 80, 80 80, 120 100 S 200 120, 240 100 S 320 80, 360 100"/>
+          <path d="M0 130 C 40 110, 80 110, 120 130 S 200 150, 240 130 S 320 110, 360 130"/>
+        </svg>
+        <div>
+          <p class="eyebrow">Newsletter</p>
+          <h2 id="news-title">Field Notes</h2>
+          <p class="desc">A monthly email about designing with data. 1,900 readers.</p>
+        </div>
+        <form class="news-form" id="news-form" novalidate>
+          <div class="news-row">
+            <label for="news-email" class="visually-hidden">Email address</label>
+            <input id="news-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required aria-describedby="news-note">
+            <button type="submit">Subscribe</button>
+          </div>
+          <p class="news-note" id="news-note" aria-live="polite">One email a month. Unsubscribe any time.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="container">
+      <p class="eyebrow"><span class="num">05</span> Contact</p>
+      <h2 class="section-title" id="contact-title">Working on something with a lot of data?</h2>
+      <p class="contact-lede">Tell me about the people who use it and what’s getting in their way. I reply within two working days.</p>
+      <a class="email-link" href="mailto:maya@lindqvist.example">maya@lindqvist.example</a>
+      <ul class="social" aria-label="Elsewhere">
+        <li><a href="#">Mastodon <span aria-hidden="true">↗</span></a></li>
+        <li><a href="#">GitHub <span aria-hidden="true">↗</span></a></li>
+        <li><a href="#">Dribbble <span aria-hidden="true">↗</span></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>© 2026 Maya Lindqvist</p>
+    <p>Designed and built in Gothenburg · <a href="#top">Back to top</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  /* Theme toggle */
+  var themeBtn = document.getElementById('theme-toggle');
+  function syncThemeLabel() {
+    var dark = root.getAttribute('data-theme') === 'dark';
+    themeBtn.setAttribute('aria-label', dark ? 'Switch to light color scheme' : 'Switch to dark color scheme');
+    themeBtn.setAttribute('title', dark ? 'Light mode' : 'Dark mode');
+  }
+  syncThemeLabel();
+  themeBtn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('ml-theme', next); } catch (e) {}
+    syncThemeLabel();
+  });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onChange = function (e) {
+      var stored = null;
+      try { stored = localStorage.getItem('ml-theme'); } catch (err) {}
+      if (!stored) { root.setAttribute('data-theme', e.matches ? 'dark' : 'light'); syncThemeLabel(); }
+    };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  }
+
+  /* Mobile navigation */
+  var nav = document.getElementById('site-nav');
+  var navBtn = document.querySelector('.nav-toggle');
+  function setMenu(open) {
+    nav.classList.toggle('is-open', open);
+    navBtn.setAttribute('aria-expanded', String(open));
+  }
+  navBtn.addEventListener('click', function () {
+    setMenu(navBtn.getAttribute('aria-expanded') !== 'true');
+  });
+  nav.addEventListener('click', function (e) {
+    if (e.target.closest('a')) setMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && navBtn.getAttribute('aria-expanded') === 'true') {
+      setMenu(false);
+      navBtn.focus();
+    }
+  });
+  document.addEventListener('click', function (e) {
+    if (navBtn.getAttribute('aria-expanded') === 'true' && !e.target.closest('.site-header')) setMenu(false);
+  });
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 760) setMenu(false);
+  });
+
+  /* Highlight the current section in the nav */
+  var links = Array.prototype.slice.call(nav.querySelectorAll('a'));
+  var map = { work: 'work', writing: 'writing', featured: 'writing', about: 'about', newsletter: 'about', contact: 'contact' };
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var target = map[entry.target.id];
+        links.forEach(function (a) {
+          if (a.getAttribute('href') === '#' + target) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ['top', 'work', 'writing', 'featured', 'about', 'newsletter', 'contact'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  }
+
+  /* Post filters */
+  var posts = Array.prototype.slice.call(document.querySelectorAll('#post-list .post'));
+  var filters = Array.prototype.slice.call(document.querySelectorAll('.filter'));
+  var status = document.getElementById('filter-status');
+  filters.forEach(function (btn) {
+    var key = btn.getAttribute('data-filter');
+    var n = key === 'all' ? posts.length : posts.filter(function (p) { return p.getAttribute('data-tag') === key; }).length;
+    btn.querySelector('.count').textContent = n;
+    btn.addEventListener('click', function () {
+      filters.forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+      var shown = 0;
+      posts.forEach(function (p) {
+        var match = key === 'all' || p.getAttribute('data-tag') === key;
+        p.hidden = !match;
+        if (match) shown++;
+      });
+      var label = btn.firstChild.textContent.trim();
+      status.textContent = key === 'all'
+        ? 'Showing all ' + shown + ' posts'
+        : 'Showing ' + shown + (shown === 1 ? ' post' : ' posts') + ' tagged ' + label;
+    });
+  });
+
+  /* Newsletter */
+  var form = document.getElementById('news-form');
+  var email = document.getElementById('news-email');
+  var note = document.getElementById('news-note');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var value = email.value.trim();
+    var valid = value !== '' && email.checkValidity() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    note.classList.remove('ok', 'err');
+    if (!valid) {
+      email.setAttribute('aria-invalid', 'true');
+      note.classList.add('err');
+      note.textContent = value === '' ? 'Please enter your email address.' : 'That doesn’t look like a valid email address.';
+      email.focus();
+      return;
+    }
+    email.removeAttribute('aria-invalid');
+    note.classList.add('ok');
+    note.textContent = 'Thanks! Check ' + value + ' for a confirmation link.';
+    form.reset();
+  });
+  email.addEventListener('input', function () {
+    if (email.getAttribute('aria-invalid')) {
+      email.removeAttribute('aria-invalid');
+      note.classList.remove('err');
+      note.textContent = 'One email a month. Unsubscribe any time.';
+    }
+  });
+})();
+</script>
+</body>
+</html>

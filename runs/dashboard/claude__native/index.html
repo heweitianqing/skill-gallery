@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales &amp; Operations · Kestrel Coffee Roasters</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f6f4f0;
+    --surface: #fffefc;
+    --surface-2: #f8f5f0;
+    --sidebar: #241c17;
+    --sidebar-ink: #efe7de;
+    --sidebar-muted: #b3a597;
+    --sidebar-active: #3a2e26;
+    --ink: #1d1a17;
+    --ink-2: #57514a;
+    --muted: #776f67;
+    --grid: #ece8e1;
+    --baseline: #cfc8bd;
+    --border: rgba(29, 26, 23, 0.10);
+    --focus: #2a78d6;
+    --accent: #8b4b25;
+
+    /* chart series (validated: scripts/validate_palette.js, light, surface #fffefc) */
+    --series-online: #2a78d6;
+    --series-cafes: #eb6834;
+    --series-category: #6250d6;
+
+    /* status – fixed palette; text/icons use the darker ink step */
+    --good: #0ca30c;      --good-ink: #006300;
+    --warning: #fab219;   --warning-ink: #8a5a00;
+    --critical: #d03b3b;  --critical-ink: #a32020;
+    --neutral: #8a837a;   --neutral-ink: #57514a;
+
+    --up: #006300;
+    --down: #a32020;
+
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(29, 26, 23, 0.05);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #12110f;
+      --surface: #1c1a18;
+      --surface-2: #24211e;
+      --sidebar: #0d0c0b;
+      --sidebar-ink: #efe7de;
+      --sidebar-muted: #a1948a;
+      --sidebar-active: #2a2420;
+      --ink: #f0ede8;
+      --ink-2: #c6bfb5;
+      --muted: #9a9289;
+      --grid: #2d2a26;
+      --baseline: #433e38;
+      --border: rgba(255, 255, 255, 0.10);
+      --focus: #5598e7;
+      --accent: #d9935f;
+
+      /* validated: dark, surface #1c1a18 */
+      --series-online: #3987e5;
+      --series-cafes: #d95926;
+      --series-category: #9085e9;
+
+      --good-ink: #3cc43c;
+      --warning-ink: #fab219;
+      --critical-ink: #f07a7a;
+      --neutral-ink: #c6bfb5;
+      --up: #3cc43c;
+      --down: #f07a7a;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .skip-link {
+    position: absolute; left: 12px; top: -48px; z-index: 100;
+    background: var(--surface); color: var(--ink); padding: 8px 12px; border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .skip-link:focus { top: 12px; }
+
+  /* ---------- App shell ---------- */
+  .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+
+  .sidebar {
+    background: var(--sidebar);
+    color: var(--sidebar-ink);
+    padding: 20px 14px;
+    display: flex; flex-direction: column; gap: 24px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px; text-decoration: none; }
+  .brand-mark { flex: none; width: 36px; height: 36px; }
+  .brand-name { font-weight: 700; font-size: 15px; line-height: 1.15; letter-spacing: -0.01em; }
+  .brand-name small { display: block; font-weight: 500; font-size: 12px; color: var(--sidebar-muted); letter-spacing: 0; }
+  .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--sidebar-muted); padding: 0 10px 6px; }
+  .nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .nav a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 10px; border-radius: 8px;
+    color: var(--sidebar-muted); text-decoration: none; font-weight: 500;
+  }
+  .nav a svg { width: 18px; height: 18px; flex: none; }
+  .nav a:hover { background: rgba(255, 255, 255, 0.06); color: var(--sidebar-ink); }
+  .nav a[aria-current="page"] { background: var(--sidebar-active); color: #fff; box-shadow: inset 3px 0 0 #d9935f; }
+  .nav a:focus-visible { outline-color: #86b6ef; }
+  .sidebar-foot {
+    margin-top: auto; font-size: 12px; color: var(--sidebar-muted);
+    padding: 12px 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .sidebar-close { display: none; }
+
+  .main { min-width: 0; display: flex; flex-direction: column; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .menu-btn {
+    display: none; width: 40px; height: 40px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    align-items: center; justify-content: center; cursor: pointer; flex: none;
+  }
+  .menu-btn svg { width: 20px; height: 20px; }
+  .title-block { min-width: 0; flex: 0 1 auto; }
+  .m-only { display: none; }
+  .title-block h1 { margin: 0; font-size: 20px; line-height: 1.2; letter-spacing: -0.01em; }
+  .period { display: flex; align-items: center; gap: 8px; margin-top: 2px; color: var(--ink-2); font-size: 13px; flex-wrap: wrap; }
+  .period-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    padding: 1px 8px; border-radius: 999px; color: var(--ink); font-weight: 600; font-size: 12px;
+  }
+  .period-pill svg { width: 13px; height: 13px; }
+  .search {
+    margin-left: auto; position: relative; width: min(380px, 100%);
+  }
+  .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted); pointer-events: none; }
+  .search input {
+    width: 100%; height: 40px; padding: 0 36px 0 34px;
+    border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .search input::placeholder { color: var(--muted); }
+  .search input:focus { outline: 2px solid var(--focus); outline-offset: 0; background: var(--surface); }
+  .search kbd {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font: 600 11px/1 system-ui, sans-serif; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 4px; padding: 3px 6px; background: var(--surface);
+  }
+  .user { display: flex; align-items: center; gap: 10px; flex: none; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #8b4b25; color: #fff; font-weight: 700; font-size: 13px;
+    display: grid; place-items: center; letter-spacing: 0.02em;
+  }
+  .user-text { line-height: 1.2; }
+  .user-text strong { display: block; font-size: 13px; }
+  .user-text span { font-size: 12px; color: var(--ink-2); }
+
+  /* ---------- Content ---------- */
+  .content { padding: 24px 28px 40px; display: grid; gap: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+  .span-8 { grid-column: span 8; }
+  .span-7 { grid-column: span 7; }
+  .span-5 { grid-column: span 5; }
+  .span-4 { grid-column: span 4; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    min-width: 0;
+  }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .card-head h2 { margin: 0; font-size: 15px; letter-spacing: -0.005em; }
+  .card-head p { margin: 2px 0 0; color: var(--ink-2); font-size: 13px; }
+  .card-link { font-size: 13px; color: var(--ink-2); text-decoration: none; font-weight: 500; white-space: nowrap; }
+  .card-link:hover { color: var(--ink); text-decoration: underline; }
+
+  /* KPI tiles */
+  .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+  .kpi { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+  .kpi-label { color: var(--ink-2); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .kpi-label svg { width: 16px; height: 16px; color: var(--muted); }
+  .kpi-value { font-size: 28px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }
+  .kpi-delta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .delta { display: inline-flex; align-items: center; gap: 3px; font-weight: 650; font-size: 12.5px; }
+  .delta svg { width: 12px; height: 12px; }
+  .delta.good { color: var(--up); }
+  .delta.bad { color: var(--down); }
+
+  /* Segmented control */
+  .segmented {
+    display: inline-flex; padding: 3px; gap: 2px; border-radius: 9px;
+    background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .segmented button {
+    border: 0; background: transparent; padding: 5px 12px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; color: var(--ink-2); cursor: pointer; white-space: nowrap;
+  }
+  .segmented button:hover { color: var(--ink); }
+  .segmented button[aria-checked="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--border), 0 1px 2px rgba(0,0,0,0.06); }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 8px; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); }
+  .legend li { display: inline-flex; align-items: center; gap: 6px; transition: opacity .15s; }
+  .legend li.off { opacity: 0.35; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .sw-online { background: var(--series-online); }
+  .sw-cafes { background: var(--series-cafes); }
+
+  /* Revenue chart */
+  .chart-wrap { position: relative; }
+  .chart-svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+  .chart-svg:focus-visible { outline-offset: 4px; }
+  .chart-svg text { font-family: inherit; }
+  .axis-text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .axis-year { fill: var(--muted); font-size: 10px; }
+  .cap-label { fill: var(--ink); font-size: 12px; font-weight: 650; }
+  .gridline { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; shape-rendering: crispEdges; }
+  .s-online { fill: var(--series-online); }
+  .s-cafes { fill: var(--series-cafes); }
+  .col { transition: opacity .12s; }
+  .chart-svg.has-active .col { opacity: 0.4; }
+  .chart-svg.has-active .col.active { opacity: 1; }
+  .hover-band { fill: var(--ink); opacity: 0; }
+  .hover-band.active { opacity: 0.05; }
+  .hit { fill: transparent; cursor: crosshair; }
+
+  .chart-summary { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--grid); font-size: 13px; color: var(--ink-2); }
+  .chart-summary strong { color: var(--ink); font-weight: 650; }
+
+  details.data-table { margin-top: 12px; }
+  details.data-table summary { cursor: pointer; font-size: 13px; color: var(--ink-2); font-weight: 500; width: max-content; }
+  details.data-table summary:hover { color: var(--ink); }
+  details.data-table .table-scroll { margin-top: 10px; }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed; z-index: 50; pointer-events: none;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+    padding: 10px 12px; min-width: 150px; font-size: 12.5px;
+    opacity: 0; transform: translateY(4px); transition: opacity .1s, transform .1s;
+  }
+  .tooltip.show { opacity: 1; transform: none; }
+  .tt-title { font-weight: 600; color: var(--ink-2); margin-bottom: 6px; font-size: 12px; }
+  .tt-row { display: flex; align-items: center; gap: 8px; line-height: 1.7; }
+  .tt-key { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+  .tt-row strong { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 44px; }
+  .tt-row span { color: var(--ink-2); }
+  .tt-row.total { border-top: 1px solid var(--grid); margin-top: 4px; padding-top: 4px; }
+
+  /* Category bars */
+  .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .bar-row { display: grid; grid-template-columns: 1fr; gap: 5px; }
+  .bar-row-head { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+  .bar-row-head span:first-child { color: var(--ink); }
+  .bar-row-head strong { font-variant-numeric: tabular-nums; font-weight: 650; }
+  .bar-track { height: 10px; border-radius: 0 4px 4px 0; position: relative; cursor: default; }
+  .bar-fill {
+    height: 100%; border-radius: 0 4px 4px 0; background: var(--series-category);
+    transition: filter .12s, transform .12s; transform-origin: left center;
+  }
+  .bar-row:hover .bar-fill, .bar-row:focus-within .bar-fill { filter: brightness(1.12); }
+  .bar-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 12px; border-top: 1px solid var(--baseline); padding-top: 4px; font-variant-numeric: tabular-nums; }
+  .card-note { margin: 16px 0 0; font-size: 12.5px; color: var(--ink-2); }
+
+  /* Tables */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { padding: 10px 10px; text-align: left; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th:first-child, td:first-child { padding-left: 0; }
+  th:last-child, td:last-child { padding-right: 0; }
+  thead th { font-size: 12px; font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--baseline); }
+  tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+  tbody tr:hover td { background: color-mix(in srgb, var(--surface-2) 70%, transparent); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.strong { font-weight: 600; }
+  .sub { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+
+  th[aria-sort] { padding: 0; }
+  th[aria-sort] .sort-btn {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 4px; cursor: pointer;
+    width: 100%; padding: 10px; font-size: 12px; font-weight: 600; color: var(--ink-2); border-radius: 6px;
+  }
+  th[aria-sort]:first-child .sort-btn { padding-left: 0; }
+  th[aria-sort]:last-child .sort-btn { padding-right: 0; }
+  th.num .sort-btn { justify-content: flex-end; }
+  th[aria-sort] .sort-btn:hover { color: var(--ink); }
+  th[aria-sort] .sort-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .sort-icon { width: 12px; height: 12px; flex: none; opacity: 0.35; }
+  th[aria-sort="ascending"] .sort-icon, th[aria-sort="descending"] .sort-icon { opacity: 1; color: var(--ink); }
+  th[aria-sort="ascending"] .sort-btn, th[aria-sort="descending"] .sort-btn { color: var(--ink); }
+  th[aria-sort="ascending"] .sort-icon { transform: rotate(180deg); }
+
+  .inline-bar { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .inline-bar .track { width: 72px; height: 6px; border-radius: 0 3px 3px 0; background: transparent; }
+  .inline-bar .fill { height: 100%; background: var(--series-online); border-radius: 0 3px 3px 0; }
+
+  .order-id { font-variant-numeric: tabular-nums; font-weight: 600; text-decoration: none; }
+  .order-id:hover { text-decoration: underline; }
+  .channel { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+  .channel svg { width: 14px; height: 14px; color: var(--muted); }
+
+  /* Status badges: color + icon + label */
+  .badge {
+    --c: var(--neutral); --ci: var(--neutral-ink);
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 9px 2px 6px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; color: var(--ink);
+    background: color-mix(in srgb, var(--c) 14%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+  }
+  .badge svg { width: 13px; height: 13px; color: var(--ci); flex: none; }
+  .badge.shipped { --c: var(--ink-2); --ci: var(--ink); background: transparent; border-style: solid; }
+  .badge.paid { --c: var(--good); --ci: var(--good-ink); }
+  .badge.pending { --c: var(--warning); --ci: var(--warning-ink); border-style: dashed; }
+  .badge.refunded { --c: var(--critical); --ci: var(--critical-ink); }
+
+  .empty-row td { color: var(--muted); text-align: center; padding: 20px 0; }
+  .filter-note { font-size: 12.5px; color: var(--ink-2); margin: -8px 0 10px; }
+  .filter-note[hidden] { display: none; }
+
+  /* Inventory */
+  .inv-alert {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px; border-radius: 10px; margin-bottom: 16px;
+    background: color-mix(in srgb, var(--critical) 9%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--critical) 30%, transparent);
+    font-size: 13px;
+  }
+  .inv-alert svg { width: 18px; height: 18px; color: var(--critical-ink); flex: none; margin-top: 1px; }
+  .inv-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; }
+  .inv-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .inv-name { font-weight: 600; }
+  .inv-right { display: inline-flex; align-items: center; gap: 10px; }
+  .inv-days { font-variant-numeric: tabular-nums; font-weight: 650; }
+  .inv-days small { font-weight: 400; color: var(--ink-2); font-size: 12px; }
+  .meter { position: relative; height: 10px; border-radius: 0 4px 4px 0; background: var(--grid); }
+  .meter-fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--neutral); }
+  .inv-item.reorder .meter-fill { background: var(--critical); }
+  .meter-threshold { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); border-radius: 1px; transform: translateX(-1px); }
+  .inv-scale { position: relative; height: 16px; margin-top: 6px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .inv-scale span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .inv-scale span:first-child { transform: none; }
+  .inv-scale span:last-child { transform: translateX(-100%); }
+  .inv-legend { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-2); margin-top: 14px; }
+  .inv-legend i { width: 2px; height: 12px; background: var(--ink); display: inline-block; border-radius: 1px; }
+
+  .reorder-btn {
+    border: 1px solid var(--border); background: var(--surface-2); border-radius: 7px;
+    padding: 2px 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .reorder-btn:hover { background: var(--surface); border-color: var(--baseline); }
+  .reorder-btn[aria-pressed="true"] { color: var(--good-ink); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+
+  .overlay { display: none; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1280px) {
+    .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .span-8, .span-4, .span-7, .span-5 { grid-column: span 12; }
+  }
+  @media (min-width: 1000px) and (max-width: 1280px) {
+    .span-4.side, .span-5.side { grid-column: span 6; }
+    .span-8.wide, .span-7.wide { grid-column: span 12; }
+  }
+  @media (max-width: 960px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; width: min(300px, 86vw); z-index: 60;
+      transform: translateX(-100%); transition: transform .2s ease; visibility: hidden;
+      box-shadow: 0 0 40px rgba(0,0,0,0.3);
+    }
+    .sidebar.open { transform: none; visibility: visible; }
+    .sidebar-close {
+      display: grid; place-items: center; position: absolute; right: 10px; top: 18px;
+      width: 36px; height: 36px; border-radius: 8px; border: 0; background: rgba(255,255,255,0.08); color: var(--sidebar-ink); cursor: pointer;
+    }
+    .sidebar-close svg { width: 18px; height: 18px; }
+    .overlay.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 55; }
+    .menu-btn { display: inline-flex; }
+    .topbar { flex-wrap: wrap; padding: 12px 16px; gap: 12px; }
+    .search { order: 5; width: 100%; margin-left: 0; }
+    .user { margin-left: auto; }
+    .content { padding: 16px; }
+  }
+  @media (max-width: 640px) {
+    .user-text { display: none; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .kpis .kpi:last-child { grid-column: span 2; }
+    .kpi { padding: 14px; }
+    .kpi-value { font-size: 24px; }
+    .card { padding: 16px; }
+    .grid { gap: 12px; }
+    .content { gap: 12px; }
+    .segmented { width: 100%; }
+    .segmented button { flex: 1; padding: 6px 6px; }
+    .search kbd { display: none; }
+    .title-block h1 { font-size: 18px; }
+    .title-block { flex: 1 1 0; }
+    .inline-bar .track { display: none; }
+    #cafeTable th, #cafeTable td { padding: 9px 3px; font-size: 12px; }
+    #cafeTable th:first-child, #cafeTable td:first-child { padding-left: 0; }
+    #cafeTable th[aria-sort] { padding: 0; }
+    #cafeTable th[aria-sort] .sort-btn { padding: 8px 3px; white-space: normal; font-size: 11.5px; line-height: 1.2; }
+    #cafeTable th[aria-sort]:first-child .sort-btn { padding-left: 0; }
+    #cafeTable th[aria-sort]:last-child .sort-btn { padding-right: 0; }
+    #cafeTable tbody th { white-space: normal; }
+    #cafeTable .delta svg { display: none; }
+    #cafeTable .sub { font-size: 11px; }
+
+    /* Recent orders become stacked rows */
+    .orders-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .orders-table tbody tr {
+      display: grid; grid-template-columns: 1fr auto; gap: 4px 12px;
+      grid-template-areas: "id total" "cust status" "chan items";
+      padding: 12px 0; border-bottom: 1px solid var(--grid);
+    }
+    .orders-table tbody tr:last-child { border-bottom: 0; }
+    .orders-table tbody tr.empty-row { display: table-row; }
+    .orders-table tbody th, .orders-table tbody td { padding: 0; border: 0; background: none !important; }
+    .orders-table .c-id { grid-area: id; }
+    .orders-table .c-cust { grid-area: cust; }
+    .orders-table .c-chan { grid-area: chan; }
+    .orders-table .c-items { grid-area: items; color: var(--ink-2); font-size: 12.5px; }
+    .orders-table .c-total { grid-area: total; font-weight: 650; }
+    .orders-table .c-status { grid-area: status; text-align: right; }
+    .m-only { display: inline; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+  @media (forced-colors: active) {
+    .s-online, .s-cafes, .bar-fill, .meter-fill, .fill { forced-color-adjust: none; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+
+<!-- Icon sprites -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-overview" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+    <symbol id="i-orders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12l1 4H5z"/><path d="M5 6v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6"/><path d="M9 11h6M9 15h4"/></symbol>
+    <symbol id="i-products" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="6.5" ry="9" transform="rotate(30 12 12)"/><path d="M8.5 5.5c3 2.5 4 4.5 3.5 6.5s-2.5 4-0.5 7"/></symbol>
+    <symbol id="i-customers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.5 5.2"/></symbol>
+    <symbol id="i-inventory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></symbol>
+    <symbol id="i-reports" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-up" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4 5H7v3H5V7H2z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L2 5h3V2h2v3h3z"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 12 12" fill="currentColor"><path d="M6 9L2.5 4.5h7z"/></symbol>
+    <symbol id="i-dollar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M16.5 7.5c-.6-1.4-2.2-2.3-4.5-2.3-2.6 0-4.3 1.3-4.3 3.2 0 4.6 9 2.4 9 7 0 2-1.9 3.4-4.7 3.4-2.4 0-4.1-1-4.8-2.6"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></symbol>
+    <symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></symbol>
+    <symbol id="i-return" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2zM13 10h4l3 3v3h-7"/><circle cx="6" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></symbol>
+    <symbol id="i-cup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 2.5v2.5M12 2.5v2.5"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="Primary">
+    <a class="brand" href="#" aria-label="Kestrel Coffee Roasters, overview">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <rect width="40" height="40" rx="10" fill="#8b4b25"/>
+        <!-- stylised kestrel in flight over a coffee bean -->
+        <path d="M7 17c4-1.2 7.6-.4 10.4 2.2L20 21.5l2.6-2.3C25.4 16.6 29 15.8 33 17c-3.6.6-6.4 2.4-8.2 5.2L20 27l-4.8-4.8C13.4 19.4 10.6 17.6 7 17z" fill="#f6e7d6"/>
+        <circle cx="20" cy="15.2" r="2.2" fill="#f6e7d6"/>
+        <ellipse cx="20" cy="31" rx="4.6" ry="2.6" fill="#d9935f"/>
+        <path d="M16 31.6c2.2-.9 5.8-.3 8-1.2" stroke="#8b4b25" stroke-width="1" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">Kestrel Coffee Roasters<small>Operations</small></span>
+    </a>
+    <button class="sidebar-close" type="button" id="navClose" aria-label="Close navigation">
+      <svg aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <nav class="nav" aria-label="Main">
+      <div class="nav-label">Menu</div>
+      <ul>
+        <li><a href="#" aria-current="page"><svg aria-hidden="true"><use href="#i-overview"/></svg>Overview</a></li>
+        <li><a href="#"><svg aria-hidden="true"><use href="#i-orders"/></svg>Orders</a></li>
+        <li><a href="#"><svg aria-hidden="true"><use href="#i-products"/></svg>Products</a></li>
+        <li><a href="#"><svg aria-hidden="true"><use href="#i-customers"/></svg>Customers</a></li>
+        <li><a href="#"><svg aria-hidden="true"><use href="#i-inventory"/></svg>Inventory</a></li>
+        <li><a href="#"><svg aria-hidden="true"><use href="#i-reports"/></svg>Reports</a></li>
+        <li><a href="#"><svg aria-hidden="true"><use href="#i-settings"/></svg>Settings</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-foot">Online store + 4 cafés<br>All figures in US dollars</div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" type="button" id="navOpen" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+        <svg aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+      <div class="title-block">
+        <h1>Sales &amp; Operations</h1>
+        <div class="period">
+          <span class="period-pill"><svg aria-hidden="true"><use href="#i-calendar"/></svg>October 2026</span>
+          <span>compared with September 2026</span>
+        </div>
+      </div>
+      <div class="search" role="search">
+        <svg aria-hidden="true"><use href="#i-search"/></svg>
+        <label class="sr-only" for="search">Search orders, products, customers</label>
+        <input id="search" type="search" placeholder="Search orders, products, customers" autocomplete="off" aria-describedby="searchHint">
+        <kbd aria-hidden="true">/</kbd>
+        <span id="searchHint" class="sr-only">Filters the top online products and recent orders tables as you type.</span>
+      </div>
+      <div class="user">
+        <div class="avatar" aria-hidden="true">MK</div>
+        <div class="user-text"><strong>Mara Kim</strong><span>Operations lead</span></div>
+        <span class="sr-only">Signed in as Mara Kim, Operations lead</span>
+      </div>
+    </header>
+
+    <main class="content" id="content" tabindex="-1">
+      <!-- KPI tiles -->
+      <section aria-labelledby="kpi-h">
+        <h2 id="kpi-h" class="sr-only">Key figures, October 2026 versus September 2026</h2>
+        <ul class="kpis">
+          <li class="card kpi">
+            <span class="kpi-label"><svg aria-hidden="true"><use href="#i-dollar"/></svg>Revenue</span>
+            <span class="kpi-value">$184,320</span>
+            <span class="kpi-delta"><span class="delta good"><svg aria-hidden="true"><use href="#i-up"/></svg>+6.4%</span>vs Sep 2026</span>
+          </li>
+          <li class="card kpi">
+            <span class="kpi-label"><svg aria-hidden="true"><use href="#i-bag"/></svg>Orders</span>
+            <span class="kpi-value">9,412</span>
+            <span class="kpi-delta"><span class="delta good"><svg aria-hidden="true"><use href="#i-up"/></svg>+3.1%</span>vs Sep 2026</span>
+          </li>
+          <li class="card kpi">
+            <span class="kpi-label"><svg aria-hidden="true"><use href="#i-receipt"/></svg>Average order value</span>
+            <span class="kpi-value">$19.58</span>
+            <span class="kpi-delta"><span class="delta good"><svg aria-hidden="true"><use href="#i-up"/></svg>+3.2%</span>vs Sep 2026</span>
+          </li>
+          <li class="card kpi">
+            <span class="kpi-label"><svg aria-hidden="true"><use href="#i-repeat"/></svg>Subscription customers</span>
+            <span class="kpi-value">1,286</span>
+            <span class="kpi-delta"><span class="delta good"><svg aria-hidden="true"><use href="#i-up"/></svg>+48 net</span>vs Sep 2026</span>
+          </li>
+          <li class="card kpi">
+            <span class="kpi-label"><svg aria-hidden="true"><use href="#i-return"/></svg>Refund rate</span>
+            <span class="kpi-value">1.9%</span>
+            <span class="kpi-delta"><span class="delta good" aria-label="down 0.3 percentage points, an improvement"><svg aria-hidden="true"><use href="#i-down"/></svg>−0.3 pp</span>vs Sep 2026 · lower is better</span>
+          </li>
+        </ul>
+      </section>
+
+      <div class="grid">
+        <!-- Monthly revenue -->
+        <section class="card span-8 wide" aria-labelledby="rev-h">
+          <div class="card-head">
+            <div>
+              <h2 id="rev-h">Monthly revenue by channel</h2>
+              <p>November 2025 – October 2026, thousands of US dollars</p>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Channel" id="channelFilter">
+              <button type="button" role="radio" aria-checked="true" data-channel="all">All channels</button>
+              <button type="button" role="radio" aria-checked="false" data-channel="online" tabindex="-1">Online only</button>
+              <button type="button" role="radio" aria-checked="false" data-channel="cafes" tabindex="-1">Cafés only</button>
+            </div>
+          </div>
+          <ul class="legend" id="revLegend">
+            <li data-series="online"><span class="swatch sw-online" aria-hidden="true"></span>Online</li>
+            <li data-series="cafes"><span class="swatch sw-cafes" aria-hidden="true"></span>Cafés</li>
+          </ul>
+          <div class="chart-wrap" id="revChart"></div>
+          <p class="sr-only" id="revLive" aria-live="polite"></p>
+          <div class="chart-summary" id="revSummary"></div>
+          <details class="data-table">
+            <summary>Show data table</summary>
+            <div class="table-scroll">
+              <table>
+                <caption class="sr-only">Monthly revenue by channel, thousands of US dollars</caption>
+                <thead><tr><th scope="col">Month</th><th scope="col" class="num">Online</th><th scope="col" class="num">Cafés</th><th scope="col" class="num">Total</th></tr></thead>
+                <tbody id="revTableBody"></tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+
+        <!-- Category share -->
+        <section class="card span-4 side" aria-labelledby="cat-h">
+          <div class="card-head">
+            <div>
+              <h2 id="cat-h">Revenue by category</h2>
+              <p>October 2026, share of revenue</p>
+            </div>
+          </div>
+          <ul class="bars" id="catBars"></ul>
+          <div class="bar-scale" aria-hidden="true"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span></div>
+          <p class="card-note">Whole bean and espresso drinks together make up 65% of October revenue.</p>
+        </section>
+
+        <!-- Café performance -->
+        <section class="card span-7 wide" aria-labelledby="cafe-h">
+          <div class="card-head">
+            <div>
+              <h2 id="cafe-h">Café performance</h2>
+              <p>October 2026 · select a column header to sort</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table id="cafeTable">
+              <caption class="sr-only">Café performance, October 2026. Column headers are sortable buttons.</caption>
+              <thead>
+                <tr>
+                  <th scope="col" data-key="name" data-type="text" aria-sort="none"><button class="sort-btn" type="button">Café<svg class="sort-icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="num" data-key="revenue" data-type="num" aria-sort="descending"><button class="sort-btn" type="button">Revenue<svg class="sort-icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="num" data-key="orders" data-type="num" aria-sort="none"><button class="sort-btn" type="button">Orders<svg class="sort-icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="num" data-key="ticket" data-type="num" aria-sort="none"><button class="sort-btn" type="button">Average ticket<svg class="sort-icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="num" data-key="change" data-type="num" aria-sort="none"><button class="sort-btn" type="button">Change vs Sep<svg class="sort-icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                </tr>
+              </thead>
+              <tbody id="cafeBody"></tbody>
+            </table>
+          </div>
+          <p class="card-note">Station Square is the only café down on September (−1.7%). Riverside, open since June 2026, grew fastest at +9.6%.</p>
+        </section>
+
+        <!-- Inventory -->
+        <section class="card span-5 side" aria-labelledby="inv-h">
+          <div class="card-head">
+            <div>
+              <h2 id="inv-h">Green coffee inventory</h2>
+              <p>Days of stock left at the current roasting rate</p>
+            </div>
+            <a class="card-link" href="#">Inventory →</a>
+          </div>
+          <div class="inv-alert" role="status">
+            <svg aria-hidden="true"><use href="#i-alert"/></svg>
+            <div><strong id="invAlertCount">2 coffees need a reorder</strong> — under 7 days of stock left.</div>
+          </div>
+          <ul class="inv-list" id="invList"></ul>
+          <div class="inv-scale" aria-hidden="true" id="invScale"></div>
+          <div class="inv-legend"><i aria-hidden="true"></i>Reorder point: 7 days</div>
+        </section>
+
+        <!-- Top products -->
+        <section class="card span-5 side" aria-labelledby="prod-h">
+          <div class="card-head">
+            <div>
+              <h2 id="prod-h">Top online products</h2>
+              <p>October 2026</p>
+            </div>
+            <a class="card-link" href="#">All products →</a>
+          </div>
+          <p class="filter-note" id="prodNote" hidden></p>
+          <div class="table-scroll">
+            <table>
+              <caption class="sr-only">Top online products, October 2026</caption>
+              <thead><tr><th scope="col">Product</th><th scope="col" class="num">Units</th><th scope="col" class="num">Revenue</th></tr></thead>
+              <tbody id="prodBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Recent orders -->
+        <section class="card span-7 wide" aria-labelledby="ord-h">
+          <div class="card-head">
+            <div>
+              <h2 id="ord-h">Recent orders</h2>
+              <p>Latest across the online store and cafés</p>
+            </div>
+            <a class="card-link" href="#">All orders →</a>
+          </div>
+          <p class="filter-note" id="ordNote" hidden></p>
+          <div class="table-scroll">
+            <table class="orders-table">
+              <caption class="sr-only">Recent orders</caption>
+              <thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Channel</th><th scope="col" class="num">Items</th><th scope="col" class="num">Total</th><th scope="col">Status</th></tr></thead>
+              <tbody id="ordBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip" role="presentation" aria-hidden="true"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- Data (as supplied) ---------------- */
+  const MONTHS = [
+    { short: "Nov", letter: "N", name: "November", year: 2025, online: 61, cafes: 88 },
+    { short: "Dec", letter: "D", name: "December", year: 2025, online: 74, cafes: 102 },
+    { short: "Jan", letter: "J", name: "January",  year: 2026, online: 58, cafes: 81 },
+    { short: "Feb", letter: "F", name: "February", year: 2026, online: 60, cafes: 84 },
+    { short: "Mar", letter: "M", name: "March",    year: 2026, online: 63, cafes: 89 },
+    { short: "Apr", letter: "A", name: "April",    year: 2026, online: 66, cafes: 93 },
+    { short: "May", letter: "M", name: "May",      year: 2026, online: 68, cafes: 97 },
+    { short: "Jun", letter: "J", name: "June",     year: 2026, online: 70, cafes: 99 },
+    { short: "Jul", letter: "J", name: "July",     year: 2026, online: 72, cafes: 96 },
+    { short: "Aug", letter: "A", name: "August",   year: 2026, online: 75, cafes: 95 },
+    { short: "Sep", letter: "S", name: "September",year: 2026, online: 79, cafes: 94 },
+    { short: "Oct", letter: "O", name: "October",  year: 2026, online: 83, cafes: 101 }
+  ];
+  const SERIES = {
+    online: { label: "Online", cls: "s-online", cssVar: "--series-online" },
+    cafes:  { label: "Cafés",  cls: "s-cafes",  cssVar: "--series-cafes" }
+  };
+  // Stack order bottom → top
+  const STACK = ["cafes", "online"];
+
+  const CATEGORIES = [
+    ["Whole bean", 38], ["Espresso drinks", 27], ["Filter & cold brew", 14],
+    ["Pastries", 12], ["Equipment", 6], ["Gift cards", 3]
+  ];
+
+  const CAFES = [
+    { name: "Harbor Street", note: "", revenue: 31420, orders: 1812, ticket: 17.34, change: 4.8 },
+    { name: "Mill Lane", note: "", revenue: 27960, orders: 1655, ticket: 16.89, change: 2.1 },
+    { name: "Station Square", note: "", revenue: 24310, orders: 1498, ticket: 16.23, change: -1.7 },
+    { name: "Riverside", note: "Opened June 2026", revenue: 17630, orders: 1127, ticket: 15.64, change: 9.6 }
+  ];
+
+  const PRODUCTS = [
+    { name: "Morning Tide blend, 340 g", units: 1104, revenue: 16008 },
+    { name: "Ridgeback espresso, 1 kg", units: 412, revenue: 14420 },
+    { name: "Cold brew concentrate, 1 L", units: 655, revenue: 9170 },
+    { name: "Ceramic pour-over set", units: 138, revenue: 6210 },
+    { name: "Single-origin sampler", units: 291, revenue: 5529 }
+  ];
+
+  const ORDERS = [
+    { id: "#48213", customer: "Ana Ruiz", channel: "Online", items: 2, total: 41.00, status: "Shipped" },
+    { id: "#48212", customer: "Tomás Berg", channel: "Harbor Street", items: 3, total: 14.75, status: "Paid" },
+    { id: "#48211", customer: "Priya Nair", channel: "Online", items: 1, total: 35.00, status: "Pending" },
+    { id: "#48210", customer: "Jonah Weiss", channel: "Mill Lane", items: 2, total: 9.40, status: "Paid" },
+    { id: "#48209", customer: "Lena Okafor", channel: "Online", items: 4, total: 63.50, status: "Refunded" },
+    { id: "#48208", customer: "Sam Choi", channel: "Riverside", items: 1, total: 5.25, status: "Paid" }
+  ];
+
+  const INVENTORY = [
+    { name: "Ethiopia Guji", days: 6 },
+    { name: "Colombia Huila", days: 14 },
+    { name: "Brazil Cerrado", days: 3 },
+    { name: "Kenya Nyeri", days: 21 }
+  ];
+  const REORDER_DAYS = 7;
+
+  /* ---------------- Helpers ---------------- */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  function el(tag, attrs, text) {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === "class") n.className = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function svgEl(tag, attrs) {
+    const n = document.createElementNS(SVGNS, tag);
+    if (attrs) for (const k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function icon(id, cls) {
+    const s = svgEl("svg", { "aria-hidden": "true", focusable: "false" });
+    if (cls) s.setAttribute("class", cls);
+    const u = svgEl("use", { href: "#" + id });
+    s.appendChild(u);
+    return s;
+  }
+  const fmtInt = n => n.toLocaleString("en-US");
+  const fmtUSD0 = n => "$" + n.toLocaleString("en-US");
+  const fmtUSD2 = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtK = n => "$" + n + "K";
+  const fmtPct = n => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n).toFixed(1) + "%";
+
+  /* ---------------- Tooltip ---------------- */
+  const tip = $("#tooltip");
+  function showTip(build, x, y) {
+    tip.replaceChildren();
+    build(tip);
+    tip.classList.add("show");
+    const r = tip.getBoundingClientRect();
+    let left = x + 14, top = y - r.height - 12;
+    if (left + r.width > window.innerWidth - 8) left = x - r.width - 14;
+    if (left < 8) left = 8;
+    if (top < 8) top = y + 16;
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  }
+  function hideTip() { tip.classList.remove("show"); }
+  function tipTitle(text) { return el("div", { class: "tt-title" }, text); }
+  function tipRow(value, label, color, extraCls) {
+    const row = el("div", { class: "tt-row" + (extraCls ? " " + extraCls : "") });
+    const key = el("span", { class: "tt-key" });
+    if (color) key.style.background = color; else key.style.visibility = "hidden";
+    row.append(key, el("strong", null, value), el("span", null, label));
+    return row;
+  }
+
+  /* ---------------- Revenue chart ---------------- */
+  const chartHost = $("#revChart");
+  const live = $("#revLive");
+  let channel = "all";
+  let activeIdx = -1;
+
+  function visibleSeries() {
+    return channel === "all" ? STACK.slice() : [channel];
+  }
+  function totalFor(m, keys) { return keys.reduce((s, k) => s + m[k], 0); }
+  function niceScale(max) {
+    const steps = [10, 20, 25, 30, 40, 50];
+    for (const s of steps) {
+      const top = Math.ceil(max / s) * s;
+      if (top / s <= 5) return { top, step: s };
+    }
+    return { top: Math.ceil(max / 50) * 50, step: 50 };
+  }
+  function roundedTop(x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, h, w / 2));
+    return "M" + x + "," + (y + h) + "V" + (y + r) +
+      "A" + r + "," + r + " 0 0 1 " + (x + r) + "," + y +
+      "H" + (x + w - r) +
+      "A" + r + "," + r + " 0 0 1 " + (x + w) + "," + (y + r) +
+      "V" + (y + h) + "Z";
+  }
+
+  function renderChart() {
+    const W = Math.max(280, Math.floor(chartHost.clientWidth));
+    const narrow = W < 520;
+    const H = narrow ? 240 : 300;
+    const m = { top: 22, right: 4, bottom: 40, left: 40 };
+    const pw = W - m.left - m.right;
+    const ph = H - m.top - m.bottom;
+    const keys = visibleSeries();
+    const maxVal = Math.max.apply(null, MONTHS.map(d => totalFor(d, keys)));
+    const sc = niceScale(maxVal);
+    const y = v => m.top + ph - (v / sc.top) * ph;
+    const band = pw / MONTHS.length;
+    const bw = Math.min(24, Math.max(8, band * 0.56));
+
+    const svg = svgEl("svg", {
+      class: "chart-svg", width: W, height: H, viewBox: "0 0 " + W + " " + H,
+      tabindex: "0", role: "group",
+      "aria-label": "Monthly revenue chart, " + (channel === "all" ? "online and cafés stacked" : SERIES[channel].label + " only") +
+        ". Use left and right arrow keys to read each month."
+    });
+
+    // Gridlines + y ticks
+    const gGrid = svgEl("g", { "aria-hidden": "true" });
+    for (let v = 0; v <= sc.top; v += sc.step) {
+      const yy = Math.round(y(v)) + 0.5;
+      gGrid.appendChild(svgEl("line", { class: v === 0 ? "baseline" : "gridline", x1: m.left, x2: W - m.right, y1: yy, y2: yy }));
+      const t = svgEl("text", { class: "axis-text", x: m.left - 8, y: yy + 4, "text-anchor": "end" });
+      t.textContent = v === 0 ? "$0" : "$" + v + "K";
+      gGrid.appendChild(t);
+    }
+    svg.appendChild(gGrid);
+
+    // Hover bands (drawn behind bars)
+    const gBands = svgEl("g", { "aria-hidden": "true" });
+    const bands = MONTHS.map((d, i) => {
+      const r = svgEl("rect", { class: "hover-band", x: m.left + i * band + 1, y: m.top, width: band - 2, height: ph, rx: 6 });
+      gBands.appendChild(r);
+      return r;
+    });
+    svg.appendChild(gBands);
+
+    // Columns
+    const gCols = svgEl("g", { "aria-hidden": "true" });
+    const cols = MONTHS.map((d, i) => {
+      const g = svgEl("g", { class: "col" });
+      const x = m.left + i * band + (band - bw) / 2;
+      let acc = 0;
+      keys.forEach((k, si) => {
+        const isTop = si === keys.length - 1;
+        const y0 = y(acc);              // bottom of segment
+        const y1 = y(acc + d[k]);       // top of segment
+        // 2px surface gap below any segment that sits on another
+        const bottom = si === 0 ? y0 : y0 - 2;
+        const h = Math.max(0, bottom - y1);
+        const p = svgEl("path", {
+          class: SERIES[k].cls,
+          d: isTop ? roundedTop(x, y1, bw, h, 4) : "M" + x + "," + y1 + "H" + (x + bw) + "V" + (y1 + h) + "H" + x + "Z"
+        });
+        g.appendChild(p);
+        acc += d[k];
+      });
+      gCols.appendChild(g);
+      return g;
+    });
+    svg.appendChild(gCols);
+
+    // Direct label: latest month value on the cap
+    const last = MONTHS[MONTHS.length - 1];
+    const lastTotal = totalFor(last, keys);
+    const cap = svgEl("text", {
+      class: "cap-label", x: m.left + (MONTHS.length - 1) * band + band / 2, y: y(lastTotal) - 7, "text-anchor": "middle", "aria-hidden": "true"
+    });
+    cap.textContent = fmtK(lastTotal);
+    svg.appendChild(cap);
+
+    // X axis
+    const gX = svgEl("g", { "aria-hidden": "true" });
+    MONTHS.forEach((d, i) => {
+      const cx = m.left + i * band + band / 2;
+      const t = svgEl("text", { class: "axis-text", x: cx, y: m.top + ph + 16, "text-anchor": "middle" });
+      t.textContent = narrow ? d.letter : d.short;
+      gX.appendChild(t);
+      if (i === 0 || (d.short === "Jan")) {
+        const yr = svgEl("text", { class: "axis-year", x: cx, y: m.top + ph + 31, "text-anchor": "middle" });
+        yr.textContent = String(d.year);
+        gX.appendChild(yr);
+      }
+    });
+    svg.appendChild(gX);
+
+    // Hit targets: whole band, full height
+    const gHit = svgEl("g");
+    MONTHS.forEach((d, i) => {
+      const r = svgEl("rect", { class: "hit", x: m.left + i * band, y: m.top - 16, width: band, height: ph + 16 + m.bottom });
+      r.addEventListener("pointerenter", e => setActive(i, e.clientX, e.clientY));
+      r.addEventListener("pointermove", e => setActive(i, e.clientX, e.clientY));
+      r.addEventListener("pointerdown", e => setActive(i, e.clientX, e.clientY));
+      gHit.appendChild(r);
+    });
+    svg.appendChild(gHit);
+    svg.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") clearActive(); });
+
+    // Keyboard
+    svg.addEventListener("keydown", e => {
+      let i = activeIdx;
+      if (e.key === "ArrowRight") i = i < 0 ? 0 : Math.min(MONTHS.length - 1, i + 1);
+      else if (e.key === "ArrowLeft") i = i < 0 ? MONTHS.length - 1 : Math.max(0, i - 1);
+      else if (e.key === "Home") i = 0;
+      else if (e.key === "End") i = MONTHS.length - 1;
+      else if (e.key === "Escape") { clearActive(); return; }
+      else return;
+      e.preventDefault();
+      setActive(i, null, null, true);
+    });
+    svg.addEventListener("focus", () => { if (activeIdx < 0) setActive(MONTHS.length - 1, null, null, true); });
+    svg.addEventListener("blur", clearActive);
+
+    function setActive(i, cx, cy, fromKey) {
+      activeIdx = i;
+      svg.classList.add("has-active");
+      cols.forEach((c, j) => c.classList.toggle("active", j === i));
+      bands.forEach((b, j) => b.classList.toggle("active", j === i));
+      const d = MONTHS[i];
+      let px = cx, py = cy;
+      if (px == null) {
+        const box = svg.getBoundingClientRect();
+        px = box.left + m.left + i * band + band / 2;
+        py = box.top + y(totalFor(d, keys));
+      }
+      showTip(t => {
+        t.appendChild(tipTitle(d.name + " " + d.year));
+        const order = keys.slice().reverse(); // match visual top → bottom
+        order.forEach(k => t.appendChild(tipRow(fmtK(d[k]), SERIES[k].label, "var(" + SERIES[k].cssVar + ")")));
+        if (keys.length > 1) t.appendChild(tipRow(fmtK(totalFor(d, keys)), "Total", null, "total"));
+      }, px, py);
+      if (fromKey) {
+        live.textContent = d.name + " " + d.year + ": " +
+          keys.map(k => SERIES[k].label + " " + fmtK(d[k])).join(", ") +
+          (keys.length > 1 ? ", total " + fmtK(totalFor(d, keys)) : "");
+      }
+    }
+    function clearActive() {
+      activeIdx = -1;
+      svg.classList.remove("has-active");
+      cols.forEach(c => c.classList.remove("active"));
+      bands.forEach(b => b.classList.remove("active"));
+      hideTip();
+    }
+
+    chartHost.replaceChildren(svg);
+    renderSummary(keys);
+  }
+
+  function renderSummary(keys) {
+    const host = $("#revSummary");
+    host.replaceChildren();
+    const oct = MONTHS[11], sep = MONTHS[10];
+    const lbl = channel === "all" ? "All channels" : SERIES[channel].label;
+    const a = el("div");
+    a.append(el("span", null, lbl + ", Oct 2026: "), el("strong", null, fmtK(totalFor(oct, keys))));
+    const b = el("div");
+    b.append(el("span", null, "Sep 2026: "), el("strong", null, fmtK(totalFor(sep, keys))));
+    const best = MONTHS.reduce((bi, d, i) => totalFor(d, keys) > totalFor(MONTHS[bi], keys) ? i : bi, 0);
+    const c = el("div");
+    c.append(el("span", null, "Highest month: "), el("strong", null, MONTHS[best].short + " " + MONTHS[best].year + " (" + fmtK(totalFor(MONTHS[best], keys)) + ")"));
+    host.append(a, b, c);
+  }
+
+  function renderRevTable() {
+    const body = $("#revTableBody");
+    MONTHS.forEach(d => {
+      const tr = el("tr");
+      tr.append(
+        el("th", { scope: "row" }, d.short + " " + d.year),
+        el("td", { class: "num" }, fmtK(d.online)),
+        el("td", { class: "num" }, fmtK(d.cafes)),
+        el("td", { class: "num" }, fmtK(d.online + d.cafes))
+      );
+      body.appendChild(tr);
+    });
+  }
+
+  // Channel filter (radio group semantics)
+  const filterBtns = Array.from(document.querySelectorAll("#channelFilter button"));
+  function setChannel(c, focus) {
+    channel = c;
+    filterBtns.forEach(b => {
+      const on = b.dataset.channel === c;
+      b.setAttribute("aria-checked", on ? "true" : "false");
+      b.tabIndex = on ? 0 : -1;
+      if (on && focus) b.focus();
+    });
+    document.querySelectorAll("#revLegend li").forEach(li => {
+      li.classList.toggle("off", c !== "all" && li.dataset.series !== c);
+    });
+    activeIdx = -1;
+    hideTip();
+    renderChart();
+  }
+  filterBtns.forEach((b, i) => {
+    b.addEventListener("click", () => setChannel(b.dataset.channel));
+    b.addEventListener("keydown", e => {
+      let j = null;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") j = (i + 1) % filterBtns.length;
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") j = (i - 1 + filterBtns.length) % filterBtns.length;
+      if (j != null) { e.preventDefault(); setChannel(filterBtns[j].dataset.channel, true); }
+    });
+  });
+
+  /* ---------------- Category bars ---------------- */
+  function renderCategories() {
+    const host = $("#catBars");
+    const max = 40;
+    CATEGORIES.forEach(([name, pct]) => {
+      const li = el("li", { class: "bar-row" });
+      const head = el("div", { class: "bar-row-head" });
+      head.append(el("span", null, name), el("strong", null, pct + "%"));
+      const track = el("div", { class: "bar-track", "aria-hidden": "true" });
+      const fill = el("div", { class: "bar-fill" });
+      fill.style.width = (pct / max * 100) + "%";
+      track.appendChild(fill);
+      li.append(head, track);
+      const show = e => showTip(t => {
+        t.appendChild(tipTitle("October 2026"));
+        t.appendChild(tipRow(pct + "%", name, "var(--series-category)"));
+      }, e.clientX, e.clientY);
+      li.addEventListener("pointermove", show);
+      li.addEventListener("pointerleave", hideTip);
+      host.appendChild(li);
+    });
+  }
+
+  /* ---------------- Café table (sortable) ---------------- */
+  let cafeSort = { key: "revenue", dir: "descending" };
+  function renderCafes() {
+    const body = $("#cafeBody");
+    const rows = CAFES.slice().sort((a, b) => {
+      const k = cafeSort.key;
+      const r = typeof a[k] === "string" ? a[k].localeCompare(b[k]) : a[k] - b[k];
+      return cafeSort.dir === "ascending" ? r : -r;
+    });
+    body.replaceChildren();
+    rows.forEach(c => {
+      const tr = el("tr");
+      const name = el("th", { scope: "row", class: "strong" }, c.name);
+      name.style.fontWeight = "600";
+      if (c.note) name.appendChild(el("span", { class: "sub" }, c.note));
+      const ch = el("td", { class: "num" });
+      const good = c.change >= 0;
+      const d = el("span", { class: "delta " + (good ? "good" : "bad") });
+      d.append(icon(good ? "i-up" : "i-down"), document.createTextNode(fmtPct(c.change)));
+      ch.appendChild(d);
+      tr.append(
+        name,
+        el("td", { class: "num" }, fmtUSD0(c.revenue)),
+        el("td", { class: "num" }, fmtInt(c.orders)),
+        el("td", { class: "num" }, fmtUSD2(c.ticket)),
+        ch
+      );
+      body.appendChild(tr);
+    });
+    document.querySelectorAll("#cafeTable th[data-key]").forEach(th => {
+      th.setAttribute("aria-sort", th.dataset.key === cafeSort.key ? cafeSort.dir : "none");
+    });
+  }
+  document.querySelectorAll("#cafeTable th[data-key]").forEach(th => {
+    th.querySelector("button").addEventListener("click", () => {
+      const k = th.dataset.key;
+      if (cafeSort.key === k) cafeSort.dir = cafeSort.dir === "ascending" ? "descending" : "ascending";
+      else cafeSort = { key: k, dir: th.dataset.type === "text" ? "ascending" : "descending" };
+      renderCafes();
+    });
+  });
+
+  /* ---------------- Products ---------------- */
+  const maxProdRev = Math.max.apply(null, PRODUCTS.map(p => p.revenue));
+  function renderProducts(q) {
+    const body = $("#prodBody");
+    body.replaceChildren();
+    const rows = PRODUCTS.filter(p => !q || p.name.toLowerCase().includes(q));
+    rows.forEach(p => {
+      const tr = el("tr");
+      const rev = el("td", { class: "num" });
+      const wrap = el("div", { class: "inline-bar" });
+      const track = el("span", { class: "track", "aria-hidden": "true" });
+      const fill = el("span", { class: "fill" });
+      fill.style.display = "block";
+      fill.style.width = (p.revenue / maxProdRev * 100) + "%";
+      track.appendChild(fill);
+      wrap.append(track, el("span", null, fmtUSD0(p.revenue)));
+      rev.appendChild(wrap);
+      tr.append(el("th", { scope: "row", style: "font-weight:500" }, p.name), el("td", { class: "num" }, fmtInt(p.units)), rev);
+      body.appendChild(tr);
+    });
+    if (!rows.length) {
+      const tr = el("tr", { class: "empty-row" });
+      tr.appendChild(el("td", { colspan: "3" }, "No products match this search."));
+      body.appendChild(tr);
+    }
+    return rows.length;
+  }
+
+  /* ---------------- Orders ---------------- */
+  const STATUS = {
+    Shipped:  { cls: "shipped",  icon: "i-truck" },
+    Paid:     { cls: "paid",     icon: "i-check" },
+    Pending:  { cls: "pending",  icon: "i-clock" },
+    Refunded: { cls: "refunded", icon: "i-return" }
+  };
+  function renderOrders(q) {
+    const body = $("#ordBody");
+    body.replaceChildren();
+    const rows = ORDERS.filter(o => !q ||
+      [o.id, o.customer, o.channel, o.status].some(v => v.toLowerCase().includes(q)) ||
+      o.id.replace("#", "").includes(q.replace("#", "")));
+    rows.forEach(o => {
+      const tr = el("tr");
+      const idCell = el("th", { scope: "row", class: "c-id" });
+      idCell.appendChild(el("a", { class: "order-id", href: "#" }, o.id));
+      const chCell = el("td", { class: "c-chan" });
+      const ch = el("span", { class: "channel" });
+      ch.append(icon(o.channel === "Online" ? "i-globe" : "i-cup"), document.createTextNode(o.channel));
+      chCell.appendChild(ch);
+      const stCell = el("td", { class: "c-status" });
+      const s = STATUS[o.status];
+      const badge = el("span", { class: "badge " + s.cls });
+      badge.append(icon(s.icon), document.createTextNode(o.status));
+      stCell.appendChild(badge);
+      const itemsCell = el("td", { class: "num c-items" }, String(o.items));
+      itemsCell.appendChild(el("span", { class: "m-only" }, o.items === 1 ? " item" : " items"));
+      tr.append(idCell, el("td", { class: "c-cust" }, o.customer), chCell,
+        itemsCell, el("td", { class: "num c-total" }, fmtUSD2(o.total)), stCell);
+      body.appendChild(tr);
+    });
+    if (!rows.length) {
+      const tr = el("tr", { class: "empty-row" });
+      tr.appendChild(el("td", { colspan: "6" }, "No recent orders match this search."));
+      body.appendChild(tr);
+    }
+    return rows.length;
+  }
+
+  /* ---------------- Inventory ---------------- */
+  function renderInventory() {
+    const host = $("#invList");
+    const scaleMax = 28;
+    const items = INVENTORY.slice().sort((a, b) => a.days - b.days);
+    const flagged = items.filter(i => i.days < REORDER_DAYS).length;
+    $("#invAlertCount").textContent = flagged + (flagged === 1 ? " coffee needs a reorder" : " coffees need a reorder");
+    items.forEach(it => {
+      const reorder = it.days < REORDER_DAYS;
+      const li = el("li", { class: "inv-item" + (reorder ? " reorder" : "") });
+      const head = el("div", { class: "inv-head" });
+      head.appendChild(el("span", { class: "inv-name" }, it.name));
+      const right = el("span", { class: "inv-right" });
+      const days = el("span", { class: "inv-days" }, String(it.days) + " ");
+      days.appendChild(el("small", null, it.days === 1 ? "day" : "days"));
+      const badge = el("span", { class: "badge " + (reorder ? "refunded" : "paid") });
+      badge.append(icon(reorder ? "i-alert" : "i-check"), document.createTextNode(reorder ? "Reorder" : "OK"));
+      right.append(days, badge);
+      head.appendChild(right);
+      const meter = el("div", { class: "meter", role: "img", "aria-label": it.name + ": " + it.days + " days of stock left" + (reorder ? ", below the 7-day reorder point" : "") });
+      const fill = el("div", { class: "meter-fill" });
+      fill.style.width = (it.days / scaleMax * 100) + "%";
+      const th = el("div", { class: "meter-threshold" });
+      th.style.left = (REORDER_DAYS / scaleMax * 100) + "%";
+      meter.append(fill, th);
+      li.append(head, meter);
+      if (reorder) {
+        const btn = el("button", { class: "reorder-btn", type: "button", "aria-pressed": "false", style: "margin-top:8px" }, "Mark reorder as placed");
+        btn.addEventListener("click", () => {
+          const on = btn.getAttribute("aria-pressed") !== "true";
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+          btn.textContent = on ? "✓ Reorder placed" : "Mark reorder as placed";
+        });
+        li.appendChild(btn);
+      }
+      host.appendChild(li);
+    });
+    const sc = $("#invScale");
+    [0, 7, 14, 21, 28].forEach(v => {
+      const s = el("span", null, v === 28 ? "28 days" : String(v));
+      s.style.left = (v / scaleMax * 100) + "%";
+      sc.appendChild(s);
+    });
+  }
+
+  /* ---------------- Search ---------------- */
+  const search = $("#search");
+  function applySearch() {
+    const q = search.value.trim().toLowerCase();
+    const np = renderProducts(q);
+    const no = renderOrders(q);
+    const pn = $("#prodNote"), on = $("#ordNote");
+    if (q) {
+      pn.hidden = false; on.hidden = false;
+      pn.textContent = np + " of " + PRODUCTS.length + " products match “" + search.value.trim() + "”";
+      on.textContent = no + " of " + ORDERS.length + " orders match “" + search.value.trim() + "”";
+    } else { pn.hidden = true; on.hidden = true; }
+  }
+  search.addEventListener("input", applySearch);
+  document.addEventListener("keydown", e => {
+    const t = e.target;
+    const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+    if (e.key === "/" && !typing) { e.preventDefault(); search.focus(); }
+    if (e.key === "Escape" && t === search) { search.value = ""; applySearch(); }
+  });
+
+  /* ---------------- Mobile navigation ---------------- */
+  const sidebar = $("#sidebar"), overlay = $("#overlay"), openBtn = $("#navOpen"), closeBtn = $("#navClose");
+  function openNav() {
+    sidebar.classList.add("open"); overlay.classList.add("show");
+    openBtn.setAttribute("aria-expanded", "true");
+    const cur = sidebar.querySelector('[aria-current="page"]');
+    setTimeout(() => (cur || closeBtn).focus(), 50);
+  }
+  function closeNav(returnFocus) {
+    sidebar.classList.remove("open"); overlay.classList.remove("show");
+    openBtn.setAttribute("aria-expanded", "false");
+    if (returnFocus) openBtn.focus();
+  }
+  openBtn.addEventListener("click", openNav);
+  closeBtn.addEventListener("click", () => closeNav(true));
+  overlay.addEventListener("click", () => closeNav(true));
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && sidebar.classList.contains("open")) closeNav(true); });
+  sidebar.querySelectorAll(".nav a").forEach(a => a.addEventListener("click", e => {
+    e.preventDefault();
+    if (sidebar.classList.contains("open")) closeNav(false);
+  }));
+  document.querySelectorAll('a[href="#"]').forEach(a => a.addEventListener("click", e => e.preventDefault()));
+
+  // Dismiss chart tooltip on outside tap
+  document.addEventListener("pointerdown", e => {
+    if (!e.target.closest(".chart-svg") && !e.target.closest(".bar-row")) {
+      hideTip();
+      const svg = $(".chart-svg");
+      if (svg && document.activeElement !== svg) {
+        svg.classList.remove("has-active");
+        svg.querySelectorAll(".active").forEach(n => n.classList.remove("active"));
+        activeIdx = -1;
+      }
+    }
+  });
+  window.addEventListener("scroll", hideTip, { passive: true });
+
+  /* ---------------- Init ---------------- */
+  renderRevTable();
+  renderCategories();
+  renderCafes();
+  renderInventory();
+  applySearch();
+  renderChart();
+  let lastW = chartHost.clientWidth;
+  const ro = new ResizeObserver(() => {
+    const w = chartHost.clientWidth;
+    if (Math.abs(w - lastW) > 1) { lastW = w; renderChart(); }
+  });
+  ro.observe(chartHost);
+})();
+</script>
+</body>
+</html>

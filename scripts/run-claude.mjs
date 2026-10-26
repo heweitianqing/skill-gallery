@@ -20,7 +20,8 @@ import { execFileSync } from 'node:child_process';
 import {
   CONFIG_DIR, REPO_ROOT, SCHEMA_VERSION, baseEnv, cleanup, collectOutput, copySkill, die, hostInfo,
   loadPrompt, log, makeRunDir, makeSanitizer, parseCellArgs, prepareOutDir, readJsonl, runProcess,
-  shellQuote, skillSourceMeta, writeRunJson, writeTranscript,
+  shellQuote, skillSourceMeta, writeRunJson, writeTranscript, realKeychainState, createThrowawayKeychain,
+  deleteThrowawayKeychain, listTree,
 } from './lib/common.mjs';
 import { resolveSkill } from './lib/skills.mjs';
 
@@ -97,7 +98,8 @@ function analyzeStream(events, skillName) {
       }
     }
   }
-  return { init, result, skillCalls, mdReads, skillLoads, toolCounts };
+  const rateLimits = events.filter((e) => e.type === 'rate_limit_event').map((e) => e.rate_limit_info || {});
+  return { init, result, skillCalls, mdReads, skillLoads, toolCounts, rateLimits };
 }
 
 async function main() {
@@ -109,6 +111,8 @@ async function main() {
   const skillLine = cell.skill ? `Use the ${cell.skill.name} skill.` : null;
   const prompt = loadPrompt(cell.promptId, skillLine);
   const dirs = makeRunDir(AGENT, cell.promptId, cell.variant);
+  const keychainBefore = realKeychainState();
+  const keychain = createThrowawayKeychain(dirs);
   const configDir = path.join(dirs.runDir, 'claude-config');
   fs.mkdirSync(configDir);
 
@@ -119,7 +123,7 @@ async function main() {
     skillMeta.installed_to = `.claude/skills/${cell.skill.name}`;
   }
   fs.writeFileSync(path.join(dirs.runDir, 'prompt.txt'), prompt.text);
-  const before = { config_dir: fs.readdirSync(configDir), home: fs.readdirSync(dirs.home) };
+  const before = { config_dir: fs.readdirSync(configDir), home: listTree(dirs.home) };
 
   const mcpConfig = '{"mcpServers":{}}';
   const args = [
@@ -163,10 +167,12 @@ async function main() {
   const checks = {
     init_event_present: Boolean(a.init),
     only_builtin_plugins: plugins.every((p) => p.path === 'builtin' || /@builtin$/.test(p.source || '')),
+    no_synced_plugins: plugins.every((p) => !/@synced\b/.test(p.source || '') && p.path !== 'synced'),
     no_mcp_servers: (init.mcp_servers || []).length === 0,
     no_plugin_skills: skills.every((s) => !s.includes(':')),
     config_dir_was_empty: before.config_dir.length === 0,
-    home_was_empty: before.home.length === 0,
+    home_had_only_throwaway_keychain: before.home.every((f) => f.startsWith('Library/Keychains/')),
+    real_keychain_unchanged: JSON.stringify(realKeychainState()) === JSON.stringify(keychainBefore),
     auto_memory_disabled: env.CLAUDE_CODE_DISABLE_AUTO_MEMORY === '1',
   };
   if (cell.skill) checks.skill_listed = skills.includes(cell.skill.name);
@@ -214,6 +220,11 @@ async function main() {
       model_usage: r.modelUsage ?? null,
     } : null,
     activity: a.toolCounts,
+    rate_limits: {
+      events: a.rateLimits.length,
+      not_allowed: a.rateLimits.filter((x) => x.status && x.status !== 'allowed').map((x) => ({ status: x.status, type: x.rateLimitType ?? null })),
+      last: a.rateLimits.length ? (({ status, rateLimitType, unifiedWindows }) => ({ status, rateLimitType, unifiedWindows }))(a.rateLimits.at(-1)) : null,
+    },
     success: failures.length === 0,
     failure_reasons: failures,
     skill_triggered: skillTriggered,
@@ -229,6 +240,7 @@ async function main() {
       method: [
         'env built from scratch (env -i equivalent); HOME is an empty throwaway directory',
         'CLAUDE_CONFIG_DIR is an empty throwaway directory (no user settings, plugins, skills, CLAUDE.md, memory)',
+        'macOS: the throwaway HOME has its own new, unlocked login keychain, so programs the agent starts (e.g. Chrome) do not show keychain dialogs; the real keychain settings are compared before and after',
         '--setting-sources project; --strict-mcp-config with an empty server list; CLAUDE_CODE_DISABLE_AUTO_MEMORY=1',
         'working directory is a fresh throwaway directory outside any git repo',
       ],
@@ -259,6 +271,7 @@ async function main() {
     screenshots: null,
   };
   writeRunJson(out, record);
+  deleteThrowawayKeychain(dirs, keychain);
   cleanup(dirs);
   log(`${record.success ? 'OK' : 'FAILED'} -> ${path.relative(REPO_ROOT, out)}${failures.length ? ` (${failures.join('; ')})` : ''}`);
   process.exit(record.success ? 0 : 1);

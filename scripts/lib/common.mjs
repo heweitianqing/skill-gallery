@@ -173,6 +173,52 @@ export function makeRunDir(agent, promptId, variant) {
   return dirs;
 }
 
+// macOS: the throwaway HOME has no keychain, so any program the agent starts
+// that touches the keychain (for example Google Chrome launched directly,
+// which stores "Chrome Safe Storage") makes macOS show a "keychain not found"
+// dialog on the operator's desktop and can hang until someone clicks it. The
+// Security framework resolves the user keychain relative to $HOME, so we give
+// the throwaway HOME its own new, unlocked, no-auto-lock login keychain. The
+// operator's real keychain settings are not touched (checked before/after).
+const SECURITY = '/usr/bin/security';
+export function realKeychainState() {
+  if (process.platform !== 'darwin') return null;
+  const run = (args) => { try { return execFileSync(SECURITY, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); } catch (e) { return `error: ${String(e.stderr || e.message).trim()}`; } };
+  return { default: run(['default-keychain']), user_list: run(['list-keychains', '-d', 'user']), login: run(['login-keychain']) };
+}
+
+export function createThrowawayKeychain(dirs) {
+  if (process.platform !== 'darwin') return null;
+  const kc = path.join(dirs.home, 'Library', 'Keychains', 'login.keychain-db');
+  fs.mkdirSync(path.dirname(kc), { recursive: true });
+  const env = { HOME: dirs.home, USER: os.userInfo().username, PATH: '/usr/bin:/bin' };
+  const password = crypto.randomBytes(16).toString('hex'); // guards nothing; discarded
+  execFileSync(SECURITY, ['create-keychain', '-p', password, kc], { env, stdio: 'ignore' });
+  execFileSync(SECURITY, ['set-keychain-settings', kc], { env, stdio: 'ignore' }); // no timeout, no lock on sleep
+  return kc;
+}
+
+export function deleteThrowawayKeychain(dirs, kc) {
+  if (!kc) return;
+  try {
+    execFileSync(SECURITY, ['delete-keychain', kc], { env: { HOME: dirs.home, USER: os.userInfo().username, PATH: '/usr/bin:/bin' }, stdio: 'ignore' });
+  } catch {}
+}
+
+// Files under the throwaway HOME, relative to it (used to show it held only the keychain).
+export function listTree(dir) {
+  const out = [];
+  const walk = (d) => {
+    for (const n of fs.readdirSync(d).sort()) {
+      const p = path.join(d, n);
+      if (fs.lstatSync(p).isDirectory()) walk(p);
+      else out.push(path.relative(dir, p));
+    }
+  };
+  if (fs.existsSync(dir)) walk(dir);
+  return out;
+}
+
 // Same minimal PATH for both agents: node, Homebrew, system.
 export function isolatedPath(extraDirs = []) {
   const nodeDir = path.dirname(process.execPath);
@@ -279,6 +325,12 @@ export function makeSanitizer(dirs) {
     add(d, '$TMPDIR');
     add(path.dirname(d), '$TMPDIR/..');
   }
+  // Claude Code's own temp dir (/tmp/claude-<uid>/…) and the dash-mangled
+  // form of the temp path it uses for per-project folders.
+  const uid = os.userInfo().uid;
+  add(`/private/tmp/claude-${uid}`, '$CLAUDE_TMP');
+  add(`/tmp/claude-${uid}`, '$CLAUDE_TMP');
+  add(tmp.replace(/[^A-Za-z0-9]/g, '-'), '-TMPDIR');
   add(os.homedir(), '~');
   pairs.sort((a, b) => b[0].length - a[0].length);
   const fix = (s) => {
@@ -302,6 +354,14 @@ const omitted = (v) => `[output omitted: ${typeof v === 'string' ? v.length : JS
 export function redactToolOutput(v) {
   if (Array.isArray(v)) return v.map(redactToolOutput);
   if (!v || typeof v !== 'object') return v;
+  // Claude injects a loaded skill's SKILL.md as a synthetic user message; keep
+  // only its first line ("Base directory for this skill: ...") as evidence so
+  // third-party skill text is not copied into the repo.
+  if (v.type === 'user' && v.isSynthetic && Array.isArray(v.message?.content)) {
+    const content = v.message.content.map((b) => (b?.type === 'text' && typeof b.text === 'string'
+      ? { ...b, text: `${b.text.split('\n')[0]}\n[skill content omitted: ${b.text.length} chars]` } : b));
+    return { ...v, message: { ...v.message, content } };
+  }
   if (v.type === 'tool_result' || v.type === 'custom_tool_call_output' || v.type === 'function_call_output') {
     const { content, output, ...rest } = v;
     return { ...rest, ...(content !== undefined && { content: omitted(content) }), ...(output !== undefined && { output: omitted(output) }) };

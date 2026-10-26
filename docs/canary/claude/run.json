@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "agent": "claude",
+  "cli": {
+    "name": "claude-code",
+    "version": "2.1.308",
+    "path": "~/Library/Application Support/Claude/claude-code/2.1.308/a93ded4b1b47/claude.app/Contents/MacOS/claude"
+  },
+  "model": "claude-opus-5-5",
+  "effort": "high",
+  "prompt": {
+    "id": "canary",
+    "file": "scripts/canary/prompts/canary.md",
+    "version": "1",
+    "file_sha256": "464f9320c6b561b7e1ae310187c9aff569721f499ce37f93e7279824280c8bae",
+    "text_sha256": "e11370018bc5d419940d4b462f9524f998f0f2e6fe14b72ca980cd5586978c05",
+    "skill_line": "Use the canary-marker skill."
+  },
+  "variant": "canary-marker",
+  "skill": {
+    "name": "canary-marker",
+    "source_url": null,
+    "source_commit": "51fbb8d21edf6810d3f7fc66ba652981761daac1",
+    "source_path": "scripts/canary/skills/canary-marker",
+    "source_dirty": false,
+    "tree_sha256": "6e70849c2f1799fb1067a80d6f8b7b95c5263b7e162025434e016661ccb02341",
+    "installed_to": ".claude/skills/canary-marker"
+  },
+  "attempt": 1,
+  "previous_attempts": [],
+  "started_at": "2026-10-26T02:51:19.380Z",
+  "finished_at": "2026-10-26T02:51:30.336Z",
+  "duration_ms": 10953,
+  "exit_code": 0,
+  "timed_out": false,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 4379,
+    "cache_read_input_tokens": 45203,
+    "output_tokens": 378,
+    "total_cost_usd": 0.0516566,
+    "num_turns": 4,
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 6,
+        "outputTokens": 378,
+        "cacheReadInputTokens": 45203,
+        "cacheCreationInputTokens": 4379,
+        "webSearchRequests": 0,
+        "costUSD": 0.0516566,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 0,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    }
+  },
+  "activity": {
+    "Skill": 1,
+    "Write": 1
+  },
+  "rate_limits": {
+    "events": 1,
+    "not_allowed": [],
+    "last": {
+      "status": "allowed",
+      "rateLimitType": "five_hour",
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.01,
+          "resetsAt": 1792995600
+        },
+        "seven_day": {
+          "utilization": 0.2,
+          "resetsAt": 1793260800
+        }
+      }
+    }
+  },
+  "success": true,
+  "failure_reasons": [],
+  "skill_triggered": true,
+  "skill_evidence": {
+    "skill_tool_calls": [
+      {
+        "skill": "canary-marker",
+        "ok": true,
+        "result": "Launching skill: canary-marker"
+      }
+    ],
+    "skill_content_loaded": [
+      {
+        "base_dir": "$RUN/work/.claude/skills/canary-marker",
+        "chars": 562
+      }
+    ],
+    "skill_md_reads": []
+  },
+  "builtin_skills_used": [],
+  "isolation": {
+    "ok": true,
+    "checks": {
+      "init_event_present": true,
+      "only_builtin_plugins": true,
+      "no_synced_plugins": true,
+      "no_mcp_servers": true,
+      "no_plugin_skills": true,
+      "config_dir_was_empty": true,
+      "home_was_empty": true,
+      "auto_memory_disabled": true,
+      "skill_listed": true
+    },
+    "method": [
+      "env built from scratch (env -i equivalent); HOME is an empty throwaway directory",
+      "CLAUDE_CONFIG_DIR is an empty throwaway directory (no user settings, plugins, skills, CLAUDE.md, memory)",
+      "--setting-sources project; --strict-mcp-config with an empty server list; CLAUDE_CODE_DISABLE_AUTO_MEMORY=1",
+      "working directory is a fresh throwaway directory outside any git repo"
+    ],
+    "auth_method": "oauth_token_file",
+    "command": "'~/Library/Application Support/Claude/claude-code/2.1.308/a93ded4b1b47/claude.app/Contents/MacOS/claude' -p \"$(cat prompt.txt)\" --model claude-opus-5-5 --effort high --output-format stream-json --verbose --setting-sources project --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --permission-mode bypassPermissions --no-session-persistence",
+    "cwd": "$RUN/work",
+    "env": {
+      "HOME": "$RUN/home",
+      "USER": "$USER",
+      "LOGNAME": "$USER",
+      "PATH": "/opt/homebrew/Cellar/node@22/22.18.0/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "LANG": "en_US.UTF-8",
+      "TERM": "dumb",
+      "TMPDIR": "$RUN/tmp/",
+      "CLAUDE_CONFIG_DIR": "$RUN/claude-config",
+      "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+      "DISABLE_AUTOUPDATER": "1",
+      "CLAUDE_CODE_OAUTH_TOKEN": "<redacted>"
+    },
+    "before_run": {
+      "config_dir": [],
+      "home": []
+    },
+    "observed": {
+      "tools": [
+        "Task",
+        "Bash",
+        "CronCreate",
+        "CronDelete",
+        "CronList",
+        "DesignSync",
+        "Edit",
+        "EnterWorktree",
+        "ExitWorktree",
+        "ListAgents",
+        "Monitor",
+        "NotebookEdit",
+        "PushNotification",
+        "Read",
+        "RemoteTrigger",
+        "ReportFindings",
+        "ScheduleWakeup",
+        "SendMessage",
+        "Skill",
+        "TaskStop",
+        "ToolSearch",
+        "WebFetch",
+        "WebSearch",
+        "Workflow",
+        "Write"
+      ],
+      "mcp_servers": [],
+      "skills": [
+        "canary-marker",
+        "deep-research",
+        "design",
+        "design-sync",
+        "dataviz",
+        "update-config",
+        "verify",
+        "debug",
+        "code-review",
+        "simplify",
+        "batch",
+        "fewer-permission-prompts",
+        "doctor",
+        "loop",
+        "schedule",
+        "claude-api",
+        "workflow-authoring",
+        "run",
+        "run-skill-generator",
+        "plugin-authoring"
+      ],
+      "plugins": [
+        {
+          "name": "cc-plugin-agents-md",
+          "path": "builtin",
+          "source": "cc-plugin-agents-md@builtin"
+        },
+        {
+          "name": "cc-plugin-telemetry",
+          "path": "builtin",
+          "source": "cc-plugin-telemetry@builtin"
+        },
+        {
+          "name": "cc-plugin-plugin-authoring",
+          "path": "builtin",
+          "source": "cc-plugin-plugin-authoring@builtin"
+        }
+      ],
+      "agents": [
+        "claude",
+        "Explore",
+        "general-purpose",
+        "Plan",
+        "statusline-setup"
+      ],
+      "slash_commands": [
+        "canary-marker",
+        "deep-research",
+        "design",
+        "design-sync",
+        "dataviz",
+        "update-config",
+        "verify",
+        "debug",
+        "code-review",
+        "simplify",
+        "batch",
+        "fewer-permission-prompts",
+        "doctor",
+        "loop",
+        "schedule",
+        "claude-api",
+        "workflow-authoring",
+        "run",
+        "run-skill-generator",
+        "plugin-authoring",
+        "advisor",
+        "agents",
+        "auto-mode-setup",
+        "autocompact",
+        "clear",
+        "color",
+        "compact",
+        "config",
+        "output-style",
+        "context",
+        "effort",
+        "fast",
+        "focus",
+        "heapdump",
+        "init",
+        "mcp",
+        "import",
+        "model",
+        "__remote-workflow",
+        "workflow-launch-exec",
+        "reload-plugins",
+        "reload-skills",
+        "rename",
+        "ultrareview",
+        "security-review",
+        "usage",
+        "insights",
+        "recap",
+        "skill-doctor",
+        "goal",
+        "design-consent",
+        "design-revoke",
+        "list-agents",
+        "team-onboarding"
+      ],
+      "model": "claude-opus-5-5",
+      "permission_mode": "bypassPermissions",
+      "api_key_source": "none",
+      "output_style": "default",
+      "cwd": "$RUN/work"
+    }
+  },
+  "output": {
+    "index_html": true,
+    "index_html_bytes": 152,
+    "index_html_sha256": "d1a85cfa2733a9b3faf2c5e59cf93690f415eff15d205aae56437e59f0f03853",
+    "other_files": []
+  },
+  "external_refs": {
+    "count": 0,
+    "counts": {},
+    "hosts": [],
+    "refs": [],
+    "remote_images": [],
+    "violations": []
+  },
+  "rule_violations": [],
+  "host": {
+    "os": "Darwin 25.6.0",
+    "arch": "arm64",
+    "node": "v22.18.0"
+  },
+  "stderr_tail": "",
+  "screenshots": null
+}

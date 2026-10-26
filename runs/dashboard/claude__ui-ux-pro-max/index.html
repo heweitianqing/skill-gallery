@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales &amp; Operations · October 2026 · Kestrel Coffee Roasters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Surfaces */
+    --color-bg: #F6F2EC;
+    --color-surface: #FFFFFF;
+    --color-surface-alt: #FAF7F3;
+    --color-border: #E6DDD1;
+    --color-border-strong: #D3C6B5;
+    /* Text */
+    --color-text: #2A1E16;
+    --color-text-muted: #66574A;
+    --color-text-subtle: #7A6A5C;
+    /* Brand */
+    --color-primary: #8A4B1C;
+    --color-primary-soft: #F4E9DD;
+    --color-on-primary: #FFFFFF;
+    --color-ring: #B4621F;
+    /* Sidebar */
+    --color-nav-bg: #21170F;
+    --color-nav-text: #F3EAE0;
+    --color-nav-muted: #BBA996;
+    --color-nav-active: #3A2A1E;
+    --color-nav-accent: #E3A35B;
+    /* Data series */
+    --series-online: #2F6690;
+    --series-cafes: #C47A2C;
+    --series-category: #8A4B1C;
+    --grid: #EEE7DD;
+    /* Semantic */
+    --good: #17663A;
+    --good-bg: #E5F3EA;
+    --bad: #A2271B;
+    --bad-bg: #FBE9E7;
+    --warn: #7A4D00;
+    --warn-bg: #FFF1D1;
+    --info: #1F4E79;
+    --info-bg: #E6EEF6;
+
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 2px rgba(42, 30, 22, .05), 0 1px 3px rgba(42, 30, 22, .06);
+    --shadow-lg: 0 12px 32px rgba(33, 23, 15, .28);
+
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-5: 20px; --space-6: 24px; --space-8: 32px;
+
+    --sidebar-w: 248px;
+    --ease-out: cubic-bezier(.2, .8, .2, 1);
+    --dur-fast: 150ms;
+    --dur: 220ms;
+
+    --z-sticky: 20; --z-scrim: 40; --z-drawer: 50; --z-tooltip: 60;
+
+    --font-sans: "Fira Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: var(--color-bg);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  a { color: inherit; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; touch-action: manipulation; }
+  svg { flex-shrink: 0; }
+  .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-sm { width: 14px; height: 14px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .sr-only {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  :focus-visible { outline: 3px solid var(--color-ring); outline-offset: 2px; border-radius: 4px; }
+
+  .skip-link {
+    position: absolute; left: var(--space-4); top: -60px; z-index: 100;
+    background: var(--color-text); color: #fff; padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm); text-decoration: none; font-weight: 600;
+  }
+  .skip-link:focus { top: var(--space-4); }
+
+  /* ---------- App shell ---------- */
+  .app { display: grid; grid-template-columns: 1fr; min-height: 100dvh; }
+
+  .sidebar {
+    background: var(--color-nav-bg);
+    color: var(--color-nav-text);
+    display: flex; flex-direction: column;
+    padding: var(--space-5) var(--space-4);
+    gap: var(--space-6);
+  }
+  .brand { display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-2); text-decoration: none; }
+  .brand-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--color-nav-accent); display: grid; place-items: center; }
+  .brand-name { font-weight: 700; font-size: 15px; line-height: 1.2; letter-spacing: .01em; }
+  .brand-name span { display: block; font-weight: 500; font-size: 12px; color: var(--color-nav-muted); letter-spacing: .04em; text-transform: uppercase; }
+
+  .nav-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--color-nav-muted); padding: 0 var(--space-3); margin-bottom: var(--space-2); }
+  .nav-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .nav-link {
+    display: flex; align-items: center; gap: var(--space-3);
+    min-height: 44px; padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-nav-text); text-decoration: none; font-weight: 500;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+    position: relative;
+  }
+  .nav-link .icon { color: var(--color-nav-muted); transition: color var(--dur-fast) ease; }
+  .nav-link:hover { background: rgba(255, 255, 255, .06); }
+  .nav-link:hover .icon { color: var(--color-nav-text); }
+  .nav-link[aria-current="page"] { background: var(--color-nav-active); color: #fff; font-weight: 600; }
+  .nav-link[aria-current="page"] .icon { color: var(--color-nav-accent); }
+  .nav-link[aria-current="page"]::before {
+    content: ""; position: absolute; left: -16px; top: 10px; bottom: 10px; width: 3px;
+    border-radius: 0 3px 3px 0; background: var(--color-nav-accent);
+  }
+  .nav-link:focus-visible { outline-color: var(--color-nav-accent); }
+  .nav-sep { height: 1px; background: rgba(255, 255, 255, .08); margin: var(--space-3) var(--space-3); }
+
+  .sidebar-foot { margin-top: auto; padding: var(--space-3); border-radius: var(--radius); background: rgba(255, 255, 255, .05); font-size: 13px; color: var(--color-nav-muted); }
+  .sidebar-foot strong { display: block; color: var(--color-nav-text); font-weight: 600; }
+
+  .drawer-close {
+    display: none; margin-left: auto; width: 44px; height: 44px; border: 0; border-radius: var(--radius-sm);
+    background: transparent; color: var(--color-nav-text); align-items: center; justify-content: center;
+  }
+  .drawer-close:hover { background: rgba(255, 255, 255, .08); }
+  .scrim { display: none; }
+
+  /* ---------- Main column ---------- */
+  .main-col { min-width: 0; display: flex; flex-direction: column; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: var(--z-sticky);
+    background: rgba(246, 242, 236, .92);
+    backdrop-filter: saturate(1.2) blur(8px);
+    -webkit-backdrop-filter: saturate(1.2) blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .topbar-inner {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas: "menu title search user";
+    align-items: center; gap: var(--space-4);
+    padding: var(--space-3) var(--space-8);
+    max-width: 1440px; margin: 0 auto; width: 100%;
+  }
+  .menu-btn {
+    grid-area: menu; display: none; width: 44px; height: 44px;
+    border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-sm);
+    align-items: center; justify-content: center;
+  }
+  .menu-btn:hover { background: var(--color-surface-alt); }
+  .title-block { grid-area: title; min-width: 0; }
+  .title-block h1 { font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
+  .period { display: inline-flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 13px; color: var(--color-text-muted); }
+  .period strong { color: var(--color-text); font-weight: 600; }
+
+  .search { grid-area: search; position: relative; width: 340px; }
+  .search .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-subtle); pointer-events: none; }
+  .search input {
+    width: 100%; height: 44px; padding: 0 44px 0 40px;
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm);
+    background: var(--color-surface); font-size: 16px;
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  }
+  .search input::placeholder { color: var(--color-text-subtle); }
+  .search input:focus { outline: none; border-color: var(--color-ring); box-shadow: 0 0 0 3px rgba(180, 98, 31, .25); }
+  .search kbd {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-family: var(--font-mono); font-size: 12px; color: var(--color-text-muted);
+    border: 1px solid var(--color-border-strong); border-bottom-width: 2px; border-radius: 4px; padding: 0 6px; background: var(--color-surface-alt);
+  }
+  .search input:not(:placeholder-shown) + kbd { display: none; }
+
+  .user { grid-area: user; display: flex; align-items: center; gap: var(--space-3); }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--color-primary); color: var(--color-on-primary);
+    display: grid; place-items: center; font-weight: 600; font-size: 14px; letter-spacing: .02em;
+  }
+  .user-meta { line-height: 1.25; }
+  .user-meta strong { display: block; font-weight: 600; font-size: 14px; }
+  .user-meta span { font-size: 13px; color: var(--color-text-muted); }
+
+  main { padding: var(--space-6) var(--space-8) var(--space-8); max-width: 1440px; width: 100%; margin: 0 auto; }
+  main:focus { outline: none; }
+
+  .search-status { min-height: 0; }
+  .search-status:not(:empty) {
+    margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4);
+    background: var(--info-bg); color: var(--info); border-radius: var(--radius-sm); font-size: 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  }
+  .link-btn { background: none; border: 0; padding: 4px 6px; font-weight: 600; color: inherit; text-decoration: underline; text-underline-offset: 2px; min-height: 32px; }
+
+  /* ---------- Grid ---------- */
+  .dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-5); }
+  .span-12 { grid-column: span 12; }
+  .span-8 { grid-column: span 8; }
+  .span-7 { grid-column: span 7; }
+  .span-5 { grid-column: span 5; }
+  .span-4 { grid-column: span 4; }
+
+  .card {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    padding: var(--space-5);
+    min-width: 0;
+  }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap; }
+  .card-head h2 { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .card-sub { font-size: 13px; color: var(--color-text-muted); margin-top: 2px; }
+
+  /* ---------- KPI ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-4); list-style: none; margin: 0; padding: 0; }
+  .kpi { padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+  .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+  .kpi-label { font-size: 13px; font-weight: 500; color: var(--color-text-muted); }
+  .kpi-icon { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--color-primary-soft); color: var(--color-primary); }
+  .kpi-value { font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+  .kpi-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--color-text-muted); }
+
+  .delta {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 8px 2px 6px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap;
+  }
+  .delta.good { color: var(--good); background: var(--good-bg); }
+  .delta.bad { color: var(--bad); background: var(--bad-bg); }
+  .delta .icon { width: 13px; height: 13px; stroke-width: 2.4; }
+
+  /* ---------- Brief ---------- */
+  .brief { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
+  .brief li { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3); border-radius: var(--radius); background: var(--color-surface-alt); border: 1px solid var(--color-border); font-size: 14px; line-height: 1.45; }
+  .brief-icon { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; flex-shrink: 0; }
+  .brief-icon.good { background: var(--good-bg); color: var(--good); }
+  .brief-icon.bad { background: var(--bad-bg); color: var(--bad); }
+  .brief-icon.info { background: var(--info-bg); color: var(--info); }
+  .brief strong { font-weight: 600; }
+
+  /* ---------- Segmented control ---------- */
+  .segmented { display: inline-flex; padding: 3px; background: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: 9px; gap: 2px; }
+  .segmented button {
+    border: 0; background: transparent; min-height: 36px; padding: 0 var(--space-3);
+    border-radius: 6px; font-size: 14px; font-weight: 500; color: var(--color-text-muted); white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  }
+  .segmented button:hover { color: var(--color-text); }
+  .segmented button[aria-pressed="true"] { background: var(--color-surface); color: var(--color-text); font-weight: 600; box-shadow: 0 1px 2px rgba(42, 30, 22, .12), 0 0 0 1px var(--color-border); }
+
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .swatch.online { background: var(--series-online); }
+  .swatch.cafes { background: var(--series-cafes); }
+  .swatch.both { background: linear-gradient(135deg, var(--series-online) 50%, var(--series-cafes) 50%); }
+
+  /* ---------- Revenue chart ---------- */
+  .chart-summary { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); margin-bottom: var(--space-3); }
+  .chart-summary div { display: flex; flex-direction: column; }
+  .chart-summary dt { font-size: 13px; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; }
+  .chart-summary dd { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+  .chart-summary dd small { font-size: 13px; font-weight: 500; color: var(--color-text-muted); letter-spacing: 0; }
+
+  .chart-wrap { position: relative; }
+  .chart-svg { display: block; width: 100%; overflow: visible; touch-action: pan-y; cursor: crosshair; border-radius: var(--radius-sm); }
+  .chart-svg:focus-visible { outline: 3px solid var(--color-ring); outline-offset: 4px; }
+  .chart-svg text { font-family: var(--font-sans); font-size: 12px; fill: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+  .chart-svg .tick-current { fill: var(--color-text); font-weight: 600; }
+  .chart-svg .year { font-size: 11px; fill: var(--color-text-subtle); }
+  .chart-svg .direct-label { fill: var(--color-text); font-weight: 600; font-size: 12px; }
+  .chart-svg .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart-svg .baseline { stroke: var(--color-border-strong); stroke-width: 1; }
+  .chart-svg .hover-band { fill: var(--color-primary-soft); opacity: 0; transition: opacity var(--dur-fast) ease; }
+  .chart-svg .hover-band.on { opacity: 1; }
+  .bar { transform-box: fill-box; transform-origin: 50% 100%; animation: grow var(--dur) var(--ease-out) both; }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  .chart-hint { margin-top: var(--space-2); font-size: 13px; color: var(--color-text-muted); }
+
+  .tooltip {
+    position: absolute; z-index: var(--z-tooltip); pointer-events: none;
+    min-width: 168px; padding: var(--space-3);
+    background: var(--color-text); color: #fff; border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg); font-size: 13px; line-height: 1.4;
+    opacity: 0; transform: translate(-50%, calc(-100% - 4px));
+    transition: opacity var(--dur-fast) ease;
+  }
+  .tooltip.on { opacity: 1; transform: translate(-50%, calc(-100% - 10px)); transition: opacity var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); }
+  .tooltip-title { font-weight: 600; margin-bottom: 6px; }
+  .tooltip-row { display: flex; align-items: center; gap: var(--space-2); justify-content: space-between; }
+  .tooltip-row span:first-child { display: inline-flex; align-items: center; gap: 6px; color: #E9DFD4; }
+  .tooltip-row strong { font-variant-numeric: tabular-nums; }
+  .tooltip-total { border-top: 1px solid rgba(255, 255, 255, .2); margin-top: 6px; padding-top: 6px; }
+
+  details.data-table { margin-top: var(--space-3); border-top: 1px solid var(--color-border); padding-top: var(--space-2); }
+  details.data-table summary {
+    cursor: pointer; font-size: 14px; font-weight: 500; color: var(--color-primary);
+    min-height: 36px; display: inline-flex; align-items: center; gap: 6px; border-radius: 4px; list-style: none;
+  }
+  details.data-table summary::-webkit-details-marker { display: none; }
+  details.data-table summary .icon { transition: transform var(--dur-fast) ease; }
+  details.data-table[open] summary .icon { transform: rotate(180deg); }
+
+  /* ---------- Category bars ---------- */
+  .hbars { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+  .hbar-row { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--space-3); align-items: baseline; }
+  .hbar-label { font-size: 14px; font-weight: 500; }
+  .hbar-value { font-size: 14px; font-weight: 600; text-align: right; }
+  .hbar-track { grid-column: 1 / -1; height: 10px; background: var(--grid); border-radius: 999px; overflow: hidden; }
+  .hbar-fill { height: 100%; background: var(--series-category); border-radius: 999px; transform-origin: left; animation: growX 420ms var(--ease-out) both; }
+  @keyframes growX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .card-note { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--color-border); font-size: 13px; color: var(--color-text-muted); }
+
+  /* ---------- Tables ---------- */
+  .table-scroll { overflow-x: auto; margin: 0 calc(var(--space-5) * -1); padding: 0 var(--space-5); }
+  .table-scroll:focus-visible { outline-offset: -3px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  caption { text-align: left; }
+  th, td { padding: var(--space-3) var(--space-3); text-align: left; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+  th:first-child, td:first-child { padding-left: 0; }
+  th:last-child, td:last-child { padding-right: 0; }
+  thead th { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--color-text-muted); white-space: nowrap; border-bottom-color: var(--color-border-strong); }
+  tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+  tbody tr { transition: background-color var(--dur-fast) ease; }
+  tbody tr:hover { background: var(--color-surface-alt); }
+  .r { text-align: right; }
+  td.r, th.r { font-variant-numeric: tabular-nums; }
+
+  .sort-btn {
+    display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 6px 4px; margin: -6px -4px;
+    font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; border-radius: 4px; min-height: 32px;
+  }
+  .sort-btn:hover { color: var(--color-text); }
+  th.r .sort-btn { flex-direction: row-reverse; }
+  th[aria-sort="ascending"], th[aria-sort="descending"] { color: var(--color-text); }
+  .sort-btn .icon { width: 14px; height: 14px; color: var(--color-text-subtle); }
+  th[aria-sort="ascending"] .sort-btn .icon, th[aria-sort="descending"] .sort-btn .icon { color: var(--color-primary); }
+
+  .cafe-name { font-weight: 600; }
+  .cafe-note { display: inline-block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--info); background: var(--info-bg); padding: 0 6px; border-radius: 4px; }
+  .change { display: inline-flex; align-items: center; gap: 3px; font-weight: 600; }
+  .change.good { color: var(--good); }
+  .change.bad { color: var(--bad); }
+  .change .icon { width: 13px; height: 13px; stroke-width: 2.4; }
+  .cafe-table { min-width: 560px; }
+
+  .rank { width: 24px; height: 24px; border-radius: 6px; background: var(--color-primary-soft); color: var(--color-primary); font-size: 12px; font-weight: 700; display: inline-grid; place-items: center; }
+  .prod-cell { display: flex; align-items: center; gap: var(--space-3); }
+  .prod-name { font-weight: 500; }
+  .mini-track { display: block; height: 4px; margin-top: 6px; width: 100%; max-width: 220px; border-radius: 4px; background: var(--grid); overflow: hidden; }
+  .mini-fill { display: block; height: 100%; background: var(--series-online); border-radius: 4px; }
+
+  .order-id { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+  .channel { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text); }
+  .channel .icon { width: 15px; height: 15px; color: var(--color-text-subtle); }
+
+  .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 7px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; border: 1px solid transparent; }
+  .status .icon { width: 14px; height: 14px; stroke-width: 2.2; }
+  .status.shipped { color: var(--info); background: var(--info-bg); border-color: #C8D8EA; }
+  .status.paid { color: var(--good); background: var(--good-bg); border-color: #C3E2CE; }
+  .status.pending { color: var(--warn); background: var(--warn-bg); border-color: #F1D79A; border-style: dashed; }
+  .status.refunded { color: var(--bad); background: var(--bad-bg); border-color: #F1C4BE; }
+
+  .status-legend { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .empty-row td { text-align: center; color: var(--color-text-muted); padding: var(--space-6) 0; }
+
+  /* ---------- Inventory ---------- */
+  .inv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
+  .inv-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-3); align-items: center; }
+  .inv-name { font-weight: 600; font-size: 14px; }
+  .inv-days { font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: var(--space-2); }
+  .inv-track { grid-column: 1 / -1; position: relative; height: 12px; background: var(--grid); border-radius: 999px; }
+  .inv-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--color-text-subtle); transform-origin: left; animation: growX 420ms var(--ease-out) both; }
+  .inv-row.low .inv-fill { background: repeating-linear-gradient(135deg, var(--bad) 0 6px, #C2483B 6px 12px); }
+  .inv-threshold { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--color-text); border-radius: 2px; }
+  .flag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 6px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .flag.reorder { background: var(--bad-bg); color: var(--bad); }
+  .flag.ok { background: var(--good-bg); color: var(--good); }
+  .flag .icon { width: 13px; height: 13px; stroke-width: 2.3; }
+  .inv-scale { position: relative; height: 18px; margin-top: var(--space-2); font-size: 12px; color: var(--color-text-subtle); font-variant-numeric: tabular-nums; }
+  .inv-scale span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .inv-scale span:first-child { transform: none; }
+  .inv-scale span:last-child { transform: translateX(-100%); }
+  .inv-legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: 13px; color: var(--color-text-muted); margin-top: var(--space-3); }
+  .inv-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-line { width: 2px; height: 14px; background: var(--color-text); border-radius: 2px; }
+  .badge-count { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--bad-bg); color: var(--bad); }
+
+  .card-link { font-size: 14px; font-weight: 500; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; min-height: 32px; border-radius: 4px; }
+  .card-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .page-foot { margin-top: var(--space-6); font-size: 13px; color: var(--color-text-muted); text-align: center; }
+
+  /* ---------- Responsive ---------- */
+  @media (min-width: 1024px) {
+    .app { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
+    .sidebar { position: sticky; top: 0; height: 100dvh; overflow-y: auto; }
+  }
+
+  @media (max-width: 1279px) {
+    .span-8, .span-4, .span-7, .span-5 { grid-column: span 12; }
+    .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .brief { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .search { width: 280px; }
+  }
+  @media (min-width: 768px) and (max-width: 1279px) {
+    .pair-left { grid-column: span 6; }
+    .pair-right { grid-column: span 6; }
+  }
+
+  @media (max-width: 1023px) {
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: var(--z-drawer);
+      width: min(300px, 86vw); overflow-y: auto;
+      transform: translateX(-100%); visibility: hidden;
+      transition: transform var(--dur) var(--ease-out), visibility 0s linear var(--dur);
+      box-shadow: var(--shadow-lg);
+    }
+    .sidebar.open { transform: translateX(0); visibility: visible; transition: transform var(--dur) var(--ease-out), visibility 0s; }
+    .drawer-close { display: inline-flex; }
+    .scrim {
+      display: block; position: fixed; inset: 0; z-index: var(--z-scrim);
+      background: rgba(33, 23, 15, .5); opacity: 0; pointer-events: none;
+      transition: opacity var(--dur) ease;
+    }
+    .scrim.open { opacity: 1; pointer-events: auto; }
+    .menu-btn { display: inline-flex; }
+    .user-meta { display: none; }
+  }
+
+  @media (max-width: 767px) {
+    .topbar-inner {
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas: "menu title user" "search search search";
+      padding: var(--space-3) var(--space-4); gap: var(--space-3);
+    }
+    .title-block h1 { font-size: 18px; }
+    .search { width: 100%; }
+    .search kbd { display: none; }
+    main { padding: var(--space-4) var(--space-4) var(--space-6); }
+    .dash { gap: var(--space-4); }
+    .card { padding: var(--space-4); border-radius: var(--radius); }
+    .table-scroll { margin: 0 calc(var(--space-4) * -1); padding: 0 var(--space-4); }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+    .kpi { padding: var(--space-3) var(--space-4); }
+    .kpis li:last-child { grid-column: 1 / -1; }
+    .kpi-value { font-size: 22px; }
+    .kpi-icon { width: 28px; height: 28px; }
+    .brief { grid-template-columns: 1fr; }
+    .card-head .segmented { width: 100%; }
+    .segmented button { flex: 1 1 auto; justify-content: center; padding: 0 var(--space-2); font-size: 13px; gap: 5px; }
+    .chart-summary dd { font-size: 18px; }
+
+    /* Recent orders: stacked cards */
+    .orders-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .orders-table, .orders-table tbody { display: block; }
+    .orders-table tbody tr {
+      display: grid; grid-template-columns: 1fr auto; grid-template-areas: "id status" "cust total" "chan items";
+      gap: 2px var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border);
+    }
+    .orders-table tbody tr:last-child { border-bottom: 0; }
+    .orders-table td { display: block; padding: 0; border: 0; text-align: left; }
+    .orders-table td.c-id { grid-area: id; }
+    .orders-table td.c-status { grid-area: status; text-align: right; }
+    .orders-table td.c-cust { grid-area: cust; font-weight: 600; }
+    .orders-table td.c-total { grid-area: total; text-align: right; font-weight: 600; }
+    .orders-table td.c-chan { grid-area: chan; font-size: 13px; color: var(--color-text-muted); }
+    .orders-table td.c-items { grid-area: items; text-align: right; font-size: 13px; color: var(--color-text-muted); }
+    .orders-table td.c-items::after { content: " items"; }
+    .orders-table td.c-items[data-one]::after { content: " item"; }
+    .orders-table .empty-row { display: block; }
+    .orders-table .empty-row td { padding: var(--space-4) 0; text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- Icon sprite (Lucide-style, 24px grid, stroke icons) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-overview" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+  <symbol id="i-orders" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+  <symbol id="i-products" viewBox="0 0 24 24"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.29 7 12 12l8.71-5"/><path d="M12 22V12"/></symbol>
+  <symbol id="i-customers" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-inventory" viewBox="0 0 24 24"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/></symbol>
+  <symbol id="i-reports" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol>
+  <symbol id="i-refund" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></symbol>
+  <symbol id="i-sort-asc" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+  <symbol id="i-sort-desc" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2 2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></symbol>
+  <symbol id="i-dollar" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></symbol>
+</svg>
+
+<div class="app">
+  <!-- ============ Navigation ============ -->
+  <nav class="sidebar" id="sidebar" aria-label="Main">
+    <div style="display:flex;align-items:center">
+      <a class="brand" href="#main" aria-label="Kestrel Coffee Roasters, Overview">
+        <span class="brand-mark" aria-hidden="true">
+          <!-- Stylised kestrel wing over a coffee bean -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <ellipse cx="12" cy="13" rx="6.5" ry="8.5" transform="rotate(28 12 13)" fill="#21170F"/>
+            <path d="M8.2 19.2c3.2-2.4 1.6-6.6 4.6-9.6 1.4-1.4 3-1.9 4.3-2" stroke="#E3A35B" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M3 6.5c3-.2 5.6.5 7.6 2.2M21 4.2c-2.9-.6-5.6-.1-7.8 1.4" stroke="#21170F" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">Kestrel Coffee Roasters<span>Ops console</span></span>
+      </a>
+      <button class="drawer-close" type="button" id="drawerClose" aria-label="Close navigation">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+    </div>
+
+    <div>
+      <p class="nav-label" id="nav-label">Workspace</p>
+      <ul class="nav-list" aria-labelledby="nav-label">
+        <li><a class="nav-link" href="#main" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#i-overview"/></svg>Overview</a></li>
+        <li><a class="nav-link" href="#orders"><svg class="icon" aria-hidden="true"><use href="#i-orders"/></svg>Orders</a></li>
+        <li><a class="nav-link" href="#products"><svg class="icon" aria-hidden="true"><use href="#i-products"/></svg>Products</a></li>
+        <li><a class="nav-link" href="#customers"><svg class="icon" aria-hidden="true"><use href="#i-customers"/></svg>Customers</a></li>
+        <li><a class="nav-link" href="#inventory"><svg class="icon" aria-hidden="true"><use href="#i-inventory"/></svg>Inventory</a></li>
+        <li><a class="nav-link" href="#reports"><svg class="icon" aria-hidden="true"><use href="#i-reports"/></svg>Reports</a></li>
+      </ul>
+      <div class="nav-sep" role="presentation"></div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#settings"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg>Settings</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-foot">
+      <strong>Reporting period</strong>
+      1–31 October 2026, compared with September 2026
+    </div>
+  </nav>
+  <div class="scrim" id="scrim" aria-hidden="true"></div>
+
+  <!-- ============ Main column ============ -->
+  <div class="main-col">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <button class="menu-btn" type="button" id="menuBtn" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+          <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+        <div class="title-block">
+          <h1>Sales &amp; Operations</h1>
+          <p class="period"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-calendar"/></svg><strong>October 2026</strong><span aria-hidden="true">·</span>vs September 2026</p>
+        </div>
+        <form class="search" role="search" onsubmit="return false">
+          <label for="q" class="sr-only">Search orders, products, customers</label>
+          <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+          <input id="q" type="search" placeholder="Search orders, products, customers" autocomplete="off" aria-describedby="qHint">
+          <kbd aria-hidden="true">/</kbd>
+          <span id="qHint" class="sr-only">Filters the recent orders, top products and café tables on this page. Press slash to focus.</span>
+        </form>
+        <div class="user">
+          <div class="avatar" aria-hidden="true">MK</div>
+          <div class="user-meta">
+            <strong>Mara Kim</strong>
+            <span>Operations lead</span>
+          </div>
+          <span class="sr-only">Signed in as Mara Kim, Operations lead</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="search-status" id="searchStatus" role="status" aria-live="polite"></div>
+
+      <div class="dash">
+        <!-- KPI cards -->
+        <section class="span-12" aria-labelledby="kpi-heading" id="customers">
+          <h2 id="kpi-heading" class="sr-only">Key metrics, October 2026 vs September 2026</h2>
+          <ul class="kpis">
+            <li class="card kpi">
+              <div class="kpi-top"><span class="kpi-label">Revenue</span><span class="kpi-icon" aria-hidden="true"><svg class="icon"><use href="#i-dollar"/></svg></span></div>
+              <p class="kpi-value num">$184,320</p>
+              <p class="kpi-foot"><span class="delta good"><svg class="icon" aria-hidden="true"><use href="#i-up"/></svg><span class="sr-only">Up </span>+6.4%</span>vs Sep</p>
+            </li>
+            <li class="card kpi">
+              <div class="kpi-top"><span class="kpi-label">Orders</span><span class="kpi-icon" aria-hidden="true"><svg class="icon"><use href="#i-bag"/></svg></span></div>
+              <p class="kpi-value num">9,412</p>
+              <p class="kpi-foot"><span class="delta good"><svg class="icon" aria-hidden="true"><use href="#i-up"/></svg><span class="sr-only">Up </span>+3.1%</span>vs Sep</p>
+            </li>
+            <li class="card kpi">
+              <div class="kpi-top"><span class="kpi-label">Average order value</span><span class="kpi-icon" aria-hidden="true"><svg class="icon"><use href="#i-scale"/></svg></span></div>
+              <p class="kpi-value num">$19.58</p>
+              <p class="kpi-foot"><span class="delta good"><svg class="icon" aria-hidden="true"><use href="#i-up"/></svg><span class="sr-only">Up </span>+3.2%</span>vs Sep</p>
+            </li>
+            <li class="card kpi">
+              <div class="kpi-top"><span class="kpi-label">Subscription customers</span><span class="kpi-icon" aria-hidden="true"><svg class="icon"><use href="#i-repeat"/></svg></span></div>
+              <p class="kpi-value num">1,286</p>
+              <p class="kpi-foot"><span class="delta good"><svg class="icon" aria-hidden="true"><use href="#i-up"/></svg><span class="sr-only">Up </span>+48 net</span>vs Sep</p>
+            </li>
+            <li class="card kpi">
+              <div class="kpi-top"><span class="kpi-label">Refund rate</span><span class="kpi-icon" aria-hidden="true"><svg class="icon"><use href="#i-refund"/></svg></span></div>
+              <p class="kpi-value num">1.9%</p>
+              <p class="kpi-foot"><span class="delta good" title="Lower refund rate is better"><svg class="icon" aria-hidden="true"><use href="#i-down"/></svg><span class="sr-only">Down </span>−0.3 pts</span>vs Sep · improved</p>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Morning brief -->
+        <section class="card span-12" aria-labelledby="brief-heading">
+          <div class="card-head" style="margin-bottom:var(--space-3)">
+            <div>
+              <h2 id="brief-heading">Morning brief</h2>
+              <p class="card-sub">What changed in October and what needs a decision today</p>
+            </div>
+          </div>
+          <ul class="brief">
+            <li><span class="brief-icon good" aria-hidden="true"><svg class="icon icon-sm"><use href="#i-up"/></svg></span><span>Online revenue reached <strong>$83K</strong>, its highest month in the last twelve.</span></li>
+            <li><span class="brief-icon good" aria-hidden="true"><svg class="icon icon-sm"><use href="#i-store"/></svg></span><span><strong>Riverside</strong> grew fastest of the cafés at <strong>+9.6%</strong>, five months after opening.</span></li>
+            <li><span class="brief-icon bad" aria-hidden="true"><svg class="icon icon-sm"><use href="#i-down"/></svg></span><span><strong>Station Square</strong> is the only café down on September, at <strong>−1.7%</strong>.</span></li>
+            <li><span class="brief-icon bad" aria-hidden="true"><svg class="icon icon-sm"><use href="#i-alert"/></svg></span><span><strong>Brazil Cerrado</strong> (3 days) and <strong>Ethiopia Guji</strong> (6 days) need a green coffee reorder.</span></li>
+          </ul>
+        </section>
+
+        <!-- Monthly revenue chart -->
+        <section class="card span-8" aria-labelledby="rev-heading" id="reports">
+          <div class="card-head">
+            <div>
+              <h2 id="rev-heading">Monthly revenue by channel</h2>
+              <p class="card-sub">November 2025 – October 2026, thousands of US dollars</p>
+            </div>
+            <div class="segmented" role="group" aria-label="Channel shown in chart">
+              <button type="button" data-mode="all" aria-pressed="true"><span class="swatch both" aria-hidden="true"></span>All channels</button>
+              <button type="button" data-mode="online" aria-pressed="false"><span class="swatch online" aria-hidden="true"></span>Online</button>
+              <button type="button" data-mode="cafes" aria-pressed="false"><span class="swatch cafes" aria-hidden="true"></span>Cafés</button>
+            </div>
+          </div>
+
+          <dl class="chart-summary" id="chartSummary"></dl>
+
+          <div class="chart-wrap" id="chartWrap">
+            <svg class="chart-svg" id="revChart" tabindex="0" role="img" aria-labelledby="revChartLabel" aria-describedby="revChartHint"></svg>
+            <span id="revChartLabel" class="sr-only">Stacked column chart of monthly revenue</span>
+            <div class="tooltip" id="tooltip" aria-hidden="true"></div>
+          </div>
+          <p class="chart-hint" id="revChartHint">Hover or tap a month for exact values. With the chart focused, use the left and right arrow keys.</p>
+          <p class="sr-only" id="chartLive" aria-live="polite"></p>
+
+          <details class="data-table">
+            <summary>View data as a table <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+            <div class="table-scroll">
+              <table>
+                <caption class="sr-only">Monthly revenue by channel, thousands of US dollars</caption>
+                <thead><tr><th scope="col">Month</th><th scope="col" class="r">Online</th><th scope="col" class="r">Cafés</th><th scope="col" class="r">Total</th></tr></thead>
+                <tbody id="revTableBody"></tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+
+        <!-- Revenue by category -->
+        <section class="card span-4" aria-labelledby="cat-heading">
+          <div class="card-head">
+            <div>
+              <h2 id="cat-heading">Revenue by category</h2>
+              <p class="card-sub">October 2026, share of revenue</p>
+            </div>
+          </div>
+          <ul class="hbars" id="catBars"></ul>
+          <p class="card-note">Coffee to take home (whole bean) and drinks made in the cafés together account for 65% of October revenue.</p>
+        </section>
+
+        <!-- Café performance -->
+        <section class="card span-7" aria-labelledby="cafe-heading" id="cafes">
+          <div class="card-head">
+            <div>
+              <h2 id="cafe-heading">Café performance</h2>
+              <p class="card-sub">October 2026 · select a column header to sort</p>
+            </div>
+          </div>
+          <div class="table-scroll" tabindex="0" role="region" aria-labelledby="cafe-heading">
+            <table class="cafe-table" id="cafeTable">
+              <caption class="sr-only">Café performance, October 2026. Column headers are sortable.</caption>
+              <thead>
+                <tr>
+                  <th scope="col" data-key="name"><button class="sort-btn" type="button">Café<svg class="icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="r" data-key="revenue"><button class="sort-btn" type="button">Revenue<svg class="icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="r" data-key="orders"><button class="sort-btn" type="button">Orders<svg class="icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="r" data-key="ticket"><button class="sort-btn" type="button">Average ticket<svg class="icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                  <th scope="col" class="r" data-key="change"><button class="sort-btn" type="button">Change vs Sep<svg class="icon" aria-hidden="true"><use href="#i-sort"/></svg></button></th>
+                </tr>
+              </thead>
+              <tbody id="cafeBody"></tbody>
+            </table>
+          </div>
+          <p class="sr-only" id="sortLive" aria-live="polite"></p>
+        </section>
+
+        <!-- Inventory -->
+        <section class="card span-5" aria-labelledby="inv-heading" id="inventory">
+          <div class="card-head">
+            <div>
+              <h2 id="inv-heading">Green coffee inventory</h2>
+              <p class="card-sub">Days of stock left at the current roasting rate</p>
+            </div>
+            <span class="badge-count" id="reorderCount"></span>
+          </div>
+          <ul class="inv-list" id="invList"></ul>
+          <div class="inv-scale" aria-hidden="true" id="invScale"></div>
+          <div class="inv-legend">
+            <span><span class="legend-line" aria-hidden="true"></span>Reorder point: 7 days</span>
+            <span>Sorted by days left, most urgent first</span>
+          </div>
+        </section>
+
+        <!-- Top online products -->
+        <section class="card span-5 pair-left" aria-labelledby="prod-heading" id="products">
+          <div class="card-head">
+            <div>
+              <h2 id="prod-heading">Top online products</h2>
+              <p class="card-sub">October 2026, ranked by revenue</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table id="prodTable">
+              <caption class="sr-only">Top online products, October 2026</caption>
+              <thead><tr><th scope="col">Product</th><th scope="col" class="r">Units</th><th scope="col" class="r">Revenue</th></tr></thead>
+              <tbody id="prodBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Recent orders -->
+        <section class="card span-7 pair-right" aria-labelledby="orders-heading" id="orders">
+          <div class="card-head">
+            <div>
+              <h2 id="orders-heading">Recent orders</h2>
+              <p class="card-sub">Latest six orders across all channels</p>
+            </div>
+            <div class="status-legend" aria-hidden="true" id="statusLegend"></div>
+          </div>
+          <table class="orders-table" id="ordersTable">
+            <caption class="sr-only">Recent orders</caption>
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Channel</th>
+                <th scope="col" class="r">Items</th>
+                <th scope="col" class="r">Total</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+        </section>
+      </div>
+
+      <p class="page-foot" id="settings">Kestrel Coffee Roasters · Sales &amp; Operations · Figures for October 2026, compared with September 2026</p>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= Data (as provided) ================= */
+  const MONTHS = [
+    { m: 'Nov', y: 2025, full: 'November 2025', online: 61, cafes: 88 },
+    { m: 'Dec', y: 2025, full: 'December 2025', online: 74, cafes: 102 },
+    { m: 'Jan', y: 2026, full: 'January 2026', online: 58, cafes: 81 },
+    { m: 'Feb', y: 2026, full: 'February 2026', online: 60, cafes: 84 },
+    { m: 'Mar', y: 2026, full: 'March 2026', online: 63, cafes: 89 },
+    { m: 'Apr', y: 2026, full: 'April 2026', online: 66, cafes: 93 },
+    { m: 'May', y: 2026, full: 'May 2026', online: 68, cafes: 97 },
+    { m: 'Jun', y: 2026, full: 'June 2026', online: 70, cafes: 99 },
+    { m: 'Jul', y: 2026, full: 'July 2026', online: 72, cafes: 96 },
+    { m: 'Aug', y: 2026, full: 'August 2026', online: 75, cafes: 95 },
+    { m: 'Sep', y: 2026, full: 'September 2026', online: 79, cafes: 94 },
+    { m: 'Oct', y: 2026, full: 'October 2026', online: 83, cafes: 101 }
+  ];
+
+  const CATEGORIES = [
+    ['Whole bean', 38], ['Espresso drinks', 27], ['Filter & cold brew', 14],
+    ['Pastries', 12], ['Equipment', 6], ['Gift cards', 3]
+  ];
+
+  const CAFES = [
+    { name: 'Harbor Street', note: '', revenue: 31420, orders: 1812, ticket: 17.34, change: 4.8 },
+    { name: 'Mill Lane', note: '', revenue: 27960, orders: 1655, ticket: 16.89, change: 2.1 },
+    { name: 'Station Square', note: '', revenue: 24310, orders: 1498, ticket: 16.23, change: -1.7 },
+    { name: 'Riverside', note: 'Opened June 2026', revenue: 17630, orders: 1127, ticket: 15.64, change: 9.6 }
+  ];
+
+  const PRODUCTS = [
+    { name: 'Morning Tide blend, 340 g', units: 1104, revenue: 16008 },
+    { name: 'Ridgeback espresso, 1 kg', units: 412, revenue: 14420 },
+    { name: 'Cold brew concentrate, 1 L', units: 655, revenue: 9170 },
+    { name: 'Ceramic pour-over set', units: 138, revenue: 6210 },
+    { name: 'Single-origin sampler', units: 291, revenue: 5529 }
+  ];
+
+  const ORDERS = [
+    { id: '#48213', customer: 'Ana Ruiz', channel: 'Online', items: 2, total: 41.00, status: 'Shipped' },
+    { id: '#48212', customer: 'Tomás Berg', channel: 'Harbor Street', items: 3, total: 14.75, status: 'Paid' },
+    { id: '#48211', customer: 'Priya Nair', channel: 'Online', items: 1, total: 35.00, status: 'Pending' },
+    { id: '#48210', customer: 'Jonah Weiss', channel: 'Mill Lane', items: 2, total: 9.40, status: 'Paid' },
+    { id: '#48209', customer: 'Lena Okafor', channel: 'Online', items: 4, total: 63.50, status: 'Refunded' },
+    { id: '#48208', customer: 'Sam Choi', channel: 'Riverside', items: 1, total: 5.25, status: 'Paid' }
+  ];
+
+  const INVENTORY = [
+    { name: 'Ethiopia Guji', days: 6 },
+    { name: 'Colombia Huila', days: 14 },
+    { name: 'Brazil Cerrado', days: 3 },
+    { name: 'Kenya Nyeri', days: 21 }
+  ];
+  const REORDER_DAYS = 7;
+
+  const STATUS = {
+    Shipped: { cls: 'shipped', icon: 'i-truck' },
+    Paid: { cls: 'paid', icon: 'i-check' },
+    Pending: { cls: 'pending', icon: 'i-clock' },
+    Refunded: { cls: 'refunded', icon: 'i-refund' }
+  };
+
+  /* ================= Helpers ================= */
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const usd0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const usd2 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+  const int = new Intl.NumberFormat('en-US');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const icon = (id, cls) => `<svg class="icon${cls ? ' ' + cls : ''}" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const k = v => '$' + v + 'K';
+  const signed = v => (v > 0 ? '+' : '−') + Math.abs(v).toFixed(1) + '%';
+  function el(tag, attrs, parent) {
+    const n = document.createElementNS(SVGNS, tag);
+    for (const a in attrs) n.setAttribute(a, attrs[a]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+
+  /* ================= Navigation drawer ================= */
+  const sidebar = $('#sidebar'), scrim = $('#scrim'), menuBtn = $('#menuBtn'), closeBtn = $('#drawerClose');
+  const mqDesktop = window.matchMedia('(min-width: 1024px)');
+  function openNav() {
+    sidebar.classList.add('open'); scrim.classList.add('open');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => closeBtn.focus(), 30);
+  }
+  function closeNav(returnFocus) {
+    if (!sidebar.classList.contains('open')) return;
+    sidebar.classList.remove('open'); scrim.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    if (returnFocus) menuBtn.focus();
+  }
+  menuBtn.addEventListener('click', openNav);
+  closeBtn.addEventListener('click', () => closeNav(true));
+  scrim.addEventListener('click', () => closeNav(true));
+  sidebar.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeNav(true); return; }
+    if (e.key !== 'Tab' || mqDesktop.matches || !sidebar.classList.contains('open')) return;
+    const f = $$('a, button', sidebar).filter(n => n.offsetParent !== null);
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  $$('.nav-link', sidebar).forEach(a => a.addEventListener('click', () => closeNav(false)));
+  mqDesktop.addEventListener('change', e => { if (e.matches) closeNav(false); });
+
+  /* ================= Revenue chart ================= */
+  let mode = 'all';
+  let active = null;          // index of highlighted month
+  let pinnedByTouch = false;
+  const chart = $('#revChart'), wrap = $('#chartWrap'), tip = $('#tooltip'), live = $('#chartLive');
+  let geom = null;
+
+  const SERIES = {
+    all: [{ key: 'cafes', label: 'Cafés', color: 'var(--series-cafes)' }, { key: 'online', label: 'Online', color: 'var(--series-online)' }],
+    online: [{ key: 'online', label: 'Online', color: 'var(--series-online)' }],
+    cafes: [{ key: 'cafes', label: 'Cafés', color: 'var(--series-cafes)' }]
+  };
+  const valueOf = d => SERIES[mode].reduce((s, x) => s + d[x.key], 0);
+
+  function niceMax(v) {
+    for (const step of [10, 20, 25, 50, 100]) {
+      const n = Math.ceil(v / step);
+      if (n <= 5) return { max: n * step, step };
+    }
+    return { max: Math.ceil(v / 100) * 100, step: 100 };
+  }
+
+  function renderSummary() {
+    const oct = MONTHS[11], sep = MONTHS[10];
+    const items = mode === 'all'
+      ? [['both', 'Total, Oct', k(oct.online + oct.cafes), 'Sep ' + k(sep.online + sep.cafes)],
+         ['online', 'Online, Oct', k(oct.online), 'Sep ' + k(sep.online)],
+         ['cafes', 'Cafés, Oct', k(oct.cafes), 'Sep ' + k(sep.cafes)]]
+      : mode === 'online'
+        ? [['online', 'Online, Oct', k(oct.online), 'Sep ' + k(sep.online)], ['online', '12-month high', k(83), 'October 2026']]
+        : [['cafes', 'Cafés, Oct', k(oct.cafes), 'Sep ' + k(sep.cafes)], ['cafes', '12-month high', k(102), 'December 2025']];
+    $('#chartSummary').innerHTML = items.map(([sw, label, val, sub]) =>
+      `<div><dt><span class="swatch ${sw}" aria-hidden="true"></span>${label}</dt><dd class="num">${val} <small>${sub}</small></dd></div>`
+    ).join('');
+  }
+
+  function renderChart(animate) {
+    const W = Math.max(280, Math.round(wrap.clientWidth));
+    const small = W < 560;
+    const H = small ? 240 : 300;
+    const M = { t: 22, r: 4, b: small ? 36 : 40, l: 44 };
+    const pw = W - M.l - M.r, ph = H - M.t - M.b;
+    const totals = MONTHS.map(valueOf);
+    const { max, step } = niceMax(Math.max(...totals));
+    const y = v => M.t + ph - (v / max) * ph;
+    const band = pw / MONTHS.length;
+    const bw = Math.min(band * (small ? 0.62 : 0.56), 40);
+
+    chart.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    chart.setAttribute('width', W);
+    chart.setAttribute('height', H);
+    chart.innerHTML = '';
+
+    // gridlines + y labels
+    const g = el('g', {}, chart);
+    for (let v = 0; v <= max; v += step) {
+      el('line', { x1: M.l, x2: W - M.r, y1: y(v), y2: y(v), class: v === 0 ? 'baseline' : 'gridline' }, g);
+      const t = el('text', { x: M.l - 8, y: y(v) + 4, 'text-anchor': 'end' }, g);
+      t.textContent = '$' + v + 'K';
+    }
+
+    // hover bands
+    const bands = el('g', {}, chart);
+    MONTHS.forEach((d, i) => {
+      el('rect', { x: M.l + i * band + 1, y: M.t - 14, width: band - 2, height: ph + 14, rx: 6, class: 'hover-band', 'data-i': i }, bands);
+    });
+
+    // bars
+    const bars = el('g', {}, chart);
+    MONTHS.forEach((d, i) => {
+      const cx = M.l + i * band + band / 2;
+      let acc = 0;
+      const segs = SERIES[mode];
+      segs.forEach((s, si) => {
+        const v = d[s.key];
+        const y0 = y(acc), y1 = y(acc + v);
+        const gap = si > 0 ? 1.5 : 0;
+        const r = el('rect', {
+          x: cx - bw / 2, y: y1, width: bw, height: Math.max(0, y0 - y1 - gap),
+          rx: 2.5, fill: s.color, class: animate ? 'bar' : ''
+        }, bars);
+        if (animate) r.style.animationDelay = (i * 25) + 'ms';
+        acc += v;
+      });
+      // x labels
+      const showLabel = !small || i % 2 === 1;
+      if (showLabel) {
+        const t = el('text', { x: cx, y: H - M.b + 18, 'text-anchor': 'middle', class: i === 11 ? 'tick-current' : '' }, chart);
+        t.textContent = d.m;
+      }
+      // Year markers sit under the first labelled month of each year
+      const yearAt = small ? (i === 1 || i === 3) : (i === 0 || d.m === 'Jan');
+      if (yearAt) {
+        const yr = el('text', { x: cx, y: H - M.b + 33, 'text-anchor': 'middle', class: 'year' }, chart);
+        yr.textContent = d.y;
+      }
+    });
+
+    // direct label on current month
+    const last = MONTHS.length - 1;
+    const dl = el('text', { x: M.l + last * band + band / 2, y: y(totals[last]) - 7, 'text-anchor': 'middle', class: 'direct-label' }, chart);
+    dl.textContent = k(totals[last]);
+
+    geom = { M, band, y, totals, W };
+    $('#revChartLabel').textContent =
+      `Stacked column chart of monthly revenue, ${mode === 'all' ? 'online and cafés' : mode === 'online' ? 'online only' : 'cafés only'}, November 2025 to October 2026. ` +
+      `October 2026: ${k(totals[last])}. Full figures are in the data table below.`;
+    if (active !== null) showActive(active, false);
+  }
+
+  function showActive(i, announce) {
+    active = i;
+    const d = MONTHS[i];
+    $$('.hover-band', chart).forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+    const rows = SERIES[mode].slice().reverse().map(s =>
+      `<div class="tooltip-row"><span><span class="swatch ${s.key}"></span>${s.label}</span><strong>${k(d[s.key])}</strong></div>`).join('');
+    const total = mode === 'all'
+      ? `<div class="tooltip-row tooltip-total"><span>Total</span><strong>${k(d.online + d.cafes)}</strong></div>` : '';
+    tip.innerHTML = `<div class="tooltip-title">${d.full}</div>${rows}${total}`;
+
+    const { M, band, y, totals, W } = geom;
+    const scale = chart.getBoundingClientRect().width / W || 1;
+    const cx = (M.l + i * band + band / 2) * scale;
+    const half = (tip.offsetWidth || 170) / 2;
+    const left = Math.min(Math.max(cx, half), wrap.clientWidth - half);
+    const top = Math.max(y(totals[i]) * scale - 6, 64);
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+    tip.classList.add('on');
+
+    if (announce) {
+      live.textContent = `${d.full}: ` + SERIES[mode].slice().reverse().map(s => `${s.label} ${k(d[s.key])}`).join(', ') +
+        (mode === 'all' ? `, total ${k(d.online + d.cafes)}` : '');
+    }
+  }
+  function hideActive() {
+    active = null;
+    tip.classList.remove('on');
+    $$('.hover-band', chart).forEach(b => b.classList.remove('on'));
+  }
+  function indexFromEvent(e) {
+    const r = chart.getBoundingClientRect();
+    const x = (e.clientX - r.left) * (geom.W / r.width);
+    const i = Math.floor((x - geom.M.l) / geom.band);
+    return i >= 0 && i < MONTHS.length ? i : null;
+  }
+
+  chart.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    const i = indexFromEvent(e);
+    if (i === null) hideActive(); else if (i !== active) showActive(i, false);
+  });
+  chart.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && document.activeElement !== chart) hideActive(); });
+  chart.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse') return;
+    const i = indexFromEvent(e);
+    if (i === null) return;
+    pinnedByTouch = true;
+    if (i === active) hideActive(); else showActive(i, true);
+  });
+  document.addEventListener('pointerdown', e => {
+    if (pinnedByTouch && !chart.contains(e.target)) { pinnedByTouch = false; hideActive(); }
+  });
+  chart.addEventListener('focus', () => { if (active === null) showActive(MONTHS.length - 1, true); });
+  chart.addEventListener('blur', hideActive);
+  chart.addEventListener('keydown', e => {
+    let i = active === null ? MONTHS.length - 1 : active;
+    if (e.key === 'ArrowLeft') i = Math.max(0, i - 1);
+    else if (e.key === 'ArrowRight') i = Math.min(MONTHS.length - 1, i + 1);
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = MONTHS.length - 1;
+    else if (e.key === 'Escape') { hideActive(); return; }
+    else return;
+    e.preventDefault();
+    showActive(i, true);
+  });
+
+  $$('.segmented button').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.mode === mode) return;
+    mode = b.dataset.mode;
+    $$('.segmented button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    renderSummary();
+    renderChart(true);
+    live.textContent = `Chart now shows ${b.textContent.trim().toLowerCase()}.`;
+  }));
+
+  let rzTimer, lastW = 0;
+  new ResizeObserver(() => {
+    clearTimeout(rzTimer);
+    rzTimer = setTimeout(() => {
+      const w = Math.round(wrap.clientWidth);
+      if (w !== lastW) { lastW = w; renderChart(false); }
+    }, 60);
+  }).observe(wrap);
+
+  $('#revTableBody').innerHTML = MONTHS.map(d =>
+    `<tr><th scope="row" style="font-weight:500">${d.full}</th><td class="r">${k(d.online)}</td><td class="r">${k(d.cafes)}</td><td class="r"><strong>${k(d.online + d.cafes)}</strong></td></tr>`
+  ).join('');
+
+  /* ================= Category bars ================= */
+  const catMax = Math.max(...CATEGORIES.map(c => c[1]));
+  $('#catBars').innerHTML = CATEGORIES.map(([name, pct], i) =>
+    `<li class="hbar-row">
+       <span class="hbar-label">${esc(name)}</span>
+       <span class="hbar-value num">${pct}%</span>
+       <span class="hbar-track" aria-hidden="true"><span class="hbar-fill" style="display:block;width:${(pct / catMax) * 100}%;animation-delay:${i * 40}ms"></span></span>
+     </li>`).join('');
+
+  /* ================= Café table (sortable) ================= */
+  let sortKey = 'revenue', sortDir = 'desc';
+  let query = '';
+  const matches = (...fields) => !query || fields.some(f => String(f).toLowerCase().includes(query));
+
+  function renderCafes() {
+    const rows = CAFES.filter(c => matches(c.name, c.note))
+      .sort((a, b) => {
+        const av = a[sortKey], bv = b[sortKey];
+        const r = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+        return sortDir === 'asc' ? r : -r;
+      });
+    $('#cafeBody').innerHTML = rows.length ? rows.map(c => `
+      <tr>
+        <th scope="row" style="font-weight:inherit">
+          <span class="cafe-name">${esc(c.name)}</span>
+          ${c.note ? `<br><span class="cafe-note">${esc(c.note)}</span>` : ''}
+        </th>
+        <td class="r">${usd0.format(c.revenue)}</td>
+        <td class="r">${int.format(c.orders)}</td>
+        <td class="r">${usd2.format(c.ticket)}</td>
+        <td class="r"><span class="change ${c.change >= 0 ? 'good' : 'bad'}">${icon(c.change >= 0 ? 'i-up' : 'i-down')}<span class="sr-only">${c.change >= 0 ? 'Up' : 'Down'} </span>${signed(c.change)}</span></td>
+      </tr>`).join('')
+      : `<tr class="empty-row"><td colspan="5">No cafés match “${esc(query)}”.</td></tr>`;
+
+    $$('#cafeTable thead th').forEach(th => {
+      const on = th.dataset.key === sortKey;
+      if (on) th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+      else th.removeAttribute('aria-sort');
+      th.querySelector('use').setAttribute('href', on ? (sortDir === 'asc' ? '#i-sort-asc' : '#i-sort-desc') : '#i-sort');
+    });
+  }
+  $$('#cafeTable thead th').forEach(th => {
+    th.querySelector('button').addEventListener('click', () => {
+      const key = th.dataset.key;
+      if (key === sortKey) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = key === 'name' ? 'asc' : 'desc'; }
+      renderCafes();
+      $('#sortLive').textContent = `Sorted by ${th.textContent.trim()}, ${sortDir === 'asc' ? 'ascending' : 'descending'}.`;
+    });
+  });
+
+  /* ================= Products ================= */
+  const prodMax = Math.max(...PRODUCTS.map(p => p.revenue));
+  function renderProducts() {
+    const rows = PRODUCTS.map((p, i) => ({ ...p, rank: i + 1 })).filter(p => matches(p.name));
+    $('#prodBody').innerHTML = rows.length ? rows.map(p => `
+      <tr>
+        <td>
+          <div class="prod-cell">
+            <span class="rank" aria-label="Rank ${p.rank}">${p.rank}</span>
+            <div style="min-width:0;flex:1">
+              <span class="prod-name">${esc(p.name)}</span>
+              <span class="mini-track" aria-hidden="true"><span class="mini-fill" style="width:${(p.revenue / prodMax) * 100}%"></span></span>
+            </div>
+          </div>
+        </td>
+        <td class="r">${int.format(p.units)}</td>
+        <td class="r"><strong>${usd0.format(p.revenue)}</strong></td>
+      </tr>`).join('')
+      : `<tr class="empty-row"><td colspan="3">No products match “${esc(query)}”.</td></tr>`;
+    return rows.length;
+  }
+
+  /* ================= Orders ================= */
+  $('#statusLegend').innerHTML = Object.keys(STATUS).map(s =>
+    `<span class="status ${STATUS[s].cls}">${icon(STATUS[s].icon)}${s}</span>`).join('');
+
+  function renderOrders() {
+    const rows = ORDERS.filter(o => matches(o.id, o.id.slice(1), o.customer, o.channel, o.status));
+    $('#ordersBody').innerHTML = rows.length ? rows.map(o => {
+      const st = STATUS[o.status];
+      return `<tr>
+        <td class="c-id"><span class="order-id">${o.id}</span></td>
+        <td class="c-cust">${esc(o.customer)}</td>
+        <td class="c-chan"><span class="channel">${icon(o.channel === 'Online' ? 'i-globe' : 'i-store')}${esc(o.channel)}</span></td>
+        <td class="c-items r num"${o.items === 1 ? ' data-one' : ''}>${o.items}</td>
+        <td class="c-total r num">${usd2.format(o.total)}</td>
+        <td class="c-status"><span class="status ${st.cls}">${icon(st.icon)}${o.status}</span></td>
+      </tr>`;
+    }).join('')
+      : `<tr class="empty-row"><td colspan="6">No recent orders match “${esc(query)}”.</td></tr>`;
+    return rows.length;
+  }
+
+  /* ================= Inventory ================= */
+  const INV_MAX = 28;
+  const inv = INVENTORY.slice().sort((a, b) => a.days - b.days);
+  const lowCount = inv.filter(x => x.days < REORDER_DAYS).length;
+  $('#reorderCount').innerHTML = lowCount
+    ? `${icon('i-alert', 'icon-sm')}${lowCount} need reorder`
+    : '';
+  $('#invList').innerHTML = inv.map((x, i) => {
+    const low = x.days < REORDER_DAYS;
+    return `<li class="inv-row${low ? ' low' : ''}">
+      <span class="inv-name">${esc(x.name)}</span>
+      <span class="inv-days num">${x.days} days
+        ${low ? `<span class="flag reorder">${icon('i-alert')}Reorder</span>` : `<span class="flag ok">${icon('i-check')}OK</span>`}
+      </span>
+      <span class="inv-track" aria-hidden="true">
+        <span class="inv-fill" style="width:${(x.days / INV_MAX) * 100}%;animation-delay:${i * 50}ms"></span>
+        <span class="inv-threshold" style="left:calc(${(REORDER_DAYS / INV_MAX) * 100}% - 1px)"></span>
+      </span>
+    </li>`;
+  }).join('');
+  $('#invScale').innerHTML = [0, 7, 14, 21, 28].map(d =>
+    `<span style="left:${(d / INV_MAX) * 100}%">${d}${d === 28 ? ' days' : ''}</span>`).join('');
+
+  /* ================= Search ================= */
+  const q = $('#q'), status = $('#searchStatus');
+  let qTimer;
+  function applySearch() {
+    query = q.value.trim().toLowerCase();
+    const o = renderOrders(), p = renderProducts();
+    renderCafes();
+    const c = CAFES.filter(x => matches(x.name, x.note)).length;
+    if (!query) { status.innerHTML = ''; return; }
+    status.innerHTML = `<span>Showing ${o} of ${ORDERS.length} orders, ${p} of ${PRODUCTS.length} products and ${c} of ${CAFES.length} cafés matching “${esc(q.value.trim())}”.</span><button type="button" class="link-btn" id="clearSearch">Clear search</button>`;
+    $('#clearSearch').addEventListener('click', () => { q.value = ''; applySearch(); q.focus(); });
+  }
+  q.addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(applySearch, 150); });
+  q.addEventListener('keydown', e => { if (e.key === 'Escape' && q.value) { q.value = ''; applySearch(); } });
+  document.addEventListener('keydown', e => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target;
+    if (t.closest && t.closest('input, textarea, [contenteditable="true"]')) return;
+    e.preventDefault(); q.focus();
+  });
+
+  /* ================= Init ================= */
+  renderSummary();
+  renderChart(true);
+  lastW = Math.round(wrap.clientWidth);
+  renderCafes();
+  renderProducts();
+  renderOrders();
+})();
+</script>
+</body>
+</html>

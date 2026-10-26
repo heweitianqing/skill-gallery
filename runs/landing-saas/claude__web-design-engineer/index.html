@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotaline — On-call scheduling and shift handoffs for engineering teams</title>
+<meta name="description" content="Rotaline builds fair on-call rotations, routes alerts to the right person, and turns every shift change into a written handoff.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  :root {
+    /* Palette */
+    --paper: #F4F1EA;
+    --paper-2: #ECE7DC;
+    --surface: #FFFDF8;
+    --ink: #16181D;
+    --ink-2: #4B4F58;
+    --ink-3: #686B72;
+    --rule: #DAD4C6;
+    --rule-strong: #C4BCAA;
+    --signal: #C9461C;
+    --signal-hover: #B23D17;
+    --signal-bright: #F0764B;
+    --signal-soft: #F7E0D5;
+    --ok: #2F7A5B;
+    --ok-soft: #DCEDE4;
+
+    /* Type */
+    --f-display: "Bricolage Grotesque", "Helvetica Neue", sans-serif;
+    --f-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+    --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+    /* Spacing: 4px base */
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px; --s9: 96px; --s10: 128px;
+
+    /* Radius grammar */
+    --r-ctl: 8px;
+    --r-panel: 14px;
+
+    /* Elevation */
+    --sh-1: 0 1px 0 rgba(22,24,29,.04), 0 1px 2px rgba(22,24,29,.06);
+    --sh-2: 0 1px 2px rgba(22,24,29,.05), 0 12px 32px -10px rgba(22,24,29,.18);
+    --sh-3: 0 2px 6px rgba(22,24,29,.05), 0 40px 90px -30px rgba(22,24,29,.35);
+
+    --ease: cubic-bezier(.2,.7,.2,1);
+    --wrap: 1240px;
+    --header-h: 68px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, p, blockquote, figure { margin: 0; }
+  h1, h2, h3 { font-family: var(--f-display); font-weight: 600; letter-spacing: -0.025em; line-height: 1.05; text-wrap: balance; }
+  p { text-wrap: pretty; }
+  a { color: inherit; }
+  img, svg { display: block; }
+  button, input { font: inherit; color: inherit; }
+  ::selection { background: var(--signal); color: #fff; }
+  :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 4px; }
+  section[id] { scroll-margin-top: calc(var(--header-h) + 8px); }
+
+  .wrap { width: min(100% - 40px, var(--wrap)); margin-inline: auto; }
+  .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .skip { position: absolute; left: 12px; top: -60px; z-index: 100; background: var(--ink); color: var(--paper); padding: 10px 14px; border-radius: var(--r-ctl); text-decoration: none; }
+  .skip:focus { top: 12px; }
+
+  .section { padding-block: clamp(72px, 10vw, 136px); }
+  .section-head { max-width: 760px; margin-bottom: clamp(40px, 6vw, 72px); }
+  .h2 { font-size: clamp(2.1rem, 4.2vw, 3.5rem); }
+  .lead { margin-top: var(--s5); font-size: clamp(1.05rem, 1.4vw, 1.2rem); color: var(--ink-2); max-width: 600px; }
+  .mono { font-family: var(--f-mono); font-size: .8em; letter-spacing: 0; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 48px; padding: 0 22px;
+    border-radius: var(--r-ctl); border: 1px solid transparent;
+    font-weight: 600; font-size: 16px; text-decoration: none; white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease), color .2s var(--ease);
+  }
+  .btn:active { transform: translateY(1px) scale(.99); }
+  .btn-primary { background: var(--signal); color: #fff; box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 6px 16px -6px rgba(201,70,28,.55); }
+  .btn-primary:hover { background: var(--signal-hover); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
+  .btn-ghost:hover { border-color: var(--ink); background: var(--surface); }
+  .btn-ink { background: var(--ink); color: var(--paper); }
+  .btn-ink:hover { background: #2a2d35; }
+  .btn-sm { min-height: 40px; padding: 0 16px; font-size: 15px; }
+  .btn .arrow { transition: transform .25s var(--ease); }
+  .btn:hover .arrow { transform: translateX(3px); }
+  .btn[disabled] { opacity: .65; cursor: progress; }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .25s var(--ease);
+  }
+  .site-header.scrolled { border-bottom-color: var(--rule); }
+  .header-row { height: var(--header-h); display: flex; align-items: center; gap: var(--s6); }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: -0.03em; }
+  .brand svg { flex: none; }
+  .primary-nav { display: flex; align-items: center; gap: var(--s6); margin-left: var(--s4); }
+  .primary-nav a { text-decoration: none; font-size: 15px; font-weight: 500; color: var(--ink-2); position: relative; padding-block: 6px; transition: color .2s; }
+  .primary-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: var(--signal); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
+  .primary-nav a:hover { color: var(--ink); }
+  .primary-nav a:hover::after { transform: scaleX(1); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: var(--s5); }
+  .signin { text-decoration: none; font-weight: 500; font-size: 15px; color: var(--ink-2); }
+  .signin:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .menu-btn { display: none; width: 44px; height: 44px; border: 1px solid var(--rule-strong); background: var(--surface); border-radius: var(--r-ctl); cursor: pointer; align-items: center; justify-content: center; }
+  .menu-btn .bars { position: relative; width: 18px; height: 12px; }
+  .menu-btn .bars span { position: absolute; left: 0; width: 100%; height: 1.5px; background: var(--ink); border-radius: 2px; transition: transform .25s var(--ease), opacity .2s, top .25s var(--ease); }
+  .menu-btn .bars span:nth-child(1) { top: 0; }
+  .menu-btn .bars span:nth-child(2) { top: 5.25px; }
+  .menu-btn .bars span:nth-child(3) { top: 10.5px; }
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(1) { top: 5.25px; transform: rotate(45deg); }
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(2) { opacity: 0; }
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(3) { top: 5.25px; transform: rotate(-45deg); }
+  .mobile-panel { display: none; }
+
+  @media (max-width: 900px) {
+    .primary-nav, .header-actions .signin { display: none; }
+    .menu-btn { display: inline-flex; }
+    .header-actions { gap: var(--s3); }
+    .mobile-panel {
+      display: block; position: absolute; left: 0; right: 0; top: 100%;
+      background: var(--paper); border-bottom: 1px solid var(--rule);
+      box-shadow: 0 24px 40px -24px rgba(22,24,29,.3);
+      padding: var(--s3) 20px var(--s5);
+      visibility: hidden; opacity: 0; transform: translateY(-8px);
+      transition: opacity .2s var(--ease), transform .25s var(--ease), visibility 0s .25s;
+    }
+    .mobile-panel.open { visibility: visible; opacity: 1; transform: none; transition: opacity .2s var(--ease), transform .25s var(--ease); }
+    .mobile-panel ul { list-style: none; margin: 0; padding: 0; }
+    .mobile-panel li a { display: flex; justify-content: space-between; align-items: center; min-height: 52px; border-bottom: 1px solid var(--rule); text-decoration: none; font-family: var(--f-display); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+    .mobile-panel li a span { color: var(--ink-3); font-family: var(--f-body); font-size: 18px; font-weight: 400; }
+    .mobile-panel .signin-row { margin-top: var(--s5); display: flex; gap: var(--s3); }
+    .mobile-panel .signin-row .btn { flex: 1; }
+  }
+  @media (max-width: 380px) { .header-actions .btn { padding: 0 12px; font-size: 14px; } }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; padding-top: clamp(48px, 7vw, 96px); padding-bottom: clamp(64px, 8vw, 112px); overflow: hidden; }
+  .hero::before { /* timetable hour lines */
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: repeating-linear-gradient(90deg, transparent 0 calc(100% / 24 - 1px), rgba(22,24,29,.055) calc(100% / 24 - 1px) calc(100% / 24));
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 25%, #000 60%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 25%, #000 60%, transparent);
+  }
+  .hero .wrap { position: relative; }
+  .hero-title { font-size: clamp(2.6rem, 6vw, 5.1rem); line-height: .98; letter-spacing: -0.04em; font-weight: 600; max-width: 13.5em; }
+  .hero-title .line2 { display: block; color: var(--ink-2); }
+  .hero-title .thread { position: relative; color: var(--ink); white-space: nowrap; }
+  .hero-title .thread svg { position: absolute; left: -2%; right: 0; bottom: -.12em; width: 104%; height: .3em; overflow: visible; }
+  .hero-title .thread path { stroke: var(--signal); stroke-width: 3; fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  html.js .hero-title .thread path { stroke-dasharray: 400; stroke-dashoffset: 400; animation: draw 1.1s .5s var(--ease) forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .hero-sub { display: grid; grid-template-columns: minmax(0, 560px) auto; gap: var(--s6) var(--s8); align-items: end; margin-top: clamp(24px, 3.5vw, 40px); }
+  .hero-sub p { font-size: clamp(1.08rem, 1.5vw, 1.3rem); color: var(--ink-2); line-height: 1.5; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: var(--s3); align-items: center; }
+  .hero-note { grid-column: 1 / -1; margin-top: calc(-1 * var(--s3)); font-size: 14px; color: var(--ink-3); display: flex; gap: var(--s4); flex-wrap: wrap; }
+  .hero-note span { display: inline-flex; align-items: center; gap: 6px; }
+  @media (max-width: 860px) {
+    .hero-sub { grid-template-columns: 1fr; gap: var(--s5); }
+    .hero-note { margin-top: 0; }
+  }
+  @media (max-width: 480px) { .hero-ctas .btn { flex: 1 1 100%; } }
+
+  /* Product illustration */
+  .stage { position: relative; margin-top: clamp(48px, 6vw, 80px); padding-inline: clamp(0px, 5vw, 72px); }
+  .app {
+    container-type: inline-size;
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-panel);
+    box-shadow: var(--sh-3);
+    overflow: hidden;
+  }
+  .app-bar { display: flex; align-items: center; gap: var(--s4); padding: 14px 20px; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  .app-bar .svc { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .app-bar .svc i { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+  .app-bar .crumb { color: var(--ink-3); }
+  .app-bar .seg { margin-left: auto; display: inline-flex; background: var(--paper); border: 1px solid var(--rule); border-radius: 7px; padding: 2px; }
+  .app-bar .seg span { padding: 3px 10px; border-radius: 5px; color: var(--ink-3); font-size: 13px; }
+  .app-bar .seg span.on { background: var(--surface); color: var(--ink); box-shadow: var(--sh-1); font-weight: 500; }
+  .app-bar .range { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-2); }
+
+  .sched { --lab: 8.4em; position: relative; display: grid; grid-template-columns: var(--lab) repeat(7, 1fr); font-size: clamp(9.5px, 1.35cqi, 14px); }
+  .sched .dh { padding: 1em .9em .8em; border-bottom: 1px solid var(--rule); border-left: 1px solid var(--rule); font-family: var(--f-mono); font-size: .9em; color: var(--ink-3); }
+  .sched .dh b { display: block; font-family: var(--f-body); font-size: 1.12em; color: var(--ink); font-weight: 600; }
+  .sched .dh.today b { color: var(--signal); }
+  .sched .corner { border-bottom: 1px solid var(--rule); }
+  .sched .rl { padding: 0 .9em 0 1.5em; display: flex; flex-direction: column; justify-content: center; height: 5.2em; border-bottom: 1px solid var(--rule); font-weight: 600; }
+  .sched .rl small { font-weight: 400; color: var(--ink-3); font-size: .86em; }
+  .sched .cells { grid-column: 2 / -1; position: relative; z-index: 1; height: 5.2em; border-bottom: 1px solid var(--rule);
+    background-image: linear-gradient(90deg, var(--rule) 1px, transparent 1px); background-size: calc(100% / 7) 100%; }
+  .sched .cells.weekend-bg::after { content: ""; position: absolute; top: 0; bottom: 0; left: calc(100% / 7 * 5); right: 0; background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(22,24,29,.025) 6px 12px); pointer-events: none; }
+  .shift {
+    position: absolute; top: .9em; bottom: .9em;
+    left: calc(100% / 7 * var(--s) + .35em); width: calc(100% / 7 * var(--d) - .7em);
+    display: flex; align-items: center; gap: .6em; padding: 0 .7em;
+    border-radius: 7px; background: var(--paper-2); border: 1px solid var(--rule-strong);
+    font-weight: 600; white-space: nowrap; overflow: hidden; z-index: 1;
+  }
+  .shift .av { flex: none; width: 2.1em; height: 2.1em; border-radius: 50%; display: grid; place-items: center; font-size: .82em; font-weight: 600; background: var(--surface); border: 1px solid var(--rule-strong); }
+  .shift .meta { font-weight: 400; color: var(--ink-3); font-size: .88em; margin-left: auto; font-family: var(--f-mono); }
+  .shift.live { background: var(--signal-soft); border-color: color-mix(in srgb, var(--signal) 45%, transparent); }
+  .shift.live .av { background: var(--signal); border-color: var(--signal); color: #fff; }
+  .shift.dark { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .shift.dark .av { background: #2b2e36; border-color: #3a3e48; color: var(--paper); }
+  .shift.dark .meta { color: #a7a9ae; }
+  .shift.override { background: repeating-linear-gradient(135deg, var(--surface) 0 5px, var(--paper) 5px 10px); border-style: dashed; border-color: var(--ink-2); }
+  .now-line { position: absolute; grid-column: 2 / -1; grid-row: 2 / span 3; top: 0; bottom: 0; left: calc(100% / 7 * .6 - 1px); width: 2px; background: var(--signal); z-index: 0; pointer-events: none; }
+  .now-line::before { content: ""; position: absolute; top: -1px; left: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--signal); transform: translate(-50%, 0); box-shadow: 0 0 0 4px rgba(201,70,28,.18); }
+  html.js .now-line::before { animation: pulse 2.4s ease-out infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(201,70,28,.45); } 70%,100% { box-shadow: 0 0 0 10px rgba(201,70,28,0); } }
+  .sched .dh .nowtxt { color: var(--signal); }
+  .app-foot { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5); align-items: center; padding: 14px 20px; font-size: 13.5px; color: var(--ink-2); background: var(--paper); }
+  .app-foot b { color: var(--ink); font-weight: 600; }
+  .app-foot .mono { color: var(--ink-3); }
+
+  .float {
+    position: absolute; z-index: 4; width: 300px;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-panel);
+    box-shadow: var(--sh-2); padding: 16px 18px; font-size: 14px;
+  }
+  .float .kicker { display: flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); }
+  .float .kicker .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--signal); }
+  .float h3 { font-family: var(--f-body); font-size: 15px; letter-spacing: 0; line-height: 1.35; font-weight: 600; margin-top: 8px; }
+  .float .row { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--ink-2); font-size: 13.5px; }
+  .ack { display: inline-flex; align-items: center; gap: 6px; background: var(--ok-soft); color: var(--ok); font-weight: 600; padding: 3px 8px; border-radius: 999px; font-size: 12.5px; }
+  .float-alert { right: 0; top: -100px; }
+  .float-note { left: 0; bottom: -150px; width: 330px; }
+  @media (min-width: 1001px) {
+    .stage { margin-bottom: 110px; }
+    .app-foot { justify-content: flex-end; }
+  }
+  .float-note ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+  .float-note li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
+  .float-note li svg { flex: none; margin-top: 2px; }
+  .float-note .carry { color: var(--signal); font-weight: 600; }
+  .float-note .handover { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 600; }
+  .mini-av { width: 24px; height: 24px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 10.5px; font-weight: 600; background: var(--paper-2); border: 1px solid var(--rule-strong); }
+  .mini-av.s { background: var(--signal); border-color: var(--signal); color: #fff; }
+  html.js .float { opacity: 0; transform: translateY(14px); animation: rise .8s var(--ease) forwards; }
+  html.js .float-alert { animation-delay: .9s; }
+  html.js .float-note { animation-delay: 1.15s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  @media (max-width: 1000px) {
+    .stage { padding-inline: 0; }
+    .float { position: relative; inset: auto; width: auto; margin-top: var(--s3); }
+    .floats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-top: var(--s3); }
+    .floats .float { margin: 0; }
+  }
+  @media (max-width: 640px) {
+    .floats { grid-template-columns: 1fr; }
+    .app-bar .crumb, .app-bar .seg { display: none; }
+    .app-bar .range { margin-left: auto; }
+    .sched { --lab: 6em; }
+    .sched .rl { padding: 0 .3em 0 .7em; }
+    .sched .dh .nowtxt { display: none; }
+    .sched .rl small { display: none; }
+    .sched .dh { padding: .8em .5em .7em; }
+    .shift { gap: .4em; padding: 0 .45em; }
+    .shift .av { display: none; }
+    .shift .meta { display: none; }
+    .shift .ln { display: none; }
+  }
+
+  /* ---------- Customers ---------- */
+  .customers { border-block: 1px solid var(--rule); padding-block: var(--s6); }
+  .customers .wrap { display: flex; align-items: center; gap: var(--s6) var(--s8); flex-wrap: wrap; }
+  .customers p { font-size: 14px; color: var(--ink-3); max-width: 15em; line-height: 1.4; }
+  .logos { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: var(--s5) var(--s6); flex-wrap: wrap; list-style: none; margin: 0; padding: 0; color: var(--ink-2); }
+  .logos li { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; opacity: .85; transition: opacity .2s, color .2s; }
+  .logos li:hover { opacity: 1; color: var(--ink); }
+  .lg-northgate { font-family: var(--f-display); font-weight: 700; font-size: 19px; letter-spacing: -0.02em; }
+  .lg-plinth { font-family: var(--f-body); font-weight: 600; font-size: 21px; letter-spacing: -0.04em; text-transform: lowercase; }
+  .lg-corvid { font-family: var(--f-mono); font-weight: 500; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
+  .lg-halden { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: .14em; text-transform: uppercase; }
+  .lg-murmur { font-family: var(--f-body); font-style: italic; font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
+  @media (max-width: 640px) {
+    .customers .wrap { flex-direction: column; align-items: flex-start; gap: var(--s5); }
+    .logos { justify-content: flex-start; gap: var(--s4) var(--s6); }
+  }
+
+  /* ---------- Features ---------- */
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--ink); }
+  .feature { position: relative; padding: var(--s6) var(--s6) var(--s7) 0; border-bottom: 1px solid var(--rule); }
+  .feature:not(:nth-child(3n+1)) { padding-left: var(--s6); border-left: 1px solid var(--rule); }
+  .feature .ic { width: 44px; height: 44px; border-radius: var(--r-ctl); display: grid; place-items: center; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink); transition: background-color .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease); }
+  .feature:hover .ic { background: var(--signal); border-color: var(--signal); color: #fff; }
+  .feature h3 { font-size: 1.45rem; margin-top: var(--s5); letter-spacing: -0.02em; }
+  .feature p { margin-top: var(--s3); color: var(--ink-2); font-size: 16px; max-width: 34ch; }
+  @media (max-width: 960px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .feature, .feature:not(:nth-child(3n+1)) { padding: var(--s6) var(--s5) var(--s6) 0; border-left: 0; }
+    .feature:nth-child(2n) { padding-left: var(--s5); border-left: 1px solid var(--rule); }
+  }
+  @media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .feature, .feature:nth-child(2n), .feature:not(:nth-child(3n+1)) { padding: var(--s5) 0 var(--s6); border-left: 0; display: grid; grid-template-columns: 44px 1fr; column-gap: var(--s4); }
+    .feature h3 { margin-top: 8px; }
+    .feature p { grid-column: 2; }
+  }
+
+  /* ---------- How it works ---------- */
+  .how { background: var(--paper-2); }
+  .steps { list-style: none; margin: 0; padding: 0; position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s6); counter-reset: step; }
+  .steps::before { content: ""; position: absolute; top: 23px; left: 24px; right: 0; height: 2px; background: linear-gradient(90deg, var(--signal) 0 66%, var(--rule-strong) 66%); }
+  .step { position: relative; }
+  .station { position: relative; z-index: 1; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--paper-2); border: 2px solid var(--signal); font-family: var(--f-mono); font-weight: 500; font-size: 15px; color: var(--signal); }
+  .step:last-child .station { background: var(--signal); color: #fff; }
+  .step h3 { font-size: 1.5rem; margin-top: var(--s5); letter-spacing: -0.02em; }
+  .step > p { margin-top: var(--s3); color: var(--ink-2); max-width: 34ch; }
+  .vignette { margin-top: var(--s5); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-panel); padding: 16px 18px; font-size: 14px; box-shadow: var(--sh-1); }
+  .vignette pre { margin: 0; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.7; color: var(--ink-2); white-space: pre; overflow-x: auto; }
+  .vignette pre .k { color: var(--signal); }
+  .vignette pre .m { color: var(--ink); font-weight: 500; }
+  .vignette .cap { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--rule-strong); font-size: 13px; color: var(--ink-3); }
+  .chain { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .chain li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .chain li:last-child { border-bottom: 0; }
+  .chain .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-mono); font-size: 11px; background: var(--paper); border: 1px solid var(--rule-strong); }
+  .chain b { font-weight: 600; }
+  .chain .via { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); text-align: right; }
+  .handoff-flow { display: grid; gap: 10px; }
+  .handoff-flow .msg { display: flex; align-items: flex-start; gap: 10px; line-height: 1.4; }
+  .handoff-flow .msg .t { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); flex: none; width: 3.6em; padding-top: 2px; }
+  @media (max-width: 900px) {
+    .steps { grid-template-columns: 1fr; gap: var(--s7); }
+    .steps::before { top: 24px; bottom: 0; left: 23px; right: auto; width: 2px; height: auto; background: linear-gradient(180deg, var(--signal) 0 70%, var(--rule-strong) 70%); }
+    .step { padding-left: 72px; }
+    .station { position: absolute; left: 0; top: 0; }
+    .step h3 { margin-top: 8px; }
+  }
+
+  /* ---------- Results ---------- */
+  .results { background: var(--ink); color: var(--paper); padding-block: clamp(72px, 9vw, 120px); position: relative; overflow: hidden; }
+  .results::before { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent 0 calc(100% / 24 - 1px), rgba(244,241,234,.05) calc(100% / 24 - 1px) calc(100% / 24)); pointer-events: none; }
+  .results .wrap { position: relative; }
+  .results h2 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); max-width: 22em; color: #d9d6cf; font-weight: 500; letter-spacing: -0.02em; }
+  .stats { list-style: none; margin: clamp(40px, 5vw, 64px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .stat { padding: var(--s5) var(--s6) 0; border-left: 1px solid rgba(244,241,234,.18); }
+  .stat:first-child { padding-left: 0; border-left: 0; }
+  .stat .num { font-family: var(--f-display); font-weight: 600; font-size: clamp(4rem, 9vw, 8rem); line-height: .9; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .stat .num small { font-size: .42em; letter-spacing: -0.02em; margin-left: .08em; color: var(--signal-bright); }
+  .stat .label { margin-top: var(--s4); font-size: 17px; color: #c3c0b9; max-width: 16em; }
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: 1fr; }
+    .stat, .stat:first-child { padding: var(--s5) 0; border-left: 0; border-top: 1px solid rgba(244,241,234,.18); }
+  }
+
+  /* ---------- Testimonials ---------- */
+  .quotes { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--s5); }
+  .quote { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-panel); padding: clamp(24px, 3vw, 36px); display: flex; flex-direction: column; justify-content: space-between; gap: var(--s6); }
+  .quote blockquote p { font-size: 1.15rem; line-height: 1.5; }
+  .quote.feature-quote { grid-row: span 2; background: var(--signal); border-color: var(--signal); color: #fff; position: relative; overflow: hidden; }
+  .quote.feature-quote blockquote p { font-family: var(--f-display); font-size: clamp(1.7rem, 2.9vw, 2.6rem); line-height: 1.12; letter-spacing: -0.025em; font-weight: 500; text-wrap: balance; }
+  .quote.feature-quote .qmark { font-family: var(--f-display); font-size: 120px; line-height: .6; height: 50px; opacity: .35; }
+  .quote figcaption { display: flex; align-items: center; gap: 14px; font-size: 15px; }
+  .quote figcaption .who b { display: block; font-weight: 600; }
+  .quote figcaption .who span { color: var(--ink-3); }
+  .feature-quote figcaption .who span { color: rgba(255,255,255,.82); }
+  .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 15px; background: var(--paper-2); border: 1px solid var(--rule-strong); }
+  .feature-quote .avatar { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.4); color: #fff; }
+  @media (max-width: 860px) {
+    .quotes { grid-template-columns: 1fr; }
+    .quote.feature-quote { grid-row: auto; }
+  }
+
+  /* ---------- Pricing ---------- */
+  .pricing-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--s6); flex-wrap: wrap; margin-bottom: clamp(40px, 5vw, 64px); }
+  .pricing-head .section-head { margin-bottom: 0; }
+  .billing { display: inline-flex; align-items: center; gap: var(--s3); }
+  .toggle { position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 10px; padding: 4px; }
+  .toggle::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: var(--ink); border-radius: 7px; transition: transform .35s var(--ease); }
+  .toggle[data-period="annual"]::before { transform: translateX(100%); }
+  .toggle button { position: relative; z-index: 1; border: 0; background: none; padding: 0 18px; min-height: 40px; min-width: 104px; border-radius: 7px; cursor: pointer; font-weight: 600; font-size: 15px; color: var(--ink-2); transition: color .25s; }
+  .toggle button[aria-pressed="true"] { color: var(--paper); }
+  .save { font-size: 13px; font-weight: 600; color: var(--signal); background: var(--signal-soft); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); align-items: stretch; }
+  .plan { position: relative; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-panel); padding: clamp(24px, 2.6vw, 36px); transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
+  .plan:hover { transform: translateY(-3px); box-shadow: var(--sh-2); }
+  .plan.popular { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: var(--sh-3); }
+  .plan .badge { position: absolute; top: -13px; left: clamp(24px, 2.6vw, 36px); background: var(--signal); color: #fff; font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 999px; letter-spacing: .01em; }
+  .plan h3 { font-size: 1.5rem; letter-spacing: -0.02em; }
+  .plan .for { margin-top: 6px; font-size: 15px; color: var(--ink-3); }
+  .plan.popular .for { color: #b4b2ab; }
+  @media (min-width: 961px) { .plan .for { min-height: 2.9em; } }
+  .price { margin-top: var(--s6); display: flex; align-items: flex-end; gap: 10px; min-height: 76px; }
+  .price .amt { font-family: var(--f-display); font-weight: 600; font-size: 4.25rem; line-height: .9; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; display: inline-block; }
+  .price .amt.swap { animation: swap .38s var(--ease); }
+  @keyframes swap { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: none; } }
+  .price .per { font-size: 14px; line-height: 1.35; color: var(--ink-2); padding-bottom: 6px; }
+  .plan.popular .price .per { color: #c3c0b9; }
+  .billed { margin-top: 10px; font-size: 13.5px; color: var(--ink-3); min-height: 1.4em; }
+  .plan.popular .billed { color: #a7a9ae; }
+  .plan ul { list-style: none; margin: var(--s6) 0 0; padding: var(--s5) 0 0; border-top: 1px solid var(--rule); display: grid; gap: 12px; font-size: 15.5px; }
+  .plan.popular ul { border-top-color: rgba(244,241,234,.16); }
+  .plan li { display: flex; gap: 10px; align-items: flex-start; }
+  .plan li svg { flex: none; margin-top: 4px; color: var(--signal); }
+  .plan.popular li svg { color: var(--signal-bright); }
+  .plan li.inherit { font-weight: 600; }
+  .plan .btn { margin-top: auto; width: 100%; }
+  .plan .cta-wrap { margin-top: var(--s7); }
+  .plan.popular .btn-ghost { color: var(--paper); border-color: rgba(244,241,234,.3); }
+  .pricing-foot { margin-top: var(--s6); font-size: 14px; color: var(--ink-3); }
+  @media (max-width: 960px) {
+    .plans { grid-template-columns: 1fr; max-width: 520px; }
+    .plan.popular { order: -1; }
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-layout { display: grid; grid-template-columns: 1fr 1.6fr; gap: var(--s8); align-items: start; }
+  .faq-layout .section-head { position: sticky; top: calc(var(--header-h) + 32px); }
+  .faq-list { border-top: 1px solid var(--ink); }
+  .faq-list details { border-bottom: 1px solid var(--rule); }
+  .faq-list summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: var(--s5); padding: 24px 0; font-family: var(--f-display); font-weight: 600; font-size: clamp(1.12rem, 1.6vw, 1.35rem); letter-spacing: -0.015em; line-height: 1.3; transition: color .2s; }
+  .faq-list summary::-webkit-details-marker { display: none; }
+  .faq-list summary:hover { color: var(--signal); }
+  .faq-list summary .pm { flex: none; position: relative; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--rule-strong); transition: background-color .25s, border-color .25s, transform .3s var(--ease); }
+  .faq-list summary .pm::before, .faq-list summary .pm::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.5px; background: currentColor; transform: translate(-50%, -50%); }
+  .faq-list summary .pm::after { transform: translate(-50%, -50%) rotate(90deg); transition: transform .3s var(--ease); }
+  .faq-list details[open] summary .pm { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .faq-list details[open] summary .pm::after { transform: translate(-50%, -50%) rotate(0deg); }
+  .faq-list .answer { padding: 0 56px 28px 0; color: var(--ink-2); max-width: 60ch; }
+  html.js .faq-list details[open] .answer { animation: open .35s var(--ease); }
+  @keyframes open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 860px) {
+    .faq-layout { grid-template-columns: 1fr; gap: var(--s5); }
+    .faq-layout .section-head { position: static; }
+    .faq-list .answer { padding-right: 0; }
+  }
+
+  /* ---------- Final CTA ---------- */
+  .final { background: var(--signal); color: #fff; position: relative; overflow: hidden; padding-block: clamp(72px, 10vw, 128px); }
+  .final::before { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent 0 calc(100% / 24 - 1px), rgba(255,255,255,.09) calc(100% / 24 - 1px) calc(100% / 24)); pointer-events: none; }
+  .final .wrap { position: relative; display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--s7) var(--s8); align-items: end; }
+  .final h2 { font-size: clamp(2.4rem, 5.2vw, 4.4rem); letter-spacing: -0.04em; line-height: 1; }
+  .final h2 span { display: block; color: rgba(255,255,255,.78); }
+  .signup label { display: block; font-size: 15px; font-weight: 500; margin-bottom: 10px; color: rgba(255,255,255,.9); }
+  .signup .field { display: flex; gap: 8px; background: #fff; border-radius: 12px; padding: 6px; box-shadow: 0 20px 40px -20px rgba(60,16,0,.5); }
+  .signup input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 0 12px; min-height: 48px; font-size: 16px; color: var(--ink); border-radius: var(--r-ctl); }
+  .signup input::placeholder { color: var(--ink-3); }
+  .signup input:focus { outline: none; }
+  .signup .field:focus-within { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .signup .msg { min-height: 1.5em; margin-top: 12px; font-size: 15px; }
+  .signup .msg.err { color: #fff; font-weight: 600; }
+  .signup .msg.ok { color: #fff; }
+  .signup .fine { font-size: 13.5px; color: rgba(255,255,255,.8); }
+  @media (max-width: 860px) { .final .wrap { grid-template-columns: 1fr; } }
+  @media (max-width: 460px) {
+    .signup .field { flex-direction: column; padding: 8px; }
+    .signup input { min-height: 48px; }
+  }
+
+  /* ---------- Footer ---------- */
+  .site-footer { padding-block: var(--s8) var(--s6); }
+  .footer-top { display: grid; grid-template-columns: 1.3fr repeat(4, 1fr); gap: var(--s6); }
+  .footer-brand p { margin-top: var(--s4); color: var(--ink-3); font-size: 15px; max-width: 24ch; }
+  .footer-col h3 { font-family: var(--f-body); font-size: 14px; font-weight: 600; letter-spacing: 0; color: var(--ink); }
+  .footer-col ul { list-style: none; margin: var(--s4) 0 0; padding: 0; display: grid; gap: 10px; }
+  .footer-col a { text-decoration: none; color: var(--ink-2); font-size: 15px; }
+  .footer-col a:hover { color: var(--signal); text-decoration: underline; text-underline-offset: 3px; }
+  .footer-bottom { margin-top: var(--s8); padding-top: var(--s5); border-top: 1px solid var(--rule); display: flex; justify-content: space-between; gap: var(--s4); flex-wrap: wrap; font-size: 14px; color: var(--ink-3); }
+  .footer-bottom .status { display: inline-flex; align-items: center; gap: 8px; }
+  .footer-bottom .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  @media (max-width: 860px) {
+    .footer-top { grid-template-columns: repeat(2, 1fr); row-gap: var(--s7); }
+    .footer-brand { grid-column: 1 / -1; }
+  }
+
+  /* ---------- Reveal ---------- */
+  html.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); transition-delay: var(--d, 0s); }
+  html.js .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    html.js .reveal { opacity: 1; transform: none; }
+    html.js .float { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ============ Header ============ -->
+<header class="site-header" id="top">
+  <div class="wrap header-row">
+    <a class="brand" href="#top" aria-label="Rotaline home">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+        <circle cx="14" cy="14" r="11" fill="none" stroke="#16181D" stroke-width="2.2"/>
+        <path d="M1 14h26" stroke="#16181D" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="19.5" cy="14" r="3.6" fill="#C9461C"/>
+      </svg>
+      Rotaline
+    </a>
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <a class="signin" href="#">Sign in</a>
+      <a class="btn btn-primary btn-sm" href="#start">Start free trial</a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-panel" id="mobile-menu">
+    <nav aria-label="Mobile">
+      <ul>
+        <li><a href="#features">Features <span aria-hidden="true">→</span></a></li>
+        <li><a href="#how">How it works <span aria-hidden="true">→</span></a></li>
+        <li><a href="#pricing">Pricing <span aria-hidden="true">→</span></a></li>
+        <li><a href="#faq">FAQ <span aria-hidden="true">→</span></a></li>
+      </ul>
+      <div class="signin-row">
+        <a class="btn btn-ghost" href="#">Sign in</a>
+        <a class="btn btn-primary" href="#start">Start free trial</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============ Hero ============ -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap">
+    <h1 class="hero-title" id="hero-title">
+      Know who's on call.
+      <span class="line2">Hand off without losing the <span class="thread">thread.<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 12 C 40 4, 80 18, 120 10 S 180 6, 198 12"/></svg></span></span>
+    </h1>
+    <div class="hero-sub">
+      <p>Rotaline builds fair on-call rotations, routes alerts to the right person, and turns every shift change into a written handoff.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#start">Start free trial <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <div class="hero-note">
+        <span><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="#2F7A5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>14-day free trial</span>
+        <span><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="#2F7A5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>No credit card required</span>
+        <span><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="#2F7A5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Built for teams of 5 to 50</span>
+      </div>
+    </div>
+
+    <!-- Product illustration -->
+    <div class="stage">
+      <div class="app" role="img" aria-label="Rotaline weekly schedule for the payments-api service. Primary on call: Ravi Menon Monday to Wednesday, Sofia Brandt Thursday to Sunday. Secondary: Dana Whitfield Monday to Thursday, Priya Nair Friday to Sunday. Override on Saturday: Tom Okafor covers after an approved swap.">
+        <div class="app-bar">
+          <span class="svc"><i></i>payments-api</span>
+          <span class="crumb">/ Weekly rotation · Europe/London</span>
+          <span class="seg"><span class="on">Week</span><span>Month</span><span>Fairness</span></span>
+          <span class="range">Oct 26 – Nov 1</span>
+        </div>
+        <div class="sched">
+          <div class="corner"></div>
+          <div class="dh today"><b>Mon</b>26<span class="nowtxt"> · now 14:20</span></div>
+          <div class="dh"><b>Tue</b>27</div>
+          <div class="dh"><b>Wed</b>28</div>
+          <div class="dh"><b>Thu</b>29</div>
+          <div class="dh"><b>Fri</b>30</div>
+          <div class="dh"><b>Sat</b>31</div>
+          <div class="dh"><b>Sun</b>1</div>
+
+          <div class="rl">Primary<small>Paged first</small></div>
+          <div class="cells weekend-bg">
+            <div class="shift live" style="--s:0;--d:3"><span class="av">RM</span><span>Ravi<span class="ln"> Menon</span></span><span class="meta">18:00 Wed</span></div>
+            <div class="shift" style="--s:3;--d:4"><span class="av">SB</span><span>Sofia<span class="ln"> Brandt</span></span><span class="meta">18:00 Sun</span></div>
+          </div>
+
+          <div class="rl">Secondary<small>After 10 min</small></div>
+          <div class="cells weekend-bg">
+            <div class="shift dark" style="--s:0;--d:4"><span class="av">DW</span><span>Dana<span class="ln"> Whitfield</span></span><span class="meta">09:00 Fri</span></div>
+            <div class="shift" style="--s:4;--d:3"><span class="av">PN</span><span>Priya<span class="ln"> Nair</span></span></div>
+          </div>
+
+          <div class="rl">Overrides<small>Swaps</small></div>
+          <div class="cells weekend-bg">
+            <div class="shift override" style="--s:5;--d:1"><span class="av">TO</span><span>Tom<span class="ln"> O.</span></span></div>
+          </div>
+
+          <div class="now-line" aria-hidden="true"></div>
+        </div>
+        <div class="app-foot">
+          <span>Next handoff <b>Wed 18:00</b> · Ravi Menon → Sofia Brandt</span>
+          <span class="mono">Nights this month: Ravi 6 · Sofia 5 · Dana 6 · Priya 5</span>
+        </div>
+      </div>
+
+      <div class="floats">
+        <div class="float float-alert" aria-hidden="true">
+          <div class="kicker"><span class="dot"></span>PAY-482 · 14:07</div>
+          <h3>Checkout p99 latency above 800 ms</h3>
+          <div class="row"><span class="mini-av">RM</span>Paged Ravi Menon <span class="ack">
+            <svg width="11" height="11" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Ack in 3 min</span></div>
+        </div>
+        <div class="float float-note" aria-hidden="true">
+          <div class="kicker">Handoff note · Wed 18:00</div>
+          <div class="handover"><span class="mini-av">RM</span><span aria-hidden="true">→</span><span class="mini-av s">SB</span>Ravi to Sofia</div>
+          <ul>
+            <li><svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="none" stroke="#C9461C" stroke-width="2"/></svg><span><span class="carry">Carried over:</span> PAY-482 still open, rollback ready</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="#2F7A5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deploy freeze lifted at 16:30</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="#2F7A5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Noisy disk alert muted until Friday</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Customers ============ -->
+<section class="customers" aria-label="Customers">
+  <div class="wrap">
+    <p>On-call teams at these companies use Rotaline</p>
+    <ul class="logos">
+      <li class="lg-northgate"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5L16 16H2z" fill="currentColor"/></svg>Northgate Labs</li>
+      <li class="lg-plinth"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="5" y="2" width="8" height="4" fill="currentColor"/><rect x="3" y="7.5" width="12" height="4" fill="currentColor"/><rect x="1" y="13" width="16" height="4" fill="currentColor"/></svg>Plinth</li>
+      <li class="lg-corvid"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7 7-7 7-7-7z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>Corvid Systems</li>
+      <li class="lg-halden"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 6.5L9 2l7 4.5z" fill="currentColor"/><rect x="3" y="8" width="2.2" height="6.5" fill="currentColor"/><rect x="7.9" y="8" width="2.2" height="6.5" fill="currentColor"/><rect x="12.8" y="8" width="2.2" height="6.5" fill="currentColor"/><rect x="2" y="15.5" width="14" height="1.6" fill="currentColor"/></svg>Halden Bank</li>
+      <li class="lg-murmur"><svg width="22" height="14" viewBox="0 0 22 14" aria-hidden="true"><path d="M1 7c2.5-5 5-5 7.5 0s5 5 7.5 0 4-4 5.5-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Murmur</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ Features ============ -->
+<section class="section" id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="h2" id="features-title">Everything a rotation needs. Nothing a spreadsheet can't replace.</h2>
+      <p class="lead">One place to decide who's on call, what reaches them, and what the next person needs to know.</p>
+    </div>
+    <div class="features-grid">
+      <article class="feature reveal">
+        <div class="ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-14.3 4.9"/><path d="M4 12a8 8 0 0 1 14.3-4.9"/><path d="M18.5 3v4.2h-4.2"/><path d="M5.5 21v-4.2h4.2"/></svg>
+        </div>
+        <h3>Rotation builder</h3>
+        <p>Set up daily, weekly or follow-the-sun rotations across time zones, and preview every shift before it goes live.</p>
+      </article>
+      <article class="feature reveal" style="--d:.06s">
+        <div class="ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14"/><path d="M14 4l4 4-4 4"/><path d="M20 16H6"/><path d="M10 12l-4 4 4 4"/></svg>
+        </div>
+        <h3>Swaps and overrides</h3>
+        <p>Request a swap in two clicks. The team lead approves it straight from email or chat, and the schedule updates itself.</p>
+      </article>
+      <article class="feature reveal" style="--d:.12s">
+        <div class="ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h5v-5h5v-5h5V4h3"/><circle cx="21" cy="4" r=".6" fill="currentColor"/></svg>
+        </div>
+        <h3>Escalation policies</h3>
+        <p>Multi-step escalation by push notification, SMS and phone call, so an alert keeps moving until someone owns it.</p>
+      </article>
+      <article class="feature reveal">
+        <div class="ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9.5 12h6"/><path d="M9.5 16h4"/></svg>
+        </div>
+        <h3>Handoff notes</h3>
+        <p>A structured note at every shift change, with open incidents carried over automatically.</p>
+      </article>
+      <article class="feature reveal" style="--d:.06s">
+        <div class="ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8 14h3"/></svg>
+        </div>
+        <h3>Calendar sync</h3>
+        <p>Shifts appear in Google Calendar, Outlook or any iCal client, and stay current when a swap is approved.</p>
+      </article>
+      <article class="feature reveal" style="--d:.12s">
+        <div class="ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M9.3 20V6"/><path d="M14.6 20V9"/><path d="M20 20V7"/><path d="M2.5 20h19"/></svg>
+        </div>
+        <h3>Fairness report</h3>
+        <p>On-call hours per person, including nights and weekends, so the load stays even across the team.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ How it works ============ -->
+<section class="section how" id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="h2" id="how-title">From first alert to first handoff in an afternoon.</h2>
+      <p class="lead">Three steps, and you only do the first two once.</p>
+    </div>
+    <ol class="steps">
+      <li class="step reveal">
+        <div class="station" aria-hidden="true">01</div>
+        <h3>Connect your alerting tools</h3>
+        <p>Point any monitoring tool at a webhook, or pick one of 40 built-in integrations.</p>
+        <div class="vignette" aria-hidden="true">
+<pre><span class="k">POST</span> /v1/alerts/<span class="m">payments-api</span>
+{
+  "summary": "Checkout p99 &gt; 800 ms",
+  "severity": "high"
+}</pre>
+          <div class="cap">Alerts land on the service's escalation policy.</div>
+        </div>
+      </li>
+      <li class="step reveal" style="--d:.08s">
+        <div class="station" aria-hidden="true">02</div>
+        <h3>Build a rotation and a policy</h3>
+        <p>Create a rotation and an escalation policy for each service you run.</p>
+        <div class="vignette" aria-hidden="true">
+          <ol class="chain">
+            <li><span class="n">1</span><span><b>Primary</b> on call</span><span class="via">Push</span></li>
+            <li><span class="n">2</span><span><b>Secondary</b> after 10 min</span><span class="via">SMS</span></li>
+            <li><span class="n">3</span><span><b>Team lead</b> after 20 min</span><span class="via">Phone call</span></li>
+          </ol>
+        </div>
+      </li>
+      <li class="step reveal" style="--d:.16s">
+        <div class="station" aria-hidden="true">03</div>
+        <h3>Hand off at the end of each shift</h3>
+        <p>Rotaline reminds the outgoing person to write the note and notifies the incoming one.</p>
+        <div class="vignette" aria-hidden="true">
+          <div class="handoff-flow">
+            <div class="msg"><span class="t">17:30</span><span>Ravi, your shift ends in 30 minutes. Your handoff note is ready to fill in.</span></div>
+            <div class="msg"><span class="t">18:00</span><span><b>Sofia is on call.</b> Handoff note attached, 1 open incident.</span></div>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ Results ============ -->
+<section class="results" aria-labelledby="results-title">
+  <div class="wrap">
+    <h2 id="results-title" class="reveal">When the rota lives in one place, pages stop falling through the cracks.</h2>
+    <ul class="stats">
+      <li class="stat reveal">
+        <div class="num" data-count="38" data-suffix="%"><span class="v">38</span><small>%</small></div>
+        <p class="label">fewer missed pages</p>
+      </li>
+      <li class="stat reveal" style="--d:.08s">
+        <div class="num" data-count="4" data-suffix=" min"><span class="v">4</span><small>min</small></div>
+        <p class="label">median time to acknowledge</p>
+      </li>
+      <li class="stat reveal" style="--d:.16s">
+        <div class="num" data-count="2100"><span class="v">2,100</span></div>
+        <p class="label">teams on Rotaline</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ Testimonials ============ -->
+<section class="section" aria-labelledby="quotes-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="h2" id="quotes-title">From the people holding the pager.</h2>
+    </div>
+    <div class="quotes">
+      <figure class="quote feature-quote reveal">
+        <div>
+          <div class="qmark" aria-hidden="true">“</div>
+          <blockquote><p>The handoff note is the feature I didn't know I needed. I start every shift knowing what's still burning.</p></blockquote>
+        </div>
+        <figcaption><span class="avatar" aria-hidden="true">RM</span><span class="who"><b>Ravi Menon</b><span>Site Reliability Engineer, Halden Bank</span></span></figcaption>
+      </figure>
+      <figure class="quote reveal" style="--d:.08s">
+        <blockquote><p>“We used to argue about who covered the holidays. Now the fairness report settles it before anyone asks.”</p></blockquote>
+        <figcaption><span class="avatar" aria-hidden="true">DW</span><span class="who"><b>Dana Whitfield</b><span>Engineering Manager, Plinth</span></span></figcaption>
+      </figure>
+      <figure class="quote reveal" style="--d:.16s">
+        <blockquote><p>“Setting up follow-the-sun across three offices took one afternoon.”</p></blockquote>
+        <figcaption><span class="avatar" aria-hidden="true">SB</span><span class="who"><b>Sofia Brandt</b><span>Head of Infrastructure, Corvid Systems</span></span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Pricing ============ -->
+<section class="section" id="pricing" aria-labelledby="pricing-title" style="padding-top:0">
+  <div class="wrap">
+    <div class="pricing-head">
+      <div class="section-head reveal">
+        <h2 class="h2" id="pricing-title">Priced per person, not per page.</h2>
+        <p class="lead">Start free with a small team. Upgrade when you need more rotations or more ways to reach people.</p>
+      </div>
+      <div class="billing reveal">
+        <div class="toggle" role="group" aria-label="Billing period" data-period="monthly">
+          <button type="button" aria-pressed="true" data-period="monthly">Monthly</button>
+          <button type="button" aria-pressed="false" data-period="annual">Annual</button>
+        </div>
+        <span class="save">Save up to 22%</span>
+      </div>
+    </div>
+
+    <div class="plans">
+      <article class="plan reveal" aria-labelledby="plan-free">
+        <h3 id="plan-free">Free</h3>
+        <p class="for">For small teams getting off the spreadsheet.</p>
+        <div class="price"><span class="amt">$0</span><span class="per">forever</span></div>
+        <p class="billed">No card needed</p>
+        <ul>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Up to 5 users</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>1 rotation</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Push and email alerts</li>
+        </ul>
+        <div class="cta-wrap"><a class="btn btn-ghost" href="#start">Create free account</a></div>
+      </article>
+
+      <article class="plan popular reveal" style="--d:.08s" aria-labelledby="plan-team">
+        <span class="badge">Most popular</span>
+        <h3 id="plan-team">Team</h3>
+        <p class="for">For teams running on-call across services.</p>
+        <div class="price"><span class="amt" data-monthly="$9" data-annual="$7">$9</span><span class="per">per user<br>per month</span></div>
+        <p class="billed" data-monthly="Billed monthly" data-annual="Billed annually, $84 per user per year">Billed monthly</p>
+        <ul>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited rotations</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>SMS and phone alerts</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Handoff notes</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Calendar sync</li>
+        </ul>
+        <div class="cta-wrap"><a class="btn btn-primary" href="#start">Start free trial</a></div>
+      </article>
+
+      <article class="plan reveal" style="--d:.16s" aria-labelledby="plan-business">
+        <h3 id="plan-business">Business</h3>
+        <p class="for">For organisations with security and compliance needs.</p>
+        <div class="price"><span class="amt" data-monthly="$16" data-annual="$13">$16</span><span class="per">per user<br>per month</span></div>
+        <p class="billed" data-monthly="Billed monthly" data-annual="Billed annually, $156 per user per year">Billed monthly</p>
+        <ul>
+          <li class="inherit"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Team, plus:</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>SSO/SAML</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Audit log</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Fairness report</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>99.95% uptime SLA</li>
+        </ul>
+        <div class="cta-wrap"><a class="btn btn-ghost" href="#start">Start free trial</a></div>
+      </article>
+    </div>
+    <p class="pricing-foot">Prices in US dollars. Taxes may apply.</p>
+    <p class="visually-hidden" aria-live="polite" id="price-status"></p>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="section" id="faq" aria-labelledby="faq-title" style="padding-top:0">
+  <div class="wrap faq-layout">
+    <div class="section-head reveal">
+      <h2 class="h2" id="faq-title">Questions, answered.</h2>
+      <p class="lead">Something else on your mind? <a href="#">Contact us</a> and a person on our team will reply.</p>
+    </div>
+    <div class="faq-list reveal">
+      <details>
+        <summary>Can I import my existing schedule from a spreadsheet?<span class="pm" aria-hidden="true"></span></summary>
+        <p class="answer">Yes. Upload a CSV or paste rows straight from your spreadsheet, and Rotaline matches columns to people, dates and shift times. You review the imported rotation before anyone is notified.</p>
+      </details>
+      <details>
+        <summary>What happens if nobody acknowledges an alert?<span class="pm" aria-hidden="true"></span></summary>
+        <p class="answer">The alert moves to the next step of the service's escalation policy, for example from the primary to the secondary to the team lead. If every step is exhausted, the policy repeats and the incident is flagged in the next handoff note.</p>
+      </details>
+      <details>
+        <summary>Do you charge for SMS and phone calls?<span class="pm" aria-hidden="true"></span></summary>
+        <p class="answer">No. SMS and phone-call alerts are included in the per-user price of the Team and Business plans. The Free plan sends push and email alerts.</p>
+      </details>
+      <details>
+        <summary>Can contractors or people outside my company be on a rotation?<span class="pm" aria-hidden="true"></span></summary>
+        <p class="answer">Yes. Invite them by email as guests: they can take shifts, receive alerts and write handoff notes, but they only see the rotations they belong to. Guests count as users on paid plans.</p>
+      </details>
+      <details>
+        <summary>How does the free trial work?<span class="pm" aria-hidden="true"></span></summary>
+        <p class="answer">You get 14 days of the Team plan with no credit card required. When the trial ends, choose a paid plan or move to Free; your rotations and history are kept either way.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Final CTA ============ -->
+<section class="final" id="start" aria-labelledby="final-title">
+  <div class="wrap">
+    <h2 id="final-title" class="reveal">Start a 14&#8209;day free trial. <span>No credit card required.</span></h2>
+    <form class="signup reveal" novalidate>
+      <label for="email">Work email</label>
+      <div class="field">
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required aria-describedby="signup-msg">
+        <button class="btn btn-ink" type="submit">Start free trial</button>
+      </div>
+      <p class="msg" id="signup-msg" aria-live="polite"></p>
+      <p class="fine">Setup takes a few minutes. Cancel any time.</p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ Footer ============ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="#top" aria-label="Rotaline home">
+          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+            <circle cx="14" cy="14" r="11" fill="none" stroke="#16181D" stroke-width="2.2"/>
+            <path d="M1 14h26" stroke="#16181D" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="19.5" cy="14" r="3.6" fill="#C9461C"/>
+          </svg>
+          Rotaline
+        </a>
+        <p>On-call scheduling and shift handoffs for engineering teams.</p>
+      </div>
+      <nav class="footer-col" aria-labelledby="f-product">
+        <h3 id="f-product">Product</h3>
+        <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Integrations</a></li><li><a href="#">Changelog</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-company">
+        <h3 id="f-company">Company</h3>
+        <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-resources">
+        <h3 id="f-resources">Resources</h3>
+        <ul><li><a href="#">Docs</a></li><li><a href="#">Status</a></li><li><a href="#">Blog</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-legal">
+        <h3 id="f-legal">Legal</h3>
+        <ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Rotaline, Inc.</span>
+      <a class="status" href="#" style="text-decoration:none"><i aria-hidden="true"></i>Status page</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Header border on scroll */
+  var header = document.querySelector('.site-header');
+  var onScroll = function () { header.classList.toggle('scrolled', window.scrollY > 8); };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* Mobile menu */
+  var menuBtn = document.querySelector('.menu-btn');
+  var panel = document.getElementById('mobile-menu');
+  function setMenu(open) {
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    panel.classList.toggle('open', open);
+  }
+  menuBtn.addEventListener('click', function () { setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'); });
+  panel.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && panel.classList.contains('open')) { setMenu(false); menuBtn.focus(); }
+  });
+  window.matchMedia('(min-width: 901px)').addEventListener('change', function (m) { if (m.matches) setMenu(false); });
+
+  /* Reveal on scroll */
+  var reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* Count-up for results */
+  var nums = document.querySelectorAll('.num[data-count]');
+  var fmt = function (n) { return Math.round(n).toLocaleString('en-US'); };
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    nums.forEach(function (el) { el.querySelector('.v').textContent = '0'; });
+    var cio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target, target = +el.dataset.count, v = el.querySelector('.v'), t0 = null, dur = 1300;
+        cio.unobserve(el);
+        function tick(t) {
+          if (!t0) t0 = t;
+          var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+          v.textContent = fmt(target * e);
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.5 });
+    nums.forEach(function (el) { cio.observe(el); });
+  }
+
+  /* Pricing toggle */
+  var toggle = document.querySelector('.toggle');
+  var status = document.getElementById('price-status');
+  toggle.addEventListener('click', function (e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var period = btn.dataset.period;
+    if (toggle.dataset.period === period) return;
+    toggle.dataset.period = period;
+    toggle.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+    document.querySelectorAll('.plan [data-monthly]').forEach(function (el) {
+      el.textContent = el.dataset[period];
+      if (el.classList.contains('amt')) { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
+    });
+    status.textContent = period === 'annual'
+      ? 'Showing annual prices: Team $7, Business $13 per user per month.'
+      : 'Showing monthly prices: Team $9, Business $16 per user per month.';
+  });
+
+  /* Signup form */
+  var form = document.querySelector('.signup');
+  var input = form.querySelector('input');
+  var msg = document.getElementById('signup-msg');
+  var submit = form.querySelector('button');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var value = input.value.trim();
+    var valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+    if (!valid) {
+      msg.className = 'msg err';
+      msg.textContent = value ? 'That email address doesn’t look right. Check it and try again.' : 'Enter your work email to start the trial.';
+      input.setAttribute('aria-invalid', 'true');
+      input.focus();
+      return;
+    }
+    input.removeAttribute('aria-invalid');
+    submit.disabled = true;
+    submit.textContent = 'Starting…';
+    msg.className = 'msg';
+    msg.textContent = '';
+    setTimeout(function () {
+      submit.disabled = false;
+      submit.textContent = 'Start free trial';
+      msg.className = 'msg ok';
+      msg.textContent = 'Check your inbox. We sent a sign-up link to ' + value + '.';
+      form.reset();
+    }, 700);
+  });
+  input.addEventListener('input', function () {
+    if (input.getAttribute('aria-invalid')) { input.removeAttribute('aria-invalid'); msg.textContent = ''; }
+  });
+})();
+</script>
+</body>
+</html>
