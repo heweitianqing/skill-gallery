@@ -1,0 +1,49 @@
+name: Problem with a result · 结果有问题
+description: A wrong screenshot, wrong data, wrong install steps, a fairness concern or a translation error. 截图或数据有误、安装步骤不对、公平性疑问或翻译错误。
+title: "[result] "
+labels: ["result problem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please point to the exact cell. Note one known capture artifact: full-page screenshots draw fixed or sticky elements sized `100vh` (such as dashboard sidebars) at the first screen's height only. Open the page in the gallery to check whether the page itself is fine.
+        请指明具体是哪一格。已知的截图问题：整页截图里，高度为 `100vh` 的固定或吸顶元素（比如看板侧栏）只画到第一屏的高度。可以在画廊里打开原页面确认页面本身是否正常。
+
+  - type: input
+    id: cell
+    attributes:
+      label: Cell or page · 哪一格或哪个页面
+      description: The cell folder or the gallery URL. 格子目录或画廊页面地址。
+      placeholder: runs/dashboard/codex__frontend-design
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is wrong? · 问题类型
+      options:
+        - Screenshot or thumbnail · 截图或缩略图
+        - The page does not work in the gallery · 页面在画廊里无法正常使用
+        - Data in run.json (tokens, time, skill_triggered, …) · run.json 数据
+        - Isolation or fairness · 隔离或公平性
+        - Install or usage instructions · 安装或调用说明
+        - Translation · 翻译
+        - Something else · 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: What did you see, and what did you expect? · 看到了什么，期望是什么
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence · 证据
+      description: Screenshots, browser and OS, links to log lines or to the skill's documentation. 截图、浏览器和系统、日志行或 skill 文档的链接。
+    validations:
+      required: false

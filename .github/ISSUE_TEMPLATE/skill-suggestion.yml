@@ -1,0 +1,75 @@
+name: Suggest a skill · 推荐 skill
+description: Suggest a web-design agent skill to add to the gallery. 推荐一个网页设计类 skill 加进画廊。
+title: "[skill] "
+labels: ["skill suggestion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. We run every skill on the same three prompts in Claude Code and in Codex, so we need to know exactly which files to fetch.
+        感谢推荐。每个 skill 都会在 Claude Code 和 Codex 里用同样的三道题来跑，所以需要知道具体获取哪些文件。
+
+  - type: input
+    id: name
+    attributes:
+      label: Skill name · skill 名称
+      description: The `name` in the skill's SKILL.md frontmatter. SKILL.md 开头 frontmatter 里的 `name`。
+      placeholder: frontend-design
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: Source repository · 来源仓库
+      description: Link to the repository, ideally to the folder that contains SKILL.md. 仓库链接，最好直接指向 SKILL.md 所在目录。
+      placeholder: https://github.com/owner/repo/tree/main/skills/frontend-design
+    validations:
+      required: true
+
+  - type: input
+    id: license
+    attributes:
+      label: License · 许可证
+      description: SPDX id if you know it. 知道的话写 SPDX 标识。
+      placeholder: MIT
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agents
+    attributes:
+      label: Works with · 支持的 agent
+      options:
+        - Claude Code and Codex · 两者都支持
+        - Claude Code only · 只支持 Claude Code
+        - Codex only · 只支持 Codex
+        - Not sure · 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: install
+    attributes:
+      label: How to install and call it · 安装和调用方式
+      description: Copy the folder, a plugin, its own CLI, anything it needs at run time (Python, network, an account). 复制目录、插件、自带 CLI，以及运行时需要的东西（Python、联网、账号等）。
+    validations:
+      required: false
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is it interesting? · 推荐理由
+      description: What kind of pages it is good at, how widely it is used, links to examples. 擅长做什么样的页面、使用有多广、示例链接。
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks · 确认
+      options:
+        - label: The skill is public, and its license allows fetching and running it. · skill 是公开的，许可证允许获取和运行。
+          required: true
+        - label: It is not already in the gallery or in an open issue. · 画廊和现有 issue 里还没有这个 skill。
+          required: true

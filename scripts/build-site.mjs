@@ -989,7 +989,8 @@ ${LIGHTBOX}`;
 
 const looksLikeCommand = (s) => /^(npx|npm|pnpm|yarn|bunx|git|cp|mkdir|curl|uipro|claude|codex|\/plugin)\b/.test(s.trim());
 
-function installSection(skill, ctx) {
+// Install commands and invocation lines for both agents (also used by scripts/build-readme.mjs).
+function installInfo(skill, cells) {
   const n = skill.name;
   const gh = githubRepo(skill.repo);
   const known = skill.repo && skill.path;
@@ -1007,10 +1008,15 @@ function installSection(skill, ctx) {
   const ix = install(skill.install_codex, '.agents/skills');
 
   // The closing sentence the runs actually used, else the one meta.yaml gives.
-  const runLine = (agent) => [...ctx.cells.values()].find((c) => c.variant === n && c.agent === agent && c.run?.prompt?.skill_line)?.run.prompt.skill_line;
+  const runLine = (agent) => [...cells.values()].find((c) => c.variant === n && c.agent === agent && c.run?.prompt?.skill_line)?.run.prompt.skill_line;
   const claudeLine = runLine('claude') || (skill.usage_claude && !skill.usage_claude.startsWith('/') ? skill.usage_claude : `Use the ${n} skill.`);
   const codexMention = skill.usage_codex?.startsWith('$') ? skill.usage_codex.split(/\s/)[0] : `$${n}`;
   const codexLine = runLine('codex') || `Use the ${codexMention} skill.`;
+  return { n, ic, ix, claudeLine, codexMention, codexLine, lines };
+}
+
+function installSection(skill, ctx) {
+  const { n, ic, ix, claudeLine, codexMention, codexLine, lines } = installInfo(skill, ctx.cells);
   // Single quotes, so the shell leaves Codex's $name mention alone.
   const sq = (s) => `'${s.replace(/'/g, `'\\''`)}'`;
   const claudeUse = lines(['# interactive', `/${n} <your task>`, '', '# or end any request with', claudeLine, '', '# headless, as in the gallery runs', `claude -p ${sq(`<your task> ${claudeLine}`)}`]);
@@ -1150,16 +1156,13 @@ ${c.run ? `<dl class="details">${detailRows(c, ctx.prompts.get(c.prompt))}</dl>`
 
 // ---------------------------------------------------------------- main
 
-async function main() {
-  const opts = parseArgs(process.argv.slice(2));
+// Config, prompts, cells and skills, without writing anything (also used by scripts/build-readme.mjs).
+function loadInputs(runsDir) {
   CONFIG = { site_title: 'skill-gallery', prompts: [], skills: [], agents: [], ...(readJson(path.join(SITE_SRC, 'config.json')) || {}) };
   if (!CONFIG.repo_url && process.env.GITHUB_REPOSITORY) CONFIG.repo_url = `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${process.env.GITHUB_REPOSITORY}`;
   AGENTS = AGENT_ORDER.map((id) => ({ id, label: id, ...(CONFIG.agents || []).find((a) => a.id === id) }));
-  BUILD = { date: new Date().toISOString().slice(0, 10), sha: process.env.GITHUB_SHA || null };
-
-  prepareOutDir(opts.out);
   const prompts = loadPrompts(CONFIG.prompts || []);
-  const cells = scanRuns(opts.runs, AGENT_ORDER);
+  const cells = scanRuns(runsDir, AGENT_ORDER);
   for (const c of cells.values()) {
     if (!prompts.has(c.prompt)) {
       warn(`runs/${c.prompt}: no prompts/${c.prompt}.md, listing it by id`);
@@ -1168,6 +1171,15 @@ async function main() {
   }
   const candidates = loadCandidates();
   const skills = listSkills(CONFIG, cells).map((n) => loadSkill(n, candidates, cells));
+  return { config: CONFIG, agents: AGENTS, prompts, cells, skills };
+}
+
+async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  BUILD = { date: new Date().toISOString().slice(0, 10), sha: process.env.GITHUB_SHA || null };
+
+  prepareOutDir(opts.out);
+  const { prompts, cells, skills } = loadInputs(opts.runs);
 
   // Copy cell files unchanged and make thumbnails.
   for (const c of cells.values()) {
@@ -1260,7 +1272,12 @@ async function main() {
   if (warnings.length) console.log(`  ${warnings.length} warning(s), see stderr`);
 }
 
-main().catch((e) => {
-  console.error(`error: ${e.message}`);
-  process.exit(1);
-});
+export { loadInputs, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings };
+
+// Build only when run directly, not when imported by scripts/build-readme.mjs.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((e) => {
+    console.error(`error: ${e.message}`);
+    process.exit(1);
+  });
+}

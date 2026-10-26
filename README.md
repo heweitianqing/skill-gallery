@@ -1,86 +1,136 @@
+**English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
+
 # skill-gallery
 
-> Status: v0, work in progress. Nothing here is a final result yet.
+See what web-design agent skills actually do: the same prompts, built by Claude Code and Codex, with and without each skill, side by side.
 
-**skill-gallery** shows what web pages built with different agent skills (the `SKILL.md` format) actually look like, how to install and use each skill in **Claude Code** and **OpenAI Codex**, and how the results compare with and without the skill.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Gallery](https://img.shields.io/badge/gallery-online-555.svg)](https://heweitianqing.github.io/skill-gallery/)
 
-[中文说明](#中文说明)
+[![Overview of the results grid](docs/launch/overview.png)](https://heweitianqing.github.io/skill-gallery/)
 
-## The 2×2 matrix
+<!-- status:start -->
+> **Status: v0.** All 24 cells have run (2026-10-25 – 2026-10-26, UTC).
+<!-- status:end -->
 
-Every prompt is run in four cells:
+## Why
 
-|                | native (no skill)   | + skill                  |
-| -------------- | ------------------- | ------------------------ |
-| **Codex CLI**  | `codex__native`     | `codex__<skill-name>`    |
-| **Claude Code**| `claude__native`    | `claude__<skill-name>`   |
+There are many agent skills (the `SKILL.md` format) that promise better-looking front-end work. It is hard to tell what they actually change. Their READMEs show hand-picked examples, and it is often unclear how to install and call the same skill in Claude Code and in Codex. This repository runs every skill on the same prompts, under the same conditions, shows every result, and writes down the exact install and invocation steps for both agents.
 
-The two native cells depend only on the prompt, so every skill is compared against the same baselines.
+## How the comparison works
 
-Models under test (fixed in the run scripts):
+Every prompt runs in four cells:
 
-| Agent       | Model             | Effort                     |
-| ----------- | ----------------- | -------------------------- |
-| Claude Code | `claude-opus-5-5` | `--effort high`            |
-| Codex CLI   | `gpt-6.1-sol`     | `model_reasoning_effort=high` |
+|  | Native (no added skill) | + skill |
+| --- | --- | --- |
+| **Codex** | `codex__native` | `codex__<skill>` |
+| **Claude Code** | `claude__native` | `claude__<skill>` |
 
-## Prompts (v0: web pages only)
+The two native cells depend only on the prompt, so every skill is compared against the same two baselines.
 
-| id               | file                                                     |
-| ---------------- | -------------------------------------------------------- |
-| `landing-saas`   | [prompts/landing-saas.md](prompts/landing-saas.md)       |
-| `dashboard`      | [prompts/dashboard.md](prompts/dashboard.md)             |
-| `blog-portfolio` | [prompts/blog-portfolio.md](prompts/blog-portfolio.md)   |
+| Agent | Model | Effort |
+| --- | --- | --- |
+| Codex CLI | `gpt-6.1-sol` | `model_reasoning_effort=high` |
+| Claude Code | `claude-opus-5-5` | `--effort high` |
 
-The prompts are written in neutral language with no style adjectives. All four cells get identical text; the skill cells only add one closing sentence that names the skill explicitly.
+Three prompts, web pages only. They use neutral wording with no style adjectives, and all four cells get identical text; skill cells only add one closing sentence that names the skill.
 
-## Skills (v0)
+| Prompt | What it asks for |
+| --- | --- |
+| [`landing-saas`](prompts/landing-saas.md) | A marketing page for a fictional on-call scheduling tool, with pricing toggle and FAQ |
+| [`dashboard`](prompts/dashboard.md) | A sales and operations dashboard for a fictional coffee roaster, from fixed data |
+| [`blog-portfolio`](prompts/blog-portfolio.md) | A one-page portfolio and blog for a fictional product designer |
 
-| Skill | Source (pinned) | License |
-| ----- | --------------- | ------- |
-| [`frontend-design`](skills/frontend-design/meta.yaml) | `anthropics/skills@dbd4588` `skills/frontend-design` | Apache-2.0 |
-| [`ui-ux-pro-max`](skills/ui-ux-pro-max/meta.yaml) | `ui-ux-pro-max-cli@2.15.0` (official installer; repo `nextlevelbuilder/ui-ux-pro-max-skill`) | MIT |
-| [`web-design-engineer`](skills/web-design-engineer/meta.yaml) | `ConardLi/garden-skills@2b9a893` `skills/web-design-engineer` | MIT |
+## Results
 
-Skill files are not stored here; `scripts/fetch-skill.mjs` downloads them at the pinned version. Candidate research lives in [research/](research/).
+<!-- results:start -->
+Each square shows the top of the page at desktop width: Codex on top, Claude Code below. Click a thumbnail to open that result in the gallery.
 
-## Fairness rules
+<table>
+<thead><tr><th>Prompt</th><th>Native (no added skill)</th><th><a href="https://heweitianqing.github.io/skill-gallery/skills/frontend-design/">frontend-design</a></th><th><a href="https://heweitianqing.github.io/skill-gallery/skills/ui-ux-pro-max/">ui-ux-pro-max</a></th><th><a href="https://heweitianqing.github.io/skill-gallery/skills/web-design-engineer/">web-design-engineer</a></th></tr></thead>
+<tbody>
+<tr><th><a href="https://heweitianqing.github.io/skill-gallery/prompts/landing-saas/">SaaS landing page</a></th><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/codex__native/"><img src="docs/launch/assets/thumbs/landing-saas/codex__native.png" width="160" alt="Codex · native, SaaS landing page"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/claude__native/"><img src="docs/launch/assets/thumbs/landing-saas/claude__native.png" width="160" alt="Claude Code · native, SaaS landing page"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/codex__frontend-design/"><img src="docs/launch/assets/thumbs/landing-saas/codex__frontend-design.png" width="160" alt="Codex · + frontend-design, SaaS landing page"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/claude__frontend-design/"><img src="docs/launch/assets/thumbs/landing-saas/claude__frontend-design.png" width="160" alt="Claude Code · + frontend-design, SaaS landing page"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/codex__ui-ux-pro-max/"><img src="docs/launch/assets/thumbs/landing-saas/codex__ui-ux-pro-max.png" width="160" alt="Codex · + ui-ux-pro-max, SaaS landing page"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/claude__ui-ux-pro-max/"><img src="docs/launch/assets/thumbs/landing-saas/claude__ui-ux-pro-max.png" width="160" alt="Claude Code · + ui-ux-pro-max, SaaS landing page"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/codex__web-design-engineer/"><img src="docs/launch/assets/thumbs/landing-saas/codex__web-design-engineer.png" width="160" alt="Codex · + web-design-engineer, SaaS landing page"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/landing-saas/claude__web-design-engineer/"><img src="docs/launch/assets/thumbs/landing-saas/claude__web-design-engineer.png" width="160" alt="Claude Code · + web-design-engineer, SaaS landing page"></a><br><sub>Claude Code</sub></td></tr>
+<tr><th><a href="https://heweitianqing.github.io/skill-gallery/prompts/dashboard/">Data dashboard</a></th><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/codex__native/"><img src="docs/launch/assets/thumbs/dashboard/codex__native.png" width="160" alt="Codex · native, Data dashboard"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/claude__native/"><img src="docs/launch/assets/thumbs/dashboard/claude__native.png" width="160" alt="Claude Code · native, Data dashboard"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/codex__frontend-design/"><img src="docs/launch/assets/thumbs/dashboard/codex__frontend-design.png" width="160" alt="Codex · + frontend-design, Data dashboard"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/claude__frontend-design/"><img src="docs/launch/assets/thumbs/dashboard/claude__frontend-design.png" width="160" alt="Claude Code · + frontend-design, Data dashboard"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/codex__ui-ux-pro-max/"><img src="docs/launch/assets/thumbs/dashboard/codex__ui-ux-pro-max.png" width="160" alt="Codex · + ui-ux-pro-max, Data dashboard"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/claude__ui-ux-pro-max/"><img src="docs/launch/assets/thumbs/dashboard/claude__ui-ux-pro-max.png" width="160" alt="Claude Code · + ui-ux-pro-max, Data dashboard"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/codex__web-design-engineer/"><img src="docs/launch/assets/thumbs/dashboard/codex__web-design-engineer.png" width="160" alt="Codex · + web-design-engineer, Data dashboard"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/dashboard/claude__web-design-engineer/"><img src="docs/launch/assets/thumbs/dashboard/claude__web-design-engineer.png" width="160" alt="Claude Code · + web-design-engineer, Data dashboard"></a><br><sub>Claude Code</sub></td></tr>
+<tr><th><a href="https://heweitianqing.github.io/skill-gallery/prompts/blog-portfolio/">Personal blog and portfolio</a></th><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/codex__native/"><img src="docs/launch/assets/thumbs/blog-portfolio/codex__native.png" width="160" alt="Codex · native, Personal blog and portfolio"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/claude__native/"><img src="docs/launch/assets/thumbs/blog-portfolio/claude__native.png" width="160" alt="Claude Code · native, Personal blog and portfolio"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/codex__frontend-design/"><img src="docs/launch/assets/thumbs/blog-portfolio/codex__frontend-design.png" width="160" alt="Codex · + frontend-design, Personal blog and portfolio"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/claude__frontend-design/"><img src="docs/launch/assets/thumbs/blog-portfolio/claude__frontend-design.png" width="160" alt="Claude Code · + frontend-design, Personal blog and portfolio"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/codex__ui-ux-pro-max/"><img src="docs/launch/assets/thumbs/blog-portfolio/codex__ui-ux-pro-max.png" width="160" alt="Codex · + ui-ux-pro-max, Personal blog and portfolio"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/claude__ui-ux-pro-max/"><img src="docs/launch/assets/thumbs/blog-portfolio/claude__ui-ux-pro-max.png" width="160" alt="Claude Code · + ui-ux-pro-max, Personal blog and portfolio"></a><br><sub>Claude Code</sub></td><td align="center"><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/codex__web-design-engineer/"><img src="docs/launch/assets/thumbs/blog-portfolio/codex__web-design-engineer.png" width="160" alt="Codex · + web-design-engineer, Personal blog and portfolio"></a><br><sub>Codex</sub><br><a href="https://heweitianqing.github.io/skill-gallery/cells/blog-portfolio/claude__web-design-engineer/"><img src="docs/launch/assets/thumbs/blog-portfolio/claude__web-design-engineer.png" width="160" alt="Claude Code · + web-design-engineer, Personal blog and portfolio"></a><br><sub>Claude Code</sub></td></tr>
+</tbody>
+</table>
+<!-- results:end -->
 
-A comparison is only useful if it is fair and reproducible:
+## Skills: install and use
 
-1. **Isolated environments.** Every run gets a fresh temporary working directory outside this repo, a throwaway config home (`CLAUDE_CONFIG_DIR` / `CODEX_HOME`) and a throwaway `HOME`. None of the operator's plugins, user-level skills, settings, MCP servers or memories are visible. The init event of each run is saved as evidence.
-2. **The skill must actually fire.** For skill cells, the transcript is checked for the skill being invoked and its `SKILL.md` being read. A run where the skill did not trigger is marked failed, not published as a skill result.
-3. **No cherry-picking.** One generation per cell, no follow-up turns. Every attempt is kept in `runs/`, including failures.
-4. **Full metadata.** Each run writes a `run.json` (CLI version, model, effort, prompt hash, skill source and commit, timing, token usage, isolation evidence). See [docs/run-schema.md](docs/run-schema.md).
+The short version for each agent. Every skill page in the gallery has the full commands and notes.
 
-## Repository layout
+<!-- skills:start -->
+| Skill | Claude Code | Codex |
+| --- | --- | --- |
+| [frontend-design](https://heweitianqing.github.io/skill-gallery/skills/frontend-design/#install) | Copy the folder to `.claude/skills/frontend-design/`, then end the prompt with `Use the frontend-design skill.` (or type `/frontend-design …`) | Copy the folder to `.agents/skills/frontend-design/`, then mention `$frontend-design` in the prompt |
+| [ui-ux-pro-max](https://heweitianqing.github.io/skill-gallery/skills/ui-ux-pro-max/#install) | Run `npx ui-ux-pro-max-cli@2.15.0 init --ai claude`, then end the prompt with `Use the ui-ux-pro-max skill.` (or type `/ui-ux-pro-max …`) | Run `npx ui-ux-pro-max-cli@2.15.0 init --ai codex`, then mention `$ui-ux-pro-max` in the prompt |
+| [web-design-engineer](https://heweitianqing.github.io/skill-gallery/skills/web-design-engineer/#install) | Copy the folder to `.claude/skills/web-design-engineer/`, then end the prompt with `Use the web-design-engineer skill.` (or type `/web-design-engineer …`) | Copy the folder to `.agents/skills/web-design-engineer/`, then mention `$web-design-engineer` in the prompt |
+<!-- skills:end -->
 
+## Method and limitations
+
+- **Isolation.** Every run starts in a fresh throwaway directory outside the repository, with an empty `HOME`, its own config home (`CLAUDE_CONFIG_DIR` or `CODEX_HOME`) and an environment built from scratch. None of the operator's settings, plugins, user-level skills, MCP servers or memories are loaded. The skill is copied only into that project's skill folder. The agents' own logs are kept as evidence in each `run.json`.
+- **The skill has to fire.** A skill cell counts only if its logs show the skill being loaded (`skill_triggered`). Otherwise it is marked failed. See [docs/canary.md](docs/canary.md) for the canary test behind this check.
+- **One sample per cell, no picking.** Each cell is generated once, with no follow-up turns. Every result is published, failures included; reruns keep the earlier attempt.
+- **Native means out of the box, not zero skills.** Every cell, native ones included, can use the skills that ship with its agent: the 19 skills bundled with Claude Code, and Codex's system skills (`imagegen`, `openai-docs`, `skill-creator`, `skill-installer`). In the `dashboard` prompt, Claude Code's bundled `dataviz` skill fired on its own twice, once in `claude__native` and once in `claude__frontend-design`; `run.json` records this under `builtin_skills_used`. This is on purpose: the comparison is about what a reader actually gets after installing the agent.
+- **Limitation: the rest of the disk is still readable.** Isolation means nothing is *loaded*, not that nothing is *readable*. Codex's stock `workspace-write` sandbox can read `/`, and Claude Code with `bypassPermissions` has no sandbox. In the v0 runs, agents looked for `AGENTS.md` in parent directories, and one used Playwright from the operator's npm cache to test its page. A separate user account or a container would close this gap.
+- **Limitation: fixed sidebars in screenshots.** Full-page captures draw `position: fixed` or `sticky` elements sized `100vh` at the first screen's height only, so a dashboard sidebar can appear to stop at 900 px. The page itself is fine; open it in the gallery to check.
+- **Limitation: one sample is not a benchmark.** Read the gallery as examples of what a skill tends to do, not as a score.
+
+Details: [docs/running.md](docs/running.md) and [docs/run-schema.md](docs/run-schema.md).
+
+## Reproduce
+
+Requirements: macOS or Linux, Node 20+, git, the Codex CLI and the Claude Code CLI, and a login for each.
+
+```bash
+git clone https://github.com/heweitianqing/skill-gallery.git
+cd skill-gallery
+npm install
+npx playwright install --no-shell chromium
+codex login
+bash scripts/setup-claude-auth.sh        # long-lived token for the isolated Claude runs
+
+node scripts/fetch-skill.mjs --all       # skills at their pinned versions, into .cache/skills/
+node scripts/run-codex.mjs landing-saas native
+node scripts/run-codex.mjs landing-saas frontend-design
+node scripts/run-claude.mjs landing-saas frontend-design
+node scripts/screenshot.mjs              # desktop.png and mobile.png for new cells
+
+node scripts/build-site.mjs              # gallery in site/dist/
+node scripts/build-readme.mjs            # refresh the tables in every README
 ```
-prompts/    the fixed prompts (one Markdown file per prompt)
-skills/     vendored or referenced skills under test (each keeps its own license)
-runs/       results: runs/<prompt>/<agent>__<native|skill>/{index.html,desktop.png,mobile.png,run.json,transcript.jsonl}
-scripts/    run-claude.mjs, run-codex.mjs, screenshot.mjs, setup-claude-auth.sh
-site/       the static gallery site (placeholder for now)
-docs/       run.json schema and how to run things
-```
 
-## Running
+To preview the gallery: `python3 -m http.server 8000 --directory site/dist`, then open <http://localhost:8000/>.
 
-See [docs/running.md](docs/running.md).
+## Add a skill
 
-## License
+Suggest one with the [skill suggestion form](https://github.com/heweitianqing/skill-gallery/issues/new?template=skill-suggestion.yml), or add it yourself:
 
-The code and documentation written for this repository are released under the [MIT License](LICENSE). Third-party skills placed in or referenced from `skills/` keep their own licenses; check each skill's source. Pages in `runs/` are model outputs kept for comparison.
+1. Create `skills/<name>/meta.yaml` with the pinned source (repository, commit, path), license, and how to install and invoke it in each agent. Copy an existing one as a template.
+2. Run `node scripts/fetch-skill.mjs <name>`, then the six skill cells (three prompts × two agents) and `node scripts/screenshot.mjs`.
+3. Add the skill's name to `site/config.json` and run `node scripts/build-readme.mjs`.
+4. Open a pull request with the new `runs/` cells. Do not rerun cells to get a nicer result.
 
----
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the details.
 
-## 中文说明
+## Credits
 
-**skill-gallery** 用来展示：不同的 agent skill（`SKILL.md` 格式）做出来的网页长什么样，在 Claude Code 和 Codex 里怎么安装、怎么使用，以及用和不用 skill 的效果对比。
+The skills belong to their authors and keep their own licenses. This repository does not include their files; they are fetched at the pinned commit or version.
 
-- **2×2 矩阵**：每道题跑四格，Codex 原生、Codex + skill、Claude 原生、Claude + skill。两个原生格只跟题目有关，所有 skill 共用同一组基线。
-- **被测模型**：Claude Code 用 `claude-opus-5-5`（effort high），Codex 用 `gpt-6.1-sol`（reasoning effort high），写死在运行脚本里。
-- **v0 题目**：SaaS 落地页、数据看板、个人博客/作品集，都只做网页。题目措辞中立，四格完全相同；带 skill 的格子只在末尾多一句显式点名。
-- **公平性**：每次运行用仓库外的全新临时目录和独立配置目录，看不到操作者的插件、用户级 skill、设置和记忆；带 skill 的运行必须从日志里证明 skill 真的被调用了，否则判失败；每格只生成一次、不追问、不挑图；每次运行都写 `run.json` 元数据。
-- **怎么跑**：见 [docs/running.md](docs/running.md)。
-- **许可**：本仓库自己的代码和文档用 MIT 许可；`skills/` 里的第三方 skill 保留各自的许可。
+<!-- credits:start -->
+| Skill | Source | License | Pinned commit |
+| --- | --- | --- | --- |
+| [frontend-design](https://heweitianqing.github.io/skill-gallery/skills/frontend-design/) | [anthropics/skills](https://github.com/anthropics/skills) `skills/frontend-design` | [Apache-2.0](https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design/LICENSE.txt) | [`dbd4588f9e`](https://github.com/anthropics/skills/tree/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design) |
+| [ui-ux-pro-max](https://heweitianqing.github.io/skill-gallery/skills/ui-ux-pro-max/) | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) `.claude/skills/ui-ux-pro-max`<br><sub>Copyright (c) 2024 Next Level Builder</sub> | [MIT](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/d14efff8ed1faa4187f004f79926f428c8074ec7/LICENSE) | `ui-ux-pro-max-cli@2.15.0` (CLI-generated)<br><sub>[`d14efff8ed`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/d14efff8ed1faa4187f004f79926f428c8074ec7/.claude/skills/ui-ux-pro-max)</sub> |
+| [web-design-engineer](https://heweitianqing.github.io/skill-gallery/skills/web-design-engineer/) | [ConardLi/garden-skills](https://github.com/ConardLi/garden-skills) `skills/web-design-engineer`<br><sub>Copyright (c) 2026 (no name given; attribute to ConardLi/garden-skills)</sub> | [MIT](https://github.com/ConardLi/garden-skills/blob/2b9a89340b70f632d31c0f1c69fce94a7912423e/LICENSE) | [`2b9a89340b`](https://github.com/ConardLi/garden-skills/tree/2b9a89340b70f632d31c0f1c69fce94a7912423e/skills/web-design-engineer) |
+<!-- credits:end -->
+
+## Disclaimer
+
+This project is not affiliated with, endorsed by, or sponsored by Anthropic or OpenAI. Claude, Claude Code, Codex and other names are trademarks of their respective owners. The pages in `runs/` are unedited model outputs, and the fictional companies and people in them are made up.
+
+The translations of this README were made with AI. Corrections are welcome as pull requests.
+
+The code and documentation in this repository are released under the [MIT License](LICENSE).
