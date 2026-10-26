@@ -1,0 +1,56 @@
+# Skill files are not stored in this repo. `node scripts/fetch-skill.mjs design-taste-frontend`
+# downloads them at the pinned commit into .cache/skills/ (git-ignored).
+name: design-taste-frontend   # frontmatter name; the upstream folder is skills/taste-skill ("taste-skill")
+display_name: taste-skill       # what readers and the repo call it; folders, cells and invocation use the skill name
+summary: >-
+  taste-skill v2: art direction for websites and app screens. A script deals
+  three researched directions from a library of 247 studied sites, the agent
+  builds the page from the chosen one, then checks it in a real browser with a
+  bundled inspector. Instructions plus Node scripts; needs Node 22+, Chrome, and
+  network for found pictures.
+research_id: leonxlnx-taste-skill   # research/candidates.json
+
+upstream:
+  repo: https://github.com/Leonxlnx/taste-skill
+  commit: 12af471f627f866411b4bd785b19646d3672784c   # tag v2.1.5
+  path: skills/taste-skill
+  skill_md: https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/skills/taste-skill/SKILL.md
+
+license:
+  spdx: MIT
+  file: https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/LICENSE
+  in_skill_folder: false
+  copyright: Copyright (c) 2026 Leonxlnx
+
+fetch:
+  method: git
+
+install:
+  claude: Copy the folder to <project>/.claude/skills/design-taste-frontend/
+  codex: Copy the folder to <project>/.agents/skills/design-taste-frontend/
+
+invoke:
+  claude: "Use the design-taste-frontend skill."   # interactive: /design-taste-frontend <task>
+  codex: "$design-taste-frontend"                   # e.g. "... Use the $design-taste-frontend skill."
+
+strengths:
+  - text: Art direction for websites, distilled from a study of 247 curated gallery sites (One Page Love, Awwwards Sites of the Day)
+    source: https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/skills/taste-skill/SKILL.md#L3-L12
+  - text: Makes coding agents design websites and app screens instead of assembling the average landing page
+    source: https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/README.md#L61
+  - text: Gives the agent an art direction, real pictures and a way to check its own work in a real browser
+    source: https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/README.md#L61
+  - text: The idea comes from the subject, and the agent reviews its own screenshots and revises
+    source: https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/skills/taste-skill/SKILL.md#L22-L32
+
+# Its description names landing pages, portfolios and dashboards (research/batch2.md section 11).
+applies_to: [landing-saas, dashboard, blog-portfolio]
+out_of_scope_reason: Showcase prompt added for frontend-ui-engineering only.
+applies_to_note: Decided from the skill text before the batch-2 runs.
+
+notes:
+  - The upstream folder name (taste-skill) differs from the skill name (design-taste-frontend); the gallery installs it under the skill name.
+  - Writes working files to .taste-skill/ and may save pictures and scripts next to index.html; the run scripts keep the files index.html references (output.kept_assets) and flag them as extra_files.
+  - Codex cells have no network, so the picture search step cannot run there.
+  - Its two signature strengths, real pictures and scroll scenes with a motion layer, are limited by the shared prompt rules (no remote images) and invisible in static screenshots; each cell also has a scroll recording.
+  - Upstream released v2.0.0 to v2.1.5 within 12 days; always use the pinned commit.

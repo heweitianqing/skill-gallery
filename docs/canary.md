@@ -55,3 +55,13 @@ One practical difference: on Codex the skill text is attached by the CLI as soon
 
 A skill cell with `skill_triggered: false` is marked failed (`failure_reasons: ["skill_not_triggered"]`). For Codex, the cell also fails if the skill is missing from the skills list the model was given (`skill_not_listed`), which would mean it was installed in the wrong place.
 
+## Batch-2 canaries (2026-10-26)
+
+The first four batch-2 cells were real cells, run first to check the new skills before the rest: taste-skill (`design-taste-frontend`) and `theme-factory` on `landing-saas`, on both agents. All four succeeded with `skill_triggered: true`; none needed a re-run.
+
+- **theme-factory** documents a "show the themes, ask the user, wait for confirmation" workflow. In one-pass cells neither agent stopped to ask; both picked a theme themselves and finished. The same held for the dashboard and blog-portfolio cells.
+- **taste-skill** is invoked by its frontmatter name `design-taste-frontend` (`Use the design-taste-frontend skill.` / `Use the $design-taste-frontend skill.`); its upstream folder is `taste-skill`. Both agents ran its scripts: `draw.mjs` (direction sheet) on both, `lint.mjs` on both, and the browser inspector `inspect.mjs` on Claude only, because the Codex sandbox blocks its local server and Chrome.
+  - Every taste-skill page in the batch was a single `index.html` (no kept assets), with inline SVG/CSS rather than downloaded pictures.
+  - Claude agents deleted `.taste-skill/` before finishing to leave one file, and Codex agents wrote the direction sheet to `/tmp` with `--out`. The runners now snapshot the evidence files during the run; for cells that ran before that, the files were recovered from snapshots or `/tmp` where possible (see each cell's `notes`). The Claude landing canary's evidence was lost.
+  - taste-skill cells took 7–21 minutes (Claude: 16, 11 and 21 minutes for landing, dashboard, blog; $2.85–$3.82 each), within the 120-minute timeout.
+

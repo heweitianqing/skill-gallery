@@ -30,6 +30,19 @@ invoke:
   claude: "Use the web-design-engineer skill."   # interactive: /web-design-engineer <task>
   codex: "$web-design-engineer"
 
+strengths:
+  - text: Polished browser-rendered visual artifacts with HTML/CSS/JavaScript, including pages, dashboards and data visualizations
+    source: https://github.com/ConardLi/garden-skills/blob/2b9a89340b70f632d31c0f1c69fce94a7912423e/skills/web-design-engineer/SKILL.md#L3
+  - text: Aims for "stunning", not just "functional"
+    source: https://github.com/ConardLi/garden-skills/blob/2b9a89340b70f632d31c0f1c69fce94a7912423e/skills/web-design-engineer/SKILL.md#L10
+  - text: Declares a design system before building, with an anti-cliché checklist and 25 style recipes
+    source: https://github.com/ConardLi/garden-skills/blob/2b9a89340b70f632d31c0f1c69fce94a7912423e/skills/web-design-engineer/README.md#L23-L34
+
+# "Web pages & landing pages ... portfolios" and "Dashboards" (research/batch2.md section 11).
+applies_to: [landing-saas, dashboard, blog-portfolio]
+out_of_scope_reason: Showcase prompt added for frontend-ui-engineering only.
+applies_to_note: Checked against the skill text after the v0 runs (not decided in advance); the text names all three page types.
+
 notes:
   - Replaces OpenAI's frontend-skill in v0, because that skill was removed from OpenAI's official catalog and readers can no longer install it.
   - Its React path loads React and Babel from a CDN; the default hand-written CSS path needs no network.

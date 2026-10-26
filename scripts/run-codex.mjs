@@ -17,7 +17,7 @@ import {
   REPO_ROOT, SCHEMA_VERSION, baseEnv, cleanup, collectOutput, copySkill, die, hostInfo, loadPrompt,
   log, makeRunDir, makeSanitizer, parseCellArgs, prepareOutDir, readJsonl, runProcess, shellQuote,
   skillSourceMeta, writeRunJson, writeTranscript, realKeychainState, createThrowawayKeychain,
-  deleteThrowawayKeychain, listTree,
+  deleteThrowawayKeychain, listTree, startEvidenceWatch,
 } from './lib/common.mjs';
 import { resolveSkill } from './lib/skills.mjs';
 
@@ -34,13 +34,21 @@ const DISABLED_FEATURES = ['apps', 'remote_plugin', 'plugins', 'memories', 'tool
 
 const SOURCE_CODEX_HOME = process.env.SG_CODEX_AUTH_HOME || path.join(os.homedir(), '.codex');
 
+// Pinned so every cell runs the same CLI (see run-claude.mjs).
+const CODEX_VERSION = process.env.SG_CODEX_VERSION || '0.164.0';
+
 function findCodex() {
-  if (process.env.CODEX_BIN) return process.env.CODEX_BIN;
-  try {
-    return execFileSync('/bin/sh', ['-c', 'command -v codex'], { encoding: 'utf8' }).trim();
-  } catch {
-    die('codex not found. Install it with: npm install -g @openai/codex');
+  let bin = process.env.CODEX_BIN;
+  if (!bin) {
+    try {
+      bin = execFileSync('/bin/sh', ['-c', 'command -v codex'], { encoding: 'utf8' }).trim();
+    } catch {
+      die(`codex not found. Install it with: npm install -g @openai/codex@${CODEX_VERSION}`);
+    }
   }
+  const version = execFileSync(bin, ['--version'], { encoding: 'utf8' }).trim().replace(/^codex-cli\s*/, '');
+  if (version !== CODEX_VERSION) die(`codex ${version} found at ${bin}, expected ${CODEX_VERSION}. Install it with npm install -g @openai/codex@${CODEX_VERSION}, or set SG_CODEX_VERSION.`);
+  return bin;
 }
 
 function minimalConfig() {
@@ -201,7 +209,9 @@ async function main() {
   log(`codex ${cell.promptId} ${cell.variant}: running in ${dirs.runDir}`);
   const eventsFile = path.join(dirs.runDir, 'events.jsonl');
   const stderrFile = path.join(dirs.runDir, 'stderr.log');
+  const stopEvidenceWatch = startEvidenceWatch(dirs.work, path.join(dirs.runDir, 'evidence-snapshots'));
   const proc = await runProcess({ cmd: codexBin, args, env, cwd: dirs.work, stdoutFile: eventsFile, stderrFile });
+  stopEvidenceWatch();
   const finishedAt = new Date().toISOString();
   log(`codex exited ${proc.exitCode} after ${Math.round(proc.durationMs / 1000)}s`);
 
@@ -228,7 +238,7 @@ async function main() {
     if (e.type === 'item.completed' && e.item?.type) itemCounts[e.item.type] = (itemCounts[e.item.type] || 0) + 1;
   }
 
-  const output = collectOutput(dirs.work, out, ['.agents']);
+  const output = collectOutput(dirs.work, out, { ignoreTop: ['.agents'], sanitize: san.fix, snapshotDir: path.join(dirs.runDir, 'evidence-snapshots') });
   writeTranscript(events, path.join(out, 'transcript.jsonl'), san);
 
   const systemSkills = ev.skills_listed.filter((s) => ev.skill_roots.find((r) => s.file.startsWith(`${r.id}/`))?.path.endsWith('/skills/.system'));
@@ -253,6 +263,7 @@ async function main() {
   if (proc.exitCode !== 0) failures.push(`exit_code_${proc.exitCode}`);
   if (turnFailed) failures.push(`turn_failed: ${turnFailed}`);
   if (!output.index_html) failures.push('no_index_html');
+  if (output.missing_local_refs?.length) failures.push('broken_local_ref');
   if (!isolationOk) failures.push('isolation_check_failed');
   if (cell.skill && cell.skill.name && !ev.skills_listed.some((s) => s.name === cell.skill.name)) failures.push('skill_not_listed');
   if (cell.skill && !skillTriggered) failures.push('skill_not_triggered');
@@ -273,6 +284,7 @@ async function main() {
     duration_ms: proc.durationMs,
     exit_code: proc.exitCode,
     timed_out: proc.timedOut,
+    timeout_min: proc.timeoutMin,
     usage: { ...usage, total_cost_usd: null },
     activity: itemCounts,
     success: failures.length === 0,
@@ -311,7 +323,11 @@ async function main() {
     },
     output: (({ external_refs, ...rest }) => rest)(output),
     external_refs: output.external_refs ?? null,
-    rule_violations: output.external_refs?.violations ?? [],
+    rule_violations: [
+      ...(output.external_refs?.violations ?? []),
+      ...(output.kept_assets?.length ? ['extra_files'] : []),
+      ...(output.assets_over_cap?.length ? ['assets_over_cap'] : []),
+    ],
     host: hostInfo(),
     stderr_tail: san.fix(fs.readFileSync(stderrFile, 'utf8').split('\n').filter((l) => l.trim()).slice(-15).join('\n')),
     screenshots: null,

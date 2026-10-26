@@ -44,6 +44,19 @@ invoke:
   claude: "Use the ui-ux-pro-max skill."   # interactive: /ui-ux-pro-max <task>
   codex: "$ui-ux-pro-max"
 
+strengths:
+  - text: Searchable local design data for web, mobile and desktop UI (styles, product palettes, font pairings, UX guidelines, chart types, stacks)
+    source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/d14efff8ed1faa4187f004f79926f428c8074ec7/.claude/skills/ui-ux-pro-max/SKILL.md#L3
+  - text: Industry-specific colour palettes and reasoning rules that generate a design system per product type
+    source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/d14efff8ed1faa4187f004f79926f428c8074ec7/README.md#L192-L198
+  - text: Chart type recommendations for dashboards and analytics
+    source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/d14efff8ed1faa4187f004f79926f428c8074ec7/README.md#L192-L198
+
+# Its README example prompts are a SaaS landing page, a dashboard and a portfolio (research/batch2.md section 11).
+applies_to: [landing-saas, dashboard, blog-portfolio]
+out_of_scope_reason: Showcase prompt added for frontend-ui-engineering only.
+applies_to_note: Checked against the skill text after the v0 runs (not decided in advance). Quotes are from the repo at the reference commit; the gallery runs the CLI 2.15.0 output, whose description is the same.
+
 notes:
   - Needs python3 (standard library only) to run its search scripts.
   - The upstream README recommends `npm i -g ui-ux-pro-max-cli`; the gallery uses npx with a pinned version instead so nothing is installed globally.

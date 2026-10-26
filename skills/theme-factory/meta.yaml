@@ -1,0 +1,48 @@
+# Skill files are not stored in this repo. `node scripts/fetch-skill.mjs theme-factory`
+# downloads them at the pinned commit into .cache/skills/ (git-ignored).
+name: theme-factory
+summary: >-
+  Anthropic's theme toolkit: ten preset colour palettes with font pairings (or a
+  generated custom theme) applied to a finished artifact such as a landing page.
+  Colour and type only, no layout. Instructions plus ten small theme files and a showcase PDF.
+research_id: anthropics-theme-factory   # research/candidates.json
+
+upstream:
+  repo: https://github.com/anthropics/skills
+  commit: dbd4588f9e1033efb41dad4bef2f7947c8993d44
+  path: skills/theme-factory
+  skill_md: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/theme-factory/SKILL.md
+
+license:
+  spdx: Apache-2.0
+  file: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/theme-factory/LICENSE.txt
+  in_skill_folder: true
+  copyright: Copyright 2026 Anthropic, PBC.
+
+fetch:
+  method: git
+
+install:
+  claude: Copy the folder to <project>/.claude/skills/theme-factory/
+  codex: Copy the folder to <project>/.agents/skills/theme-factory/
+
+invoke:
+  claude: "Use the theme-factory skill."   # interactive: /theme-factory <task>
+  codex: "$theme-factory"
+
+strengths:
+  - text: Ten preset themes with colours and fonts that can be applied to any finished artifact, or a new theme generated on the fly
+    source: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/theme-factory/SKILL.md#L3
+  - text: A cohesive colour palette with hex codes and complementary font pairings for headers and body text
+    source: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/theme-factory/SKILL.md#L15-L16
+
+# Its description lists "slides, docs, reportings, HTML landing pages, etc." and "any artifact".
+applies_to: [landing-saas, dashboard, blog-portfolio]
+out_of_scope_reason: Showcase prompt added for frontend-ui-engineering only.
+applies_to_note: Decided from the skill text before the batch-2 runs. Only landing pages are named; dashboard and blog-portfolio rely on "reportings" and "any artifact".
+
+notes:
+  - Written mainly for slide decks; the description also lists HTML landing pages.
+  - The documented workflow asks the user to pick a theme and waits; in one-pass cells the agent has to choose.
+  - Theme fonts are system fonts (DejaVu Sans etc.) meant for documents.
+  - Styles colour and type only, not layout.

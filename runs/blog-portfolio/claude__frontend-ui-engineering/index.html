@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maya Lindqvist — Product designer and writer, Gothenburg</title>
+  <meta name="description" content="Maya Lindqvist is a freelance product designer and writer in Gothenburg. She designs tools for people who work with data, and writes about how they get made.">
+  <meta name="color-scheme" content="light dark">
+
+  <script>
+    // Apply the saved or preferred theme before first paint to avoid a flash.
+    (function () {
+      var theme;
+      try { theme = localStorage.getItem('ml-theme'); } catch (e) {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.classList.add('js');
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ------------------------------------------------------------------
+       Tokens
+       ------------------------------------------------------------------ */
+    :root {
+      --font-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+      --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+      --space-7: 3rem;
+      --space-8: 4rem;
+      --space-9: 6rem;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+
+      --container: 72rem;
+      --gutter: clamp(1.25rem, 4vw, 3rem);
+      --header-h: 4rem;
+    }
+
+    :root,
+    [data-theme="light"] {
+      --bg: #f6f4ef;
+      --surface: #eeebe4;
+      --surface-raised: #fbfaf7;
+      --text: #1b1d1f;
+      --text-muted: #565a5e;
+      --border: #d8d3c8;
+      --border-strong: #b9b3a6;
+      --accent: #0c5c58;
+      --accent-soft: #d5e6e2;
+      --signal: #a8401f;
+      --signal-soft: #f3ddd3;
+      --ok: #2e7d4f;
+      --focus: #0c5c58;
+    }
+
+    [data-theme="dark"] {
+      --bg: #121416;
+      --surface: #1b1e21;
+      --surface-raised: #202427;
+      --text: #e9e7e2;
+      --text-muted: #a2a7ab;
+      --border: #2e3337;
+      --border-strong: #464c51;
+      --accent: #73c7bc;
+      --accent-soft: #1d3a37;
+      --signal: #e98563;
+      --signal-soft: #3d2620;
+      --ok: #6fcf97;
+      --focus: #73c7bc;
+    }
+
+    /* ------------------------------------------------------------------
+       Base
+       ------------------------------------------------------------------ */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-behavior: smooth; }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    img, svg { display: block; max-width: 100%; }
+
+    h1, h2, h3, h4 { margin: 0; font-weight: 500; line-height: 1.2; }
+    p { margin: 0; }
+    ul, ol { margin: 0; padding: 0; }
+
+    a {
+      color: inherit;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
+    a:hover { color: var(--accent); }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+
+    [id] { scroll-margin-top: calc(var(--header-h) + var(--space-5)); }
+
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0);
+      white-space: nowrap; border: 0;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: var(--space-4);
+      top: -3rem;
+      z-index: 100;
+      padding: var(--space-2) var(--space-4);
+      background: var(--text);
+      color: var(--bg);
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: var(--space-3); color: var(--bg); }
+
+    .container {
+      width: 100%;
+      max-width: var(--container);
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      letter-spacing: 0;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.125rem var(--space-2);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ------------------------------------------------------------------
+       Header
+       ------------------------------------------------------------------ */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+      -webkit-backdrop-filter: saturate(1.4) blur(10px);
+      backdrop-filter: saturate(1.4) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      min-height: var(--header-h);
+    }
+
+    .site-title {
+      margin-right: auto;
+      font-family: var(--font-serif);
+      font-size: 1.375rem;
+      font-weight: 500;
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .site-title:hover { color: var(--text); }
+
+    .nav-list {
+      display: flex;
+      gap: var(--space-1);
+      list-style: none;
+    }
+
+    .nav-list a {
+      display: block;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      text-decoration: none;
+      color: var(--text-muted);
+    }
+    .nav-list a:hover { color: var(--text); background: var(--surface); }
+    .nav-list a[aria-current="true"] { color: var(--text); }
+
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      min-width: 2.75rem;
+      height: 2.75rem;
+      padding: 0 var(--space-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .icon-button:hover { background: var(--surface); border-color: var(--border-strong); }
+    .icon-button svg { width: 1.125rem; height: 1.125rem; }
+
+    .theme-toggle .icon-sun { display: none; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+    .menu-toggle { display: none; }
+
+    @media (max-width: 47.99rem) {
+      .js .menu-toggle { display: inline-flex; }
+
+      .js .site-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        display: none;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: var(--space-2) var(--gutter) var(--space-4);
+      }
+      .js .site-nav.is-open { display: block; }
+      .js .nav-list { flex-direction: column; }
+      .js .nav-list a {
+        padding: var(--space-3) 0;
+        font-size: 1.125rem;
+        color: var(--text);
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
+      }
+      .js .nav-list li:last-child a { border-bottom: 0; }
+      .js .nav-list a:hover { background: transparent; color: var(--accent); }
+
+      /* Without JS, the nav stays visible and wraps under the title. */
+      html:not(.js) .header-inner { flex-wrap: wrap; padding-block: var(--space-2); }
+      html:not(.js) .site-nav { order: 3; width: 100%; }
+    }
+
+    /* ------------------------------------------------------------------
+       Sections
+       ------------------------------------------------------------------ */
+    .section {
+      padding-block: var(--space-8);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (min-width: 64rem) {
+      .section { padding-block: var(--space-9); }
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-2) var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 3vw, 2.25rem);
+      letter-spacing: -0.015em;
+    }
+
+    .section-lede {
+      max-width: 34rem;
+      color: var(--text-muted);
+    }
+
+    /* Intro ------------------------------------------------------------ */
+    .intro {
+      padding-block: var(--space-8) var(--space-8);
+    }
+    @media (min-width: 64rem) {
+      .intro { padding-block: 7rem var(--space-9); }
+    }
+
+    .intro-meta {
+      margin-bottom: var(--space-5);
+    }
+
+    .intro h1 {
+      max-width: 22ch;
+      font-family: var(--font-serif);
+      font-size: clamp(2.25rem, 5.6vw, 4.5rem);
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+    }
+    .intro h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .intro-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-4) var(--space-6);
+      margin-top: var(--space-6);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface-raised);
+      font-size: 0.9375rem;
+    }
+    .status-dot {
+      position: relative;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--ok);
+      flex: none;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .status-dot::after {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 1px solid var(--ok);
+        opacity: 0;
+        animation: ping 2.4s ease-out infinite;
+      }
+    }
+    @keyframes ping {
+      0% { transform: scale(0.6); opacity: 0.8; }
+      80%, 100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .intro-links {
+      display: flex;
+      gap: var(--space-5);
+      list-style: none;
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+    .intro-links a { text-decoration: none; border-bottom: 1px solid var(--border-strong); padding-bottom: 2px; }
+    .intro-links a:hover { border-color: currentColor; }
+
+    /* Work ------------------------------------------------------------- */
+    .work-list { list-style: none; }
+
+    .case {
+      display: grid;
+      gap: var(--space-5);
+      padding-block: var(--space-6);
+      border-top: 1px solid var(--border);
+    }
+    .case:first-child { border-top: 0; padding-top: 0; }
+
+    @media (min-width: 56rem) {
+      .case {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+        gap: var(--space-7);
+        align-items: center;
+        padding-block: var(--space-7);
+      }
+    }
+
+    .case-art {
+      aspect-ratio: 4 / 3;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .case-art svg { width: 100%; height: 100%; }
+
+    .case-index { margin-bottom: var(--space-3); }
+
+    .case h3 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw, 2rem);
+      letter-spacing: -0.015em;
+    }
+
+    .case-summary {
+      margin-top: var(--space-3);
+      max-width: 36rem;
+      font-size: 1.0625rem;
+      color: var(--text-muted);
+    }
+
+    .case-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, auto));
+      justify-content: start;
+      gap: var(--space-2) var(--space-6);
+      margin: var(--space-5) 0 0;
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .case-meta dt {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    .case-meta dd { margin: 0; font-size: 0.9375rem; font-weight: 500; }
+
+    @media (max-width: 30rem) {
+      .case-meta { grid-template-columns: 1fr 1fr; }
+      .case-meta div:first-child { grid-column: 1 / -1; }
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+      list-style: none;
+    }
+
+    /* Illustration palette, driven by theme tokens */
+    .ill-line { stroke: var(--border-strong); fill: none; }
+    .ill-ink { stroke: var(--text); fill: none; }
+    .ill-ink-fill { fill: var(--text); }
+    .ill-muted { fill: var(--border-strong); }
+    .ill-accent { stroke: var(--accent); fill: none; }
+    .ill-accent-fill { fill: var(--accent); }
+    .ill-accent-soft { fill: var(--accent-soft); }
+    .ill-signal { stroke: var(--signal); fill: none; }
+    .ill-signal-fill { fill: var(--signal); }
+    .ill-signal-soft { fill: var(--signal-soft); }
+    /* Fill classes come last so they win when combined with stroke classes. */
+    .ill-bg { fill: var(--surface); }
+    .ill-paper { fill: var(--surface-raised); }
+    .ill-text { fill: var(--text-muted); font-family: var(--font-mono); font-size: 11px; }
+
+    /* Writing ---------------------------------------------------------- */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+    }
+
+    .filter {
+      min-height: 2.5rem;
+      padding: 0 var(--space-4);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-muted);
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .filter:hover { color: var(--text); border-color: var(--border-strong); }
+    .filter[aria-pressed="true"] {
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
+    }
+    .filter-count {
+      margin-left: var(--space-1);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    .filter-status {
+      margin-bottom: var(--space-3);
+      color: var(--text-muted);
+    }
+
+    .post-list { list-style: none; border-top: 1px solid var(--border-strong); }
+
+    .post {
+      display: grid;
+      gap: var(--space-2);
+      padding-block: var(--space-5);
+      border-bottom: 1px solid var(--border);
+    }
+    .post[hidden] { display: none; }
+
+    @media (min-width: 48rem) {
+      .post {
+        grid-template-columns: 10rem minmax(0, 1fr) 9rem;
+        gap: var(--space-6);
+        align-items: baseline;
+      }
+    }
+
+    .post time, .post .post-date { color: var(--text-muted); }
+
+    .post h3 {
+      font-family: var(--font-serif);
+      font-size: 1.375rem;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+    .post h3 a { text-decoration: none; }
+    .post h3 a:hover { text-decoration: underline; }
+
+    .post-excerpt {
+      margin-top: var(--space-2);
+      max-width: 40rem;
+      color: var(--text-muted);
+    }
+
+    .post-featured-label {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      margin-top: var(--space-3);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    @media (min-width: 48rem) {
+      .post-meta {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: var(--space-2);
+        text-align: right;
+      }
+    }
+
+    .empty-state {
+      padding: var(--space-7) var(--space-4);
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .empty-state button {
+      margin-top: var(--space-3);
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--accent);
+      font: inherit;
+      font-weight: 500;
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+      cursor: pointer;
+    }
+
+    /* Featured article ------------------------------------------------- */
+    .article {
+      display: grid;
+      gap: var(--space-6);
+    }
+    @media (min-width: 64rem) {
+      .article {
+        grid-template-columns: 14rem minmax(0, 42rem);
+        gap: var(--space-8);
+        justify-content: start;
+      }
+    }
+
+    .article-aside {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    @media (min-width: 64rem) {
+      .article-aside {
+        position: sticky;
+        top: calc(var(--header-h) + var(--space-6));
+        align-self: start;
+      }
+    }
+
+    .article-facts {
+      display: grid;
+      gap: var(--space-3);
+      margin: 0;
+    }
+    .article-facts dt { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+    .article-facts dd { margin: 0; font-weight: 500; font-size: 0.9375rem; }
+
+    .article-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-4);
+      margin-top: var(--space-4);
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .prose {
+      font-family: var(--font-serif);
+      font-size: 1.1875rem;
+      line-height: 1.65;
+    }
+    .prose > * + * { margin-top: 1.1em; }
+    .prose > p:first-child { margin-top: var(--space-5); }
+    .prose h3 {
+      margin-top: 2em;
+      font-family: var(--font-sans);
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+    }
+    .prose h3 + * { margin-top: 0.6em; }
+    .prose ul { padding-left: 1.2em; }
+    .prose li + li { margin-top: 0.4em; }
+    .prose li::marker { color: var(--accent); }
+
+    .pull-quote {
+      margin: 1.8em 0;
+      padding: var(--space-2) 0 var(--space-2) var(--space-5);
+      border-left: 3px solid var(--accent);
+    }
+    .pull-quote p {
+      font-size: clamp(1.375rem, 2.4vw, 1.625rem);
+      font-style: italic;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+    }
+
+    .data-snippet {
+      margin-inline: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .data-snippet figcaption {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .data-snippet pre {
+      margin: 0;
+      padding: var(--space-4);
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      line-height: 1.7;
+    }
+    .data-snippet .hl { color: var(--accent); }
+
+    /* About ------------------------------------------------------------ */
+    .about-grid {
+      display: grid;
+      gap: var(--space-7);
+    }
+    @media (min-width: 56rem) {
+      .about-grid {
+        grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+        gap: var(--space-8);
+      }
+    }
+
+    .bio {
+      font-family: var(--font-serif);
+      font-size: clamp(1.1875rem, 1.8vw, 1.375rem);
+      line-height: 1.55;
+    }
+
+    .about-block + .about-block { margin-top: var(--space-6); }
+    .about-block h3 { margin-bottom: var(--space-3); }
+
+    .timeline { list-style: none; border-top: 1px solid var(--border); }
+    .timeline li {
+      display: grid;
+      grid-template-columns: 8.5rem minmax(0, 1fr);
+      gap: var(--space-4);
+      padding-block: var(--space-3);
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline .role { font-weight: 500; }
+    .timeline .org { color: var(--text-muted); }
+
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      list-style: none;
+    }
+    .skills li {
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      font-size: 0.9375rem;
+    }
+
+    .talks { list-style: none; border-top: 1px solid var(--border); }
+    .talks li {
+      padding-block: var(--space-3);
+      border-bottom: 1px solid var(--border);
+    }
+    .talks .talk-title { font-family: var(--font-serif); font-size: 1.1875rem; }
+    .talks .talk-meta { display: block; color: var(--text-muted); font-size: 0.9375rem; }
+
+    /* Newsletter ------------------------------------------------------- */
+    .newsletter {
+      display: grid;
+      gap: var(--space-6);
+      padding: var(--space-6);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    @media (min-width: 56rem) {
+      .newsletter {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: center;
+        gap: var(--space-7);
+        padding: var(--space-7);
+      }
+    }
+
+    .newsletter .eyebrow { margin-bottom: var(--space-2); }
+
+    .newsletter h2 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 3vw, 2.25rem);
+      letter-spacing: -0.015em;
+    }
+    .newsletter-desc { margin-top: var(--space-2); color: var(--text-muted); font-size: 1.0625rem; }
+
+    .subscribe-form label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .field-row {
+      display: flex;
+      gap: var(--space-2);
+    }
+    @media (max-width: 30rem) {
+      .field-row { flex-direction: column; }
+    }
+
+    .subscribe-form input {
+      flex: 1;
+      min-width: 0;
+      height: 3rem;
+      padding: 0 var(--space-4);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+    }
+    .subscribe-form input::placeholder { color: var(--text-muted); opacity: 0.8; }
+    .subscribe-form input:focus-visible { outline-offset: 1px; }
+    .subscribe-form input[aria-invalid="true"] { border-color: var(--signal); }
+
+    .button {
+      height: 3rem;
+      padding: 0 var(--space-5);
+      border: 1px solid var(--text);
+      border-radius: var(--radius-md);
+      background: var(--text);
+      color: var(--bg);
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .button:hover { background: var(--accent); border-color: var(--accent); }
+    .button:disabled { opacity: 0.6; cursor: progress; }
+
+    .form-hint, .form-message {
+      margin-top: var(--space-2);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .form-message:empty { display: none; }
+    .form-message[data-state="error"] { color: var(--signal); }
+    .form-message[data-state="success"] { color: var(--text); }
+    .form-message svg { display: inline-block; vertical-align: -0.2em; margin-right: var(--space-1); width: 1rem; height: 1rem; }
+
+    /* Contact & footer ------------------------------------------------- */
+    .contact-email {
+      display: inline-block;
+      margin-top: var(--space-4);
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 5vw, 3.5rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 0.15em;
+      overflow-wrap: anywhere;
+    }
+
+    .contact-grid {
+      display: grid;
+      gap: var(--space-6);
+    }
+    @media (min-width: 56rem) {
+      .contact-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: end; }
+    }
+
+    .contact-copy { margin-top: var(--space-4); max-width: 34rem; color: var(--text-muted); }
+
+    .social-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-5);
+      list-style: none;
+    }
+    @media (min-width: 56rem) {
+      .social-list { justify-content: flex-end; }
+    }
+    .social-list a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding-block: var(--space-2);
+      font-weight: 500;
+    }
+
+    .site-footer {
+      padding-block: var(--space-5);
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-2) var(--space-5);
+    }
+    .footer-inner a { color: inherit; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="site-title" href="#top">Maya Lindqvist</a>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <ul class="nav-list">
+          <li><a href="#work">Work</a></li>
+          <li><a href="#writing">Writing</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <button class="icon-button theme-toggle" type="button" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+      </button>
+
+      <button class="icon-button menu-toggle" type="button" id="menu-toggle" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path class="menu-icon-open" d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <span>Menu</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <!-- Introduction -->
+    <section class="intro" id="top" aria-labelledby="intro-title">
+      <div class="container">
+        <p class="eyebrow intro-meta">Product designer &amp; writer · Gothenburg, Sweden</p>
+        <h1 id="intro-title">I design tools for people who work with data, and I write about <em>how they get made.</em></h1>
+        <div class="intro-footer">
+          <p class="status"><span class="status-dot" aria-hidden="true"></span>Available for new projects from January 2027.</p>
+          <ul class="intro-links">
+            <li><a href="#work">See selected work</a></li>
+            <li><a href="#writing">Read the blog</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Selected work -->
+    <section class="section" id="work" aria-labelledby="work-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title" id="work-title">Selected work</h2>
+          <p class="section-lede">Four projects from the last three years, from boats in the Skagerrak to a credit union’s back office.</p>
+        </div>
+
+        <ol class="work-list">
+          <!-- Tidepool -->
+          <li class="case">
+            <div class="case-art">
+              <svg viewBox="0 0 400 300" role="img" aria-label="Illustration: a phone showing a tide curve above stylised waves">
+                <rect class="ill-bg" width="400" height="300"/>
+                <path class="ill-line" stroke-width="1.5" d="M0 214c25 0 25-10 50-10s25 10 50 10 25-10 50-10 25 10 50 10 25-10 50-10 25 10 50 10 25-10 50-10 25 10 50 10"/>
+                <path class="ill-line" stroke-width="1.5" d="M0 240c25 0 25-10 50-10s25 10 50 10 25-10 50-10 25 10 50 10 25-10 50-10 25 10 50 10 25-10 50-10 25 10 50 10"/>
+                <path class="ill-line" stroke-width="1.5" d="M0 266c25 0 25-10 50-10s25 10 50 10 25-10 50-10 25 10 50 10 25-10 50-10 25 10 50 10 25-10 50-10 25 10 50 10"/>
+                <rect class="ill-paper ill-ink" stroke-width="2" x="140" y="34" width="120" height="232" rx="16"/>
+                <rect class="ill-ink-fill" x="183" y="44" width="34" height="5" rx="2.5"/>
+                <text class="ill-text" x="154" y="74">LYS-04</text>
+                <rect class="ill-signal-soft" x="214" y="63" width="34" height="15" rx="3"/>
+                <text class="ill-text" x="218" y="74" style="font-size:9px">OFF</text>
+                <path class="ill-line" stroke-width="1" d="M152 150h96M152 120h96M152 180h96"/>
+                <path class="ill-accent-soft" d="M152 150c12-38 24-38 36 0s24 38 36 0 18-28 24-24V190H152Z" opacity="0.9"/>
+                <path class="ill-accent" stroke-width="2.5" stroke-linecap="round" d="M152 150c12-38 24-38 36 0s24 38 36 0 18-28 24-24"/>
+                <circle class="ill-accent-fill" cx="206" cy="178" r="4.5"/>
+                <rect class="ill-muted" x="152" y="204" width="60" height="6" rx="3"/>
+                <rect class="ill-muted" x="152" y="216" width="40" height="6" rx="3"/>
+                <rect class="ill-ink-fill" x="152" y="236" width="96" height="18" rx="4"/>
+                <path class="ill-ink" stroke-width="2" stroke-linejoin="round" d="M300 196h56l-10 14h-38Z"/>
+                <path class="ill-ink" stroke-width="2" d="M326 196v-38l20 30h-20"/>
+              </svg>
+            </div>
+            <div class="case-body">
+              <p class="eyebrow case-index">01 — Field app</p>
+              <h3>Tidepool</h3>
+              <p class="case-summary">A field app that lets marine biologists log samples offline on a boat and sync everything once they reach the harbour.</p>
+              <dl class="case-meta">
+                <div><dt>Client</dt><dd>Nordic Ocean Institute</dd></div>
+                <div><dt>Year</dt><dd>2026</dd></div>
+                <div><dt>Role</dt><dd>Lead designer</dd></div>
+              </dl>
+              <ul class="tag-list" aria-label="Tags">
+                <li class="tag">Mobile</li>
+                <li class="tag">Offline</li>
+                <li class="tag">Research</li>
+              </ul>
+            </div>
+          </li>
+
+          <!-- Ledger rewrite -->
+          <li class="case">
+            <div class="case-art">
+              <svg viewBox="0 0 400 300" role="img" aria-label="Illustration: a legacy terminal window behind a modern banking form with one field flagged">
+                <rect class="ill-bg" width="400" height="300"/>
+                <rect class="ill-line" stroke-width="1.5" stroke-dasharray="4 4" x="52" y="40" width="190" height="150" rx="4"/>
+                <path class="ill-line" stroke-width="1.5" stroke-dasharray="4 4" d="M52 60h190"/>
+                <text class="ill-text" x="62" y="84">ACCT-OPEN v2.4</text>
+                <text class="ill-text" x="62" y="104">NAME____ SSN____</text>
+                <text class="ill-text" x="62" y="124">F3=EXIT  F7=NEXT</text>
+                <rect class="ill-paper ill-ink" stroke-width="2" x="150" y="76" width="200" height="190" rx="8"/>
+                <rect class="ill-muted" x="170" y="96" width="70" height="6" rx="3"/>
+                <rect class="ill-bg ill-line" stroke-width="1.5" x="170" y="108" width="160" height="22" rx="4"/>
+                <rect class="ill-muted" x="170" y="144" width="54" height="6" rx="3"/>
+                <rect class="ill-signal-soft" x="170" y="156" width="160" height="22" rx="4"/>
+                <rect class="ill-signal" stroke-width="1.5" x="170" y="156" width="160" height="22" rx="4"/>
+                <circle class="ill-signal-fill" cx="318" cy="167" r="5"/>
+                <rect class="ill-signal-fill" x="170" y="184" width="96" height="5" rx="2.5" opacity="0.7"/>
+                <rect class="ill-accent" stroke-width="2" x="170" y="204" width="14" height="14" rx="3"/>
+                <path class="ill-accent" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M173 211l3 3 6-6"/>
+                <rect class="ill-muted" x="192" y="208" width="90" height="6" rx="3"/>
+                <rect class="ill-ink-fill" x="250" y="232" width="80" height="20" rx="4"/>
+              </svg>
+            </div>
+            <div class="case-body">
+              <p class="eyebrow case-index">02 — Member banking</p>
+              <h3>Ledger rewrite</h3>
+              <p class="case-summary">Replacing a 20-year-old member banking system for a community credit union without losing the edge cases its staff relied on every day.</p>
+              <dl class="case-meta">
+                <div><dt>Client</dt><dd>Västkust Credit Union</dd></div>
+                <div><dt>Year</dt><dd>2025</dd></div>
+                <div><dt>Role</dt><dd>Product designer</dd></div>
+              </dl>
+              <ul class="tag-list" aria-label="Tags">
+                <li class="tag">Finance</li>
+                <li class="tag">Forms</li>
+                <li class="tag">Accessibility</li>
+              </ul>
+            </div>
+          </li>
+
+          <!-- Delay map -->
+          <li class="case">
+            <div class="case-art">
+              <svg viewBox="0 0 400 300" role="img" aria-label="Illustration: a transit map with two routes and delayed stops highlighted">
+                <rect class="ill-bg" width="400" height="300"/>
+                <g class="ill-line" stroke-width="1" opacity="0.7">
+                  <path d="M0 60h400M0 120h400M0 180h400M0 240h400M70 0v300M150 0v300M230 0v300M310 0v300"/>
+                </g>
+                <path class="ill-bg" d="M0 210c60-20 110 30 170 10s100-60 230-40v120H0Z" style="fill:var(--accent-soft);opacity:.55"/>
+                <path class="ill-ink" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" d="M40 70h110l80 80h130"/>
+                <path class="ill-accent" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" d="M90 250V170l60-60 70-0 50-50h90"/>
+                <g stroke-width="2.5">
+                  <circle class="ill-paper ill-ink" cx="40" cy="70" r="7"/>
+                  <circle class="ill-paper ill-ink" cx="150" cy="70" r="7"/>
+                  <circle class="ill-paper ill-ink" cx="290" cy="150" r="7"/>
+                  <circle class="ill-paper ill-ink" cx="360" cy="150" r="7"/>
+                  <circle class="ill-paper ill-accent" cx="90" cy="250" r="7"/>
+                  <circle class="ill-paper ill-accent" cx="90" cy="170" r="7"/>
+                  <circle class="ill-paper ill-accent" cx="270" cy="60" r="7"/>
+                  <circle class="ill-paper ill-accent" cx="360" cy="60" r="7"/>
+                </g>
+                <circle class="ill-paper" cx="190" cy="110" r="10"/>
+                <circle class="ill-signal" stroke-width="3" cx="190" cy="110" r="10"/>
+                <circle class="ill-signal" stroke-width="1.5" cx="190" cy="110" r="18" opacity="0.5"/>
+                <rect class="ill-signal-fill" x="206" y="78" width="34" height="18" rx="3"/>
+                <text x="212" y="91" style="fill:var(--bg);font-family:var(--font-mono);font-size:11px;font-weight:500">+4</text>
+                <circle class="ill-paper" cx="230" cy="150" r="9"/>
+                <circle class="ill-signal" stroke-width="3" cx="230" cy="150" r="9"/>
+                <rect class="ill-signal-fill" x="240" y="164" width="34" height="18" rx="3"/>
+                <text x="246" y="177" style="fill:var(--bg);font-family:var(--font-mono);font-size:11px;font-weight:500">+2</text>
+              </svg>
+            </div>
+            <div class="case-body">
+              <p class="eyebrow case-index">03 — Live transit</p>
+              <h3>Delay map</h3>
+              <p class="case-summary">A live map of tram and bus delays that gives commuters a straight answer and dispatchers the full picture, from the same data.</p>
+              <dl class="case-meta">
+                <div><dt>Client</dt><dd>Region Väst Transit</dd></div>
+                <div><dt>Year</dt><dd>2025</dd></div>
+                <div><dt>Role</dt><dd>Design and front-end</dd></div>
+              </dl>
+              <ul class="tag-list" aria-label="Tags">
+                <li class="tag">Maps</li>
+                <li class="tag">Data visualization</li>
+              </ul>
+            </div>
+          </li>
+
+          <!-- Open Data Handbook -->
+          <li class="case">
+            <div class="case-art">
+              <svg viewBox="0 0 400 300" role="img" aria-label="Illustration: an open handbook with text on one page and a table and bar chart on the other">
+                <rect class="ill-bg" width="400" height="300"/>
+                <path class="ill-paper ill-ink" stroke-width="2" stroke-linejoin="round" d="M200 70c-40-14-90-16-140-6v176c50-10 100-8 140 6Z"/>
+                <path class="ill-paper ill-ink" stroke-width="2" stroke-linejoin="round" d="M200 70c40-14 90-16 140-6v176c-50-10-100-8-140 6Z"/>
+                <path class="ill-ink" stroke-width="2" d="M200 70v176"/>
+                <rect class="ill-ink-fill" x="78" y="88" width="80" height="8" rx="2"/>
+                <g class="ill-muted">
+                  <rect x="78" y="110" width="104" height="5" rx="2.5"/>
+                  <rect x="78" y="122" width="96" height="5" rx="2.5"/>
+                  <rect x="78" y="134" width="104" height="5" rx="2.5"/>
+                  <rect x="78" y="146" width="70" height="5" rx="2.5"/>
+                  <rect x="78" y="166" width="104" height="5" rx="2.5"/>
+                  <rect x="78" y="178" width="88" height="5" rx="2.5"/>
+                  <rect x="78" y="190" width="100" height="5" rx="2.5"/>
+                  <rect x="78" y="202" width="60" height="5" rx="2.5"/>
+                </g>
+                <rect class="ill-accent-soft" x="218" y="86" width="104" height="16"/>
+                <g class="ill-line" stroke-width="1">
+                  <rect x="218" y="86" width="104" height="64"/>
+                  <path d="M218 102h104M218 118h104M218 134h104M262 86v64"/>
+                </g>
+                <path class="ill-line" stroke-width="1" d="M218 216h104"/>
+                <rect class="ill-accent-fill" x="226" y="186" width="14" height="30"/>
+                <rect class="ill-accent-fill" x="248" y="172" width="14" height="44"/>
+                <rect class="ill-accent-fill" x="270" y="194" width="14" height="22"/>
+                <rect class="ill-ink-fill" x="292" y="164" width="14" height="52"/>
+              </svg>
+            </div>
+            <div class="case-body">
+              <p class="eyebrow case-index">04 — Handbook</p>
+              <h3>Open Data Handbook</h3>
+              <p class="case-summary">A free guide that walks municipalities through publishing their first datasets, from choosing a licence to writing a README people actually read.</p>
+              <dl class="case-meta">
+                <div><dt>Client</dt><dd>Self-initiated</dd></div>
+                <div><dt>Year</dt><dd>2024</dd></div>
+                <div><dt>Role</dt><dd>Author and designer</dd></div>
+              </dl>
+              <ul class="tag-list" aria-label="Tags">
+                <li class="tag">Writing</li>
+                <li class="tag">Open data</li>
+              </ul>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Writing -->
+    <section class="section" id="writing" aria-labelledby="writing-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title" id="writing-title">Writing</h2>
+          <p class="section-lede">Notes on design, data and running a one-person studio. New posts roughly every three weeks.</p>
+        </div>
+
+        <div class="filters" role="group" aria-label="Filter posts by tag">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">All<span class="filter-count" aria-hidden="true"></span></button>
+          <button class="filter" type="button" data-filter="Design" aria-pressed="false">Design<span class="filter-count" aria-hidden="true"></span></button>
+          <button class="filter" type="button" data-filter="Data" aria-pressed="false">Data<span class="filter-count" aria-hidden="true"></span></button>
+          <button class="filter" type="button" data-filter="Freelancing" aria-pressed="false">Freelancing<span class="filter-count" aria-hidden="true"></span></button>
+          <button class="filter" type="button" data-filter="Field notes" aria-pressed="false">Field notes<span class="filter-count" aria-hidden="true"></span></button>
+        </div>
+
+        <p class="filter-status mono" id="filter-status" role="status" aria-live="polite">Showing all 6 posts</p>
+
+        <ul class="post-list" id="post-list">
+          <li class="post" data-tag="Design">
+            <time class="mono" datetime="2026-10-02">2 Oct 2026</time>
+            <div>
+              <h3><a href="#featured">What a tide table taught me about empty states</a></h3>
+              <p class="post-excerpt">A printed tide table in a plastic sleeve changed how I think about the first screen anyone sees.</p>
+              <a class="post-featured-label" href="#featured">Read it in full below <span aria-hidden="true">↓</span></a>
+            </div>
+            <div class="post-meta"><span class="tag">Design</span><span class="mono post-date">7 min read</span></div>
+          </li>
+          <li class="post" data-tag="Field notes">
+            <time class="mono" datetime="2026-09-11">11 Sep 2026</time>
+            <div>
+              <h3>Designing for gloves: touch targets in the field</h3>
+              <p class="post-excerpt">Wet neoprene, cold fingers and a rolling deck: what a week of field testing taught me about minimum target sizes.</p>
+            </div>
+            <div class="post-meta"><span class="tag">Field notes</span><span class="mono post-date">5 min read</span></div>
+          </li>
+          <li class="post" data-tag="Design">
+            <time class="mono" datetime="2026-08-20">20 Aug 2026</time>
+            <div>
+              <h3>Notes from rebuilding a 20-year-old banking form</h3>
+              <p class="post-excerpt">Two decades of edge cases lived inside one account-opening form, and we had to find every one before the migration.</p>
+            </div>
+            <div class="post-meta"><span class="tag">Design</span><span class="mono post-date">9 min read</span></div>
+          </li>
+          <li class="post" data-tag="Data">
+            <time class="mono" datetime="2026-07-03">3 Jul 2026</time>
+            <div>
+              <h3>Why I stopped using pie charts in client reports</h3>
+              <p class="post-excerpt">Clients kept misreading the same chart, so I switched to sorted bars and our review meetings got half as long.</p>
+            </div>
+            <div class="post-meta"><span class="tag">Data</span><span class="mono post-date">4 min read</span></div>
+          </li>
+          <li class="post" data-tag="Field notes">
+            <time class="mono" datetime="2026-05-28">28 May 2026</time>
+            <div>
+              <h3>A month of sketching on the tram</h3>
+              <p class="post-excerpt">Thirty days, one pocket notebook and the number 11 line: what drawing strangers taught me about paying attention.</p>
+            </div>
+            <div class="post-meta"><span class="tag">Field notes</span><span class="mono post-date">6 min read</span></div>
+          </li>
+          <li class="post" data-tag="Freelancing">
+            <time class="mono" datetime="2026-04-15">15 Apr 2026</time>
+            <div>
+              <h3>Pricing freelance work by the problem, not the hour</h3>
+              <p class="post-excerpt">Hourly rates punished me for getting faster, so I built a simple way to price projects by what they are worth to the client.</p>
+            </div>
+            <div class="post-meta"><span class="tag">Freelancing</span><span class="mono post-date">8 min read</span></div>
+          </li>
+        </ul>
+
+        <div class="empty-state" id="posts-empty" hidden>
+          <p>No posts with this tag yet.</p>
+          <button type="button" data-reset-filter>Show all posts</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured post -->
+    <section class="section" id="featured" aria-labelledby="featured-title">
+      <div class="container">
+        <article class="article">
+          <aside class="article-aside" aria-label="About this post">
+            <p class="eyebrow">Featured post</p>
+            <dl class="article-facts">
+              <div><dt>Published</dt><dd><time datetime="2026-10-02">2 October 2026</time></dd></div>
+              <div><dt>Reading time</dt><dd>7 min</dd></div>
+              <div><dt>Tag</dt><dd>Design</dd></div>
+              <div><dt>Project</dt><dd><a href="#work">Tidepool</a></dd></div>
+            </dl>
+          </aside>
+
+          <div class="article-main">
+            <header>
+              <h2 class="article-title" id="featured-title">What a tide table taught me about empty states</h2>
+              <p class="article-meta mono">
+                <span><time datetime="2026-10-02">2 October 2026</time></span>
+                <span aria-hidden="true">·</span>
+                <span>7 min read</span>
+              </p>
+            </header>
+
+            <div class="prose">
+              <p>The first build of Tidepool opened on a blank screen. The biologists we were designing for would start the app on the deck of a research vessel, forty kilometres from the nearest mast, and see nothing: no stations, no samples, no hint of what to do next. We had treated the empty state as an edge case. On a boat, it was the first thing everyone saw.</p>
+
+              <h3>The table that was never empty</h3>
+              <p>During a site visit in Lysekil, one of the researchers showed me the printed tide table she kept in a plastic sleeve. Before a single sample was logged, it was already full of useful information: predicted high and low water, the hours her team could safely reach the rock pools, the next window if the weather turned. The page didn’t wait for her to add data before it became useful. It started with what was already known.</p>
+              <p>That reframed the problem. An empty state isn’t a screen with nothing on it. It’s the moment the app knows the least about the person, and has the best chance to show what it knows about the world.</p>
+
+              <blockquote class="pull-quote">
+                <p>An empty state isn’t the absence of content. It’s the moment the product has to explain itself without any help.</p>
+              </blockquote>
+
+              <h3>What we shipped instead</h3>
+              <p>We rebuilt the first screen around the data Tidepool could carry offline. Before a trip, the app downloads the station list and tide predictions for the survey area. When a biologist opens a new survey, they see the next three sampling windows, not a button that says “Add your first entry”. The prompt to log a sample only appears once a window opens.</p>
+              <p>The underlying record is small enough to cache for a whole season:</p>
+
+              <figure class="data-snippet">
+                <figcaption><span>windows.tsv</span><span>3 of 412 rows</span></figcaption>
+                <pre tabindex="0" aria-label="Sample of tide window data"><code>station  date        low_water  <span class="hl">window</span>
+LYS-04   2026-06-12  05:41      <span class="hl">04:50–06:30</span>
+LYS-04   2026-06-12  18:02      <span class="hl">17:10–18:55</span>
+LYS-07   2026-06-13  06:20      <span class="hl">05:30–07:10</span></code></pre>
+              </figure>
+
+              <p>Three rows of plain text did more for orientation than any illustration we had sketched. People knew where they were in the day, and what the app expected of them.</p>
+
+              <h3>Questions I now ask early</h3>
+              <ul>
+                <li>What does this person already know when they arrive?</li>
+                <li>What does the product already know, even on day one?</li>
+                <li>What is the smallest useful thing we can show before they do anything?</li>
+              </ul>
+              <p>Empty states usually get designed last, after the “real” screens are signed off. Tidepool taught me to design them first. They are the one screen every user sees, and they decide whether anyone comes back for the second.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title" id="about-title">About</h2>
+        </div>
+        <div class="about-grid">
+          <div>
+            <p class="bio">I’m a freelance product designer and writer in Gothenburg. For seven years I’ve worked on software for people whose days are shaped by data: biologists logging samples at sea, credit union staff reconciling accounts, dispatchers watching a city’s trams in real time. I started out drawing maps at Kartverk Studio, spent three years designing analytics tools at Norrsken Analytics, and went independent in 2024. My work sits between interaction design and information design, and I usually prototype in code so teams can test with real data early. When I’m not with clients, I write here and in Field Notes, sketch on the number 11 tram, and swim off the rocks at Saltholmen most months of the year.</p>
+          </div>
+
+          <div>
+            <div class="about-block">
+              <h3 class="eyebrow">Experience</h3>
+              <ol class="timeline">
+                <li><span class="mono">2024 – now</span><span><span class="role">Independent</span></span></li>
+                <li><span class="mono">2021 – 2024</span><span><span class="role">Senior product designer</span><br><span class="org">Norrsken Analytics</span></span></li>
+                <li><span class="mono">2019 – 2021</span><span><span class="role">Designer</span><br><span class="org">Kartverk Studio</span></span></li>
+              </ol>
+            </div>
+
+            <div class="about-block">
+              <h3 class="eyebrow">Skills</h3>
+              <ul class="skills">
+                <li>Interaction design</li>
+                <li>Information design</li>
+                <li>Prototyping in code</li>
+                <li>Design systems</li>
+                <li>Workshop facilitation</li>
+              </ul>
+            </div>
+
+            <div class="about-block">
+              <h3 class="eyebrow">Talks</h3>
+              <ul class="talks">
+                <li><span class="talk-title">Empty states are content</span><span class="talk-meta">Nordic Design Days, 2026</span></li>
+                <li><span class="talk-title">Forms that survive a migration</span><span class="talk-meta">Front-end Gothenburg, 2025</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="section" id="newsletter" aria-labelledby="newsletter-title">
+      <div class="container">
+        <div class="newsletter">
+          <div>
+            <p class="eyebrow">Newsletter</p>
+            <h2 id="newsletter-title">Field Notes</h2>
+            <p class="newsletter-desc">A monthly email about designing with data. 1,900 readers.</p>
+          </div>
+          <form class="subscribe-form" id="subscribe-form" novalidate>
+            <label for="email">Email address</label>
+            <div class="field-row">
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required aria-describedby="email-hint email-message">
+              <button class="button" type="submit">Subscribe</button>
+            </div>
+            <p class="form-hint" id="email-hint">One email a month. Unsubscribe any time.</p>
+            <p class="form-message" id="email-message" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section" id="contact" aria-labelledby="contact-title">
+      <div class="container contact-grid">
+        <div>
+          <h2 class="section-title" id="contact-title">Contact</h2>
+          <p class="contact-copy">Have a data-heavy product that needs a designer, or a talk you’d like me to give? Write to me. I reply within two working days.</p>
+          <a class="contact-email" href="mailto:maya@lindqvist.example">maya@lindqvist.example</a>
+        </div>
+        <ul class="social-list" aria-label="Elsewhere">
+          <li><a href="#">Mastodon</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Dribbble</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© 2026 Maya Lindqvist</p>
+      <p>Designed and built in Gothenburg. <a href="#top">Back to top</a></p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+
+      /* Theme toggle --------------------------------------------------- */
+      var themeToggle = document.getElementById('theme-toggle');
+
+      function syncThemeLabel() {
+        var isDark = root.getAttribute('data-theme') === 'dark';
+        themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+      }
+
+      themeToggle.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('ml-theme', next); } catch (e) {}
+        syncThemeLabel();
+      });
+      syncThemeLabel();
+
+      /* Mobile navigation --------------------------------------------- */
+      var menuToggle = document.getElementById('menu-toggle');
+      var nav = document.getElementById('site-nav');
+
+      function setMenu(open) {
+        nav.classList.toggle('is-open', open);
+        menuToggle.setAttribute('aria-expanded', String(open));
+      }
+
+      menuToggle.addEventListener('click', function () {
+        setMenu(menuToggle.getAttribute('aria-expanded') !== 'true');
+      });
+
+      nav.addEventListener('click', function (event) {
+        if (event.target.closest('a')) setMenu(false);
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') {
+          setMenu(false);
+          menuToggle.focus();
+        }
+      });
+
+      document.addEventListener('click', function (event) {
+        if (menuToggle.getAttribute('aria-expanded') === 'true' &&
+            !nav.contains(event.target) && !menuToggle.contains(event.target)) {
+          setMenu(false);
+        }
+      });
+
+      window.matchMedia('(min-width: 48rem)').addEventListener('change', function (mq) {
+        if (mq.matches) setMenu(false);
+      });
+
+      /* Post filters --------------------------------------------------- */
+      var filterButtons = Array.prototype.slice.call(document.querySelectorAll('.filter'));
+      var posts = Array.prototype.slice.call(document.querySelectorAll('#post-list .post'));
+      var status = document.getElementById('filter-status');
+      var empty = document.getElementById('posts-empty');
+
+      filterButtons.forEach(function (button) {
+        var tag = button.getAttribute('data-filter');
+        var count = tag === 'all' ? posts.length : posts.filter(function (p) { return p.getAttribute('data-tag') === tag; }).length;
+        button.querySelector('.filter-count').textContent = count;
+      });
+
+      function applyFilter(tag) {
+        var shown = 0;
+        posts.forEach(function (post) {
+          var match = tag === 'all' || post.getAttribute('data-tag') === tag;
+          post.hidden = !match;
+          if (match) shown++;
+        });
+        filterButtons.forEach(function (button) {
+          button.setAttribute('aria-pressed', String(button.getAttribute('data-filter') === tag));
+        });
+        empty.hidden = shown !== 0;
+        status.textContent = tag === 'all'
+          ? 'Showing all ' + posts.length + ' posts'
+          : 'Showing ' + shown + ' of ' + posts.length + ' posts tagged “' + tag + '”';
+      }
+
+      filterButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          applyFilter(button.getAttribute('data-filter'));
+        });
+      });
+
+      document.querySelector('[data-reset-filter]').addEventListener('click', function () {
+        applyFilter('all');
+        filterButtons[0].focus();
+      });
+
+      /* Newsletter form ----------------------------------------------- */
+      var form = document.getElementById('subscribe-form');
+      var input = document.getElementById('email');
+      var message = document.getElementById('email-message');
+      var submit = form.querySelector('button[type="submit"]');
+      var checkIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>';
+      var alertIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4M8 11v.5"/></svg>';
+
+      function showMessage(state, html) {
+        message.setAttribute('data-state', state);
+        message.innerHTML = html;
+      }
+
+      input.addEventListener('input', function () {
+        if (input.getAttribute('aria-invalid') === 'true' && input.validity.valid) {
+          input.removeAttribute('aria-invalid');
+          showMessage('', '');
+        }
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var value = input.value.trim();
+        input.value = value;
+
+        if (!value) {
+          input.setAttribute('aria-invalid', 'true');
+          showMessage('error', alertIcon + 'Enter your email address to subscribe.');
+          input.focus();
+          return;
+        }
+        if (!input.validity.valid) {
+          input.setAttribute('aria-invalid', 'true');
+          showMessage('error', alertIcon + 'That doesn’t look like an email address. Check for a missing @ or domain.');
+          input.focus();
+          return;
+        }
+
+        input.removeAttribute('aria-invalid');
+        submit.disabled = true;
+        submit.textContent = 'Subscribing…';
+
+        // No backend on a static page: simulate the request.
+        window.setTimeout(function () {
+          submit.disabled = false;
+          submit.textContent = 'Subscribe';
+          form.reset();
+          showMessage('success', checkIcon + 'Thanks! Check your inbox for a confirmation link from Field Notes.');
+        }, 700);
+      });
+    })();
+  </script>
+</body>
+</html>

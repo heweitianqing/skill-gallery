@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Harbor Bank component states</title>
+<style>
+:root {
+  --ink:#172d35; --muted:#607078; --faint:#7c8a90; --canvas:#f6f8f8;
+  --surface:#fff; --line:#dce3e5; --control-line:#819299; --navy:#142f38;
+  --teal:#096c60; --teal-hover:#075b51; --teal-pressed:#03463f;
+  --mint:#c7ede1; --mint-bg:#edf7f3; --focus:#208a7b; --focus-halo:#d7eee7;
+  --red:#b53539; --red-hover:#9a292d; --red-pressed:#7d2024; --red-bg:#fff1f0;
+  --amber:#8a5b12; --amber-bg:#fff8e9; --blue:#345b82; --blue-bg:#f0f5fb;
+  --disabled-bg:#f0f2f3; --disabled-ink:#819096; --radius:6px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:32px}
+body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed}
+a{color:var(--teal);text-underline-offset:4px}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:4px}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button,input,select,textarea{transition:background-color .15s,border-color .15s}
+.icon{width:20px;height:20px;flex:none;vertical-align:middle}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:fixed;left:16px;top:-80px;background:var(--surface);padding:12px 20px;z-index:20}
+.skip:focus{top:16px}
+.sidebar{position:fixed;inset:0 auto 0 0;width:224px;background:var(--navy);color:#fff;display:flex;flex-direction:column;padding:36px 20px 24px;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;padding:0 8px}
+.brand-symbol{width:34px;height:34px;flex:none}
+.brand-name{font:600 27px/1 Georgia,"Times New Roman",serif;letter-spacing:-1px}
+.brand-name small{font:500 10px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:2px;display:block;margin-top:5px}
+.side-caption{font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:1.5px;color:#a5bcc2;margin:52px 12px 16px}
+.nav{display:flex;flex-direction:column;gap:5px}
+.nav a{display:flex;align-items:center;gap:12px;padding:12px;color:#bdcdd1;text-decoration:none;border-radius:var(--radius);font-size:13px}
+.nav .icon{width:17px;height:17px;opacity:.8}
+.nav a:hover{background:#25424b;color:#fff}
+.nav a[aria-current]{background:#294b50;color:#ddf7ec;box-shadow:inset 2px 0 var(--mint)}
+.nav .nav-num{margin-left:auto;font-size:10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;opacity:.7}
+.side-bottom{margin-top:auto;padding:24px 12px 0;border-top:1px solid #35505a}
+.side-bottom p{font-size:11px;color:#a8bec4;margin:6px 0}
+.system-state{display:flex;align-items:center;gap:7px;color:#d2eee4;font-size:11px}
+.system-state:before{content:"";width:6px;height:6px;border-radius:50%;background:#a6d9c7}
+main{margin-left:224px;padding:0 48px;max-width:1536px}
+.topbar{height:72px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);color:var(--muted);font-size:11px}
+.breadcrumb{display:flex;align-items:center;gap:12px}
+.breadcrumb span:first-child{color:var(--ink);font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.version{font:10px ui-monospace,SFMono-Regular,Consolas,monospace;border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:4px 7px}
+.page-header{padding:44px 0 32px}
+.eyebrow{text-transform:uppercase;font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1.6px;color:var(--teal);margin:0 0 12px}
+h1{font-size:38px;line-height:1.2;letter-spacing:-1.5px;font-weight:600;margin:0 0 12px}
+.page-description{font-size:15px;color:var(--muted);margin:0}
+.header-note{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);margin-top:24px}
+.header-note .icon{width:15px;height:15px}
+.header-note span{height:3px;width:3px;border-radius:50%;background:var(--faint);margin:0 4px}
+section{padding:0 0 40px;scroll-margin-top:24px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:16px}
+.section-title{display:flex;align-items:center;gap:10px}
+.section-number{display:grid;place-items:center;width:25px;height:25px;border:1px solid #c9dfd8;border-radius:5px;color:var(--teal);background:var(--mint-bg);font:10px ui-monospace,SFMono-Regular,Consolas,monospace}
+h2{font-size:19px;font-weight:600;letter-spacing:-.4px;line-height:1.4;margin:0}
+.section-head p{margin:6px 0 0 35px;color:var(--muted);font-size:12px}
+.section-meta{font:10px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);white-space:nowrap}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.state-label{text-transform:uppercase;letter-spacing:1px;color:var(--muted);font:9px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;margin:0 0 16px}
+.fields-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 24px;padding:28px}
+label.field-label,.field-label{display:block;font-size:12px;font-weight:550;margin:0 0 4px}
+.hint{display:block;font-size:11px;color:var(--muted);margin:0 0 8px}
+.control{width:100%;height:42px;border:1px solid var(--control-line);border-radius:var(--radius);background:var(--surface);color:var(--ink);padding:10px 12px;min-width:0}
+.control::placeholder{color:var(--muted);opacity:1}
+.control:disabled{color:var(--disabled-ink);background:var(--disabled-bg);border-color:var(--line);opacity:1}
+.control[readonly]{background:#f5f7f7;border-color:var(--line)}
+.control.is-focused,.select-preview.is-focused{border-color:var(--focus);outline:2px solid var(--focus-halo);outline-offset:1px}
+.control[aria-invalid="true"]{border-color:var(--red)}
+.input-wrap{position:relative}
+.input-wrap .control{padding-right:36px}
+.input-wrap>.icon{position:absolute;right:11px;top:12px;width:17px;height:17px;color:var(--teal)}
+.input-wrap.invalid>.icon{color:var(--red)}
+.feedback{display:flex;gap:5px;font-size:10px;line-height:1.5;margin:8px 0 0;color:var(--red)}
+.feedback.good{color:var(--teal)}
+.feedback .icon{height:13px;width:13px;margin-top:1px}
+.field-annotation{border-left:2px solid var(--line);padding:0 0 0 16px;align-self:center;font-size:11px;color:var(--muted);line-height:1.8}
+.field-annotation strong{display:block;color:var(--ink);font-size:11px;font-weight:550;margin-bottom:4px}
+.choices-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.component-card{padding:24px}
+.component-card h3,.subheading{font-size:13px;font-weight:600;margin:0}
+.component-subtitle{color:var(--muted);font-size:11px;margin:4px 0 20px}
+.choice-row{display:grid;grid-template-columns:66px minmax(0,1fr);gap:12px;align-items:start;padding:14px 0;border-top:1px solid #edf0f1;min-height:56px}
+.choice-row>.state-label{margin:4px 0 0;font-size:8px;letter-spacing:.6px}
+.choice-label{display:flex;gap:9px;align-items:center;font-size:12px;cursor:pointer;line-height:1.6}
+.choice-label:has(input:disabled){color:var(--disabled-ink);cursor:not-allowed}
+.choice-input{appearance:none;-webkit-appearance:none;width:17px;height:17px;border:1px solid var(--control-line);background:var(--surface);margin:0;flex:none;display:inline-grid;place-content:center;border-radius:3px}
+.choice-input:checked{border-color:var(--teal);background:var(--teal)}
+.choice-input[type="checkbox"]:checked:after{content:"";display:block;width:8px;height:4px;border:solid white;border-width:0 0 2px 2px;transform:translateY(-1px) rotate(-45deg)}
+.choice-input[type="radio"]{border-radius:50%}
+.choice-input[type="radio"]:checked{background:white}
+.choice-input[type="radio"]:checked:after{content:"";width:9px;height:9px;border-radius:50%;background:var(--teal)}
+.choice-input.is-focused,.switch.is-focused{outline:2px solid var(--focus);outline-offset:3px}
+.choice-input:disabled{background:var(--disabled-bg);border-color:#c4ced2}
+.choice-input[aria-invalid="true"]{border-color:var(--red)}
+.choice-row fieldset{padding:0;border:0;margin:0;min-width:0}
+.radio-options{display:flex;gap:16px;flex-wrap:wrap}
+.radio-options .choice-label{font-size:11px;gap:6px}
+.switch{appearance:none;-webkit-appearance:none;position:relative;border:1px solid #74878d;background:#74878d;flex:none;width:32px;height:19px;border-radius:20px;margin:0;cursor:pointer}
+.switch:before{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch:checked{background:var(--teal);border-color:var(--teal)}
+.switch:checked:before{transform:translateX(13px)}
+.switch:disabled{background:#d7dee1;border-color:#d7dee1;cursor:not-allowed}
+.switch-label{font-size:11px}
+.select-row{padding-top:12px;padding-bottom:12px}
+.select-row .control{height:38px;font-size:11px;padding-top:8px;padding-bottom:8px}
+.select-shell{position:relative}
+.select-shell select{appearance:none;padding-right:30px}
+.select-shell>.icon{position:absolute;right:11px;top:12px;width:14px;height:14px;pointer-events:none}
+.select-preview{border:1px solid var(--focus);border-radius:var(--radius);font-size:11px;background:var(--surface)}
+.select-preview-header{padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+.select-preview-header .icon{width:14px;height:14px;transform:rotate(180deg)}
+.open-options{border-top:1px solid var(--line);list-style:none;padding:4px;margin:0}
+.open-options li{padding:8px;border-radius:3px}
+.open-options li:first-child{background:var(--mint-bg);color:var(--teal);display:flex;align-items:center;justify-content:space-between}
+.open-options .icon{width:14px;height:14px}
+.button-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.button-table th,.button-table td{padding:20px 12px;border-bottom:1px solid #edf0f1;text-align:center}
+.button-table thead th{font:9px ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);background:#fbfcfc;padding-top:15px;padding-bottom:15px}
+.button-table thead th:first-child{width:106px}
+.button-table tbody th{text-align:left;padding-left:24px;font-size:11px;font-weight:550}
+.button-table tbody th small{display:block;font-size:9px;color:var(--muted);font-weight:400;margin-top:3px}
+.button-table tr:last-child td,.button-table tr:last-child th{border-bottom:0}
+.btn{min-height:39px;border:1px solid transparent;border-radius:var(--radius);padding:9px 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:11px;font-weight:550;line-height:1.3;white-space:nowrap;background:var(--teal);color:#fff;text-decoration:none}
+.btn.primary:hover,.btn.primary.is-hover{background:var(--teal-hover)}
+.btn.primary:active,.btn.primary.is-pressed{background:var(--teal-pressed);box-shadow:inset 0 2px 3px #002d2740}
+.btn.secondary{background:var(--surface);border-color:#a5b3b9;color:var(--ink)}
+.btn.secondary:hover,.btn.secondary.is-hover{background:#eff3f3;border-color:#8b9da4}
+.btn.secondary:active,.btn.secondary.is-pressed{background:#e0e8e9;box-shadow:inset 0 2px 3px #213e3815}
+.btn.destructive{background:var(--red)}
+.btn.destructive:hover,.btn.destructive.is-hover{background:var(--red-hover)}
+.btn.destructive:active,.btn.destructive.is-pressed{background:var(--red-pressed);box-shadow:inset 0 2px 3px #48080c35}
+.btn.is-focused{outline:2px solid var(--focus);outline-offset:3px}
+.btn:disabled,.btn:disabled:hover{background:#edf0f1;color:#8a989d;border-color:#e7ecee;box-shadow:none}
+.btn .icon{width:14px;height:14px}
+.spinner{height:12px;width:12px;border:1.5px solid #ffffff55;border-top-color:white;display:inline-block;border-radius:50%;animation:spin 1s linear infinite;flex:none}
+.secondary .spinner{border-color:#bfc9cd;border-top-color:var(--ink)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.panel-footnote{font-size:10px;color:var(--muted);border-top:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:7px;background:#fbfcfc}
+.panel-footnote .icon{width:13px;height:13px}
+.transfer-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.list-panel>.state-label{padding:16px 20px;margin:0;border-bottom:1px solid var(--line);background:#fbfcfc}
+.list-header{padding:20px 20px 16px}
+.list-header h3{font-size:14px;font-weight:600;margin:0 0 14px}
+.search{position:relative}
+.search>.icon{position:absolute;left:11px;top:11px;width:16px;height:16px;color:var(--muted)}
+.search input{height:38px;font-size:11px;padding-left:34px;border-color:#bdc9cd}
+.list-body{min-height:249px}
+.center-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;text-align:center}
+.state-icon{width:42px;height:42px;display:grid;place-items:center;background:#f0f4f4;border-radius:50%;color:#637d85;margin-bottom:12px}
+.state-icon.error{color:var(--red);background:var(--red-bg)}
+.center-state p{font-size:12px;margin:0 0 6px}
+.center-state small{font-size:10px;color:var(--muted)}
+.center-state .btn{margin-top:14px;min-height:34px}
+.skeleton-list{padding:0 20px}
+.skeleton-row{display:flex;align-items:center;gap:12px;border-top:1px solid #edf0f1;padding:16px 0}
+.skeleton-circle{width:30px;height:30px;border-radius:50%;background:#eef1f2}
+.skeleton-lines{flex:1}
+.skeleton-line{height:7px;width:45%;background:#e9edef;border-radius:3px;margin-bottom:7px}
+.skeleton-line.short{width:27%;height:6px;background:#f0f3f4;margin:0}
+.skeleton-amount{width:48px;height:8px;border-radius:3px;background:#e9edef}
+.transfer-table{border-collapse:collapse;width:100%;font-size:10px}
+.transfer-table thead{background:#f9fbfb;color:var(--muted)}
+.transfer-table th{text-align:left;font-weight:500;font-size:9px;padding:9px 12px;white-space:nowrap}
+.transfer-table td{padding:14px 12px;border-bottom:1px solid #edf0f1}
+.transfer-table th:first-child,.transfer-table td:first-child{padding-left:20px}
+.transfer-table th:last-child,.transfer-table td:last-child{padding-right:20px}
+.transfer-table th:nth-child(3),.transfer-table td:nth-child(3){text-align:right;white-space:nowrap}
+.transfer-table td:first-child{color:var(--muted);white-space:nowrap;font-size:9px}
+.transfer-table td:nth-child(2){font-weight:550}
+.transfer-table tr:last-child td{border-bottom:0}
+.status{border-radius:4px;font-size:8px;display:inline-flex;align-items:center;gap:4px;padding:3px 6px;white-space:nowrap;font-weight:550;background:var(--mint-bg);color:var(--teal)}
+.status .icon{width:10px;height:10px}
+.status.pending{background:var(--amber-bg);color:var(--amber)}
+.status.failed{background:var(--red-bg);color:var(--red)}
+.table-empty{text-align:center;padding:24px;color:var(--muted);font-size:11px}
+.messages-layout{display:grid;grid-template-columns:1.1fr 1fr;gap:20px}
+.alerts-panel{padding:24px}
+.mini-heading{font-size:12px;font-weight:600;margin:0 0 18px;display:flex;justify-content:space-between;align-items:center}
+.mini-heading span{font:9px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);font-weight:400}
+.alert{display:flex;align-items:flex-start;gap:10px;padding:14px;border:1px solid #d6e2ee;background:var(--blue-bg);border-radius:var(--radius);color:var(--blue);margin-top:12px}
+.alert>.icon{height:17px;width:17px;margin-top:1px}
+.alert strong{display:block;font-size:11px;font-weight:600;margin-bottom:3px}
+.alert p{font-size:11px;line-height:1.6;margin:0}
+.alert.success{background:var(--mint-bg);color:var(--teal);border-color:#cde5da}
+.alert.warning{background:var(--amber-bg);color:var(--amber);border-color:#f0dfb8}
+.alert.error{background:var(--red-bg);color:var(--red);border-color:#efcfcf}
+.message-right{display:flex;flex-direction:column;gap:20px}
+.toasts-panel{padding:20px;background:#f0f3f3}
+.toast{display:flex;align-items:center;gap:9px;padding:11px 12px;background:white;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 2px 4px #183a3306;margin-top:10px;min-height:44px}
+.toast>.icon{color:var(--teal);height:17px;width:17px}
+.toast.error>.icon{color:var(--red)}
+.toast strong{font-size:11px;font-weight:550;flex:1}
+.icon-button{border:0;background:transparent;padding:5px;line-height:0;color:var(--muted);border-radius:3px}
+.icon-button:hover{background:var(--disabled-bg)}
+.icon-button .icon{width:14px;height:14px}
+.toast-undo{font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:white;border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;margin-top:10px}
+.link-button{border:0;padding:4px;background:none;color:var(--teal);font-size:11px;text-decoration:underline;text-underline-offset:3px}
+.dialog-panel{padding:20px;background:#f0f3f3}
+.dialog-panel .mini-heading{margin-bottom:16px}
+dialog[open]{display:block;position:relative;inset:auto;width:100%;max-width:none;margin:0;padding:22px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:white}
+.dialog-title{display:flex;align-items:center;gap:10px}
+.dialog-title>.icon{color:var(--red);width:20px;height:20px}
+dialog h3{font-size:16px;letter-spacing:-.3px;margin:0}
+dialog p{font-size:11px;line-height:1.7;color:var(--muted);margin:12px 0 20px}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch}
+.form-panel{display:flex;flex-direction:column}
+.form-panel>.state-label{padding:16px 24px;margin:0;border-bottom:1px solid var(--line);background:#fbfcfc}
+.transfer-form{padding:24px}
+.transfer-form h3{font-size:17px;font-weight:600;letter-spacing:-.3px;margin:0 0 4px}
+.form-intro{font-size:11px;color:var(--muted);margin:0 0 20px}
+.error-summary{border:1px solid #efcfcf;border-radius:var(--radius);background:var(--red-bg);color:var(--red);padding:12px 14px;margin-bottom:20px}
+.error-summary>p{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;margin:0 0 5px}
+.error-summary .icon{height:16px;width:16px}
+.error-summary ul{margin:6px 0 0;padding-left:24px;font-size:10px;line-height:1.9}
+.error-summary a{color:var(--red)}
+.form-field{margin-bottom:17px}
+.form-field .field-label{margin-bottom:7px}
+.form-field .control{height:40px;font-size:12px}
+.form-field textarea.control{height:80px;resize:vertical}
+.form-field .hint{margin:6px 0 0;font-size:10px}
+.two-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.prefix-wrap{position:relative}
+.prefix-wrap span{position:absolute;left:12px;top:10px;font-size:12px;color:var(--muted)}
+.prefix-wrap .control{padding-left:28px}
+.optional{font-weight:400;color:var(--muted)}
+.form-actions{display:flex;gap:10px;padding-top:3px}
+.form-actions .btn.primary{flex:1}
+.form-actions .btn .icon{margin-left:8px}
+.success-preview{flex:1;display:flex;align-items:center;justify-content:center;min-height:420px;padding:40px 24px;text-align:center;background:linear-gradient(180deg,#fff 60%,#fafdfb)}
+.success-content{max-width:310px;width:100%}
+.success-mark{width:64px;height:64px;background:var(--mint-bg);border:1px solid #d5eade;border-radius:50%;margin:0 auto 20px;display:grid;place-items:center;color:var(--teal)}
+.success-mark .icon{width:28px;height:28px;stroke-width:1.5}
+.success-content h3{font-size:23px;letter-spacing:-.6px;margin:0 0 10px;font-weight:600}
+.success-content>p{font-size:12px;color:var(--muted);line-height:1.8;margin:0 0 24px}
+.receipt{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;margin:0 0 24px;text-align:left}
+.receipt div{display:flex;justify-content:space-between;font-size:11px;gap:16px;padding:4px 0}
+.receipt dt{color:var(--muted)}
+.receipt dd{margin:0;font-weight:500}
+.receipt dd .status{font-size:9px}
+.success-note{display:flex;justify-content:center;align-items:center;gap:5px;font-size:9px;color:var(--muted);margin-top:20px}
+.success-note .icon{width:12px;height:12px}
+footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:24px 0 32px;font-size:10px;color:var(--muted)}
+footer nav{display:flex;gap:20px}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{text-decoration:underline}
+.live-feedback{position:fixed;right:24px;bottom:24px;max-width:360px;z-index:10;padding:14px 18px;border:1px solid #a9ccc0;border-radius:6px;background:var(--mint-bg);box-shadow:0 4px 20px #183d3014;font-size:12px;color:var(--teal)}
+.live-feedback:empty{display:none}
+[hidden]{display:none!important}
+@media(min-width:1600px){main{margin-right:auto;margin-left:224px;padding-left:64px;padding-right:64px}}
+@media(max-width:1250px){main{padding:0 32px}.sidebar{width:204px}main{margin-left:204px}.button-table th,.button-table td{padding:18px 8px}.button-table .btn{padding:9px 10px;font-size:10px}.button-table thead th:first-child{width:90px}.button-table tbody th{padding-left:16px}.fields-grid{gap:24px 18px;padding:24px}.choice-row{grid-template-columns:58px minmax(0,1fr);gap:8px}.radio-options{gap:10px}.transfer-table td,.transfer-table th{padding-left:8px;padding-right:8px}.transfer-table td:first-child,.transfer-table th:first-child{padding-left:12px}.transfer-table td:last-child,.transfer-table th:last-child{padding-right:12px}}
+@media(max-width:1100px){.sidebar{width:184px;padding-left:12px;padding-right:12px}main{margin-left:184px;padding:0 28px}.brand-name{font-size:25px}.fields-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.field-annotation{grid-column:span 2}.button-table thead th:first-child{width:84px}.button-table .btn{font-size:9px;padding:9px 7px;gap:4px}.button-table th,.button-table td{padding-left:5px;padding-right:5px}.transfer-grid,.messages-layout{grid-template-columns:1fr}.list-body{min-height:225px}.transfer-table{font-size:11px}.transfer-table th,.transfer-table td{padding:12px 20px}.transfer-table td:first-child,.transfer-table th:first-child{padding-left:20px}.message-right{display:grid;grid-template-columns:1fr 1fr;align-items:start}.radio-options{gap:8px}.radio-options .choice-label{font-size:10px;gap:5px}.choice-input{width:16px;height:16px}.choice-row{grid-template-columns:1fr;gap:12px}.choice-row>.state-label{margin:0}.choices-grid{gap:16px}.component-card{padding:20px}}
+@media(max-width:800px){html{scroll-padding-top:24px}.sidebar{position:relative;width:auto;padding:20px 24px 0;display:block}.brand{padding:0}.brand-symbol{width:30px;height:30px}.brand-name{font-size:24px}.brand-name small{display:inline;font-size:9px;letter-spacing:1.5px;margin-left:8px}.side-caption,.side-bottom{display:none}.nav{flex-direction:row;flex-wrap:wrap;gap:4px;margin-top:20px;padding-bottom:14px}.nav a{font-size:11px;padding:8px 10px;gap:7px}.nav .icon{width:14px;height:14px}.nav .nav-num{display:none}.nav a[aria-current]{box-shadow:none}main{margin:0;padding:0 24px}.topbar{height:58px}.page-header{padding:32px 0}.topbar-right>span:first-child{display:none}h1{font-size:32px;letter-spacing:-1px}.page-description{font-size:13px}.button-table th,.button-table td{padding:18px 8px}.button-table .btn{padding:9px 7px;font-size:9px;gap:4px}.button-table thead th:first-child{width:84px}.button-table tbody th{padding-left:16px}.message-right{grid-template-columns:1fr 1fr}.form-grid{gap:16px}.transfer-form{padding:20px}.two-fields{grid-template-columns:1fr;gap:0}.success-content h3{font-size:20px}.success-preview{padding:32px 20px}}
+@media(max-width:620px){.fields-grid{grid-template-columns:1fr 1fr;gap:24px 20px}.field-annotation{grid-column:auto}.choices-grid,.form-grid,.message-right{grid-template-columns:1fr}.choice-row{grid-template-columns:66px minmax(0,1fr);gap:12px}.choice-row>.state-label{margin-top:4px}.radio-options{gap:14px}.radio-options .choice-label{font-size:11px;gap:6px}.button-table,.button-table thead,.button-table tbody,.button-table tr,.button-table th,.button-table td{display:block}.button-table thead{display:none}.button-table tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:20px 16px;padding:20px;border-bottom:1px solid var(--line)}.button-table tbody tr:last-child{border-bottom:0}.button-table tbody th{grid-column:1/-1;text-align:left;padding:0;border:0;font-size:12px}.button-table tbody th small{display:inline;margin-left:6px}.button-table tbody td{border:0;padding:0;text-align:left}.button-table td:before{content:attr(data-state);display:block;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font:9px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;margin-bottom:10px}.button-table .btn{font-size:11px;padding:10px 14px;min-width:128px;min-height:40px}.section-head{gap:8px}.section-meta{font-size:9px}.section-head p{font-size:11px}.header-note{font-size:10px;gap:6px}.header-note span{margin:0}.page-header{padding-bottom:28px}section{padding-bottom:32px}.transfer-table{font-size:10px}.transfer-table th,.transfer-table td{padding:12px 8px}.transfer-table td:first-child,.transfer-table th:first-child{padding-left:14px}.transfer-table td:last-child,.transfer-table th:last-child{padding-right:14px}.list-header{padding:18px 16px 14px}.list-panel>.state-label{padding-left:16px}.transfer-table td:first-child{font-size:8px}.transfer-table td:nth-child(2){max-width:90px}.transfer-table .status{font-size:7px;gap:3px;padding:3px 4px}.transfer-table .status .icon{width:9px;height:9px}.success-preview{min-height:400px;padding:40px 24px}.success-content h3{font-size:24px}.two-fields{grid-template-columns:1fr 1fr;gap:16px}.transfer-form{padding:24px}.form-panel>.state-label{padding-left:24px}footer{flex-direction:column;align-items:flex-start;gap:14px}.live-feedback{right:16px;left:16px;bottom:16px;max-width:none}.dialog-actions .btn{min-height:40px}}
+@media(max-width:380px){main{padding:0 16px}.sidebar{padding-left:16px;padding-right:16px}h1{font-size:29px}.fields-grid{padding:20px;grid-template-columns:1fr}.field-annotation{padding-top:4px}.choice-row{grid-template-columns:52px minmax(0,1fr);gap:8px}.radio-options{gap:10px}.radio-options .choice-label{font-size:10px}.choice-label.switch-label{font-size:10px}.two-fields{grid-template-columns:1fr;gap:0}.transfer-form{padding:20px}.section-head{align-items:flex-start}.section-meta{padding-top:7px}.transfer-table th,.transfer-table td{padding-left:5px;padding-right:5px}.transfer-table td:first-child,.transfer-table th:first-child{padding-left:10px}.transfer-table td:last-child,.transfer-table th:last-child{padding-right:10px}.transfer-table td:nth-child(2){font-size:9px}.topbar-right{gap:4px}.breadcrumb{gap:8px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+@media print{.sidebar,.topbar,.live-feedback{display:none}main{margin:0;padding:0}.panel{break-inside:avoid}body{background:white}.page-header{padding-top:0}}
+</style>
+</head>
+<body>
+<!-- Design contract: an all-states reference, with comparison as the primary task.
+GOV.UK text-input guidance informs visible labels, persistent hints, and linked errors:
+https://design-system.service.gov.uk/components/text-input/
+Carbon button specifications inform distinct hover, active, focus and disabled tokens:
+https://www.carbondesignsystem.com/building-blocks/core/components/button/specifications
+Harbor assumptions: navy navigation, teal actions, 4px spacing scale, restrained 6px controls.
+Every sample is present in the initial HTML. Simulated states never depend on actual focus.
+Desktop uses a persistent index; mobile shows every section link in a wrapping header.
+No modal overlay, tabs, collapsed samples, delayed states, or remote assets.
+-->
+<a class="skip" href="#main">Skip to content</a>
+<aside class="sidebar" aria-label="Component library">
+<a class="brand" href="#main" aria-label="Harbor Bank component library">
+<svg class="brand-symbol" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#c7ede1"/><path d="M12 11v18m16-18v18M12 20c5-6 11 6 16 0" stroke="#142f38" stroke-width="3" stroke-linecap="round"/></svg>
+<span class="brand-name">Harbor<small>BANK</small></span></a>
+<p class="side-caption">Design system</p>
+<nav class="nav" aria-label="Page sections">
+<a href="#text-fields" aria-current="location"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10v4"/></svg><span>Text fields</span><span class="nav-num">01</span></a>
+<a href="#choices"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><path d="m4.5 6 1.5 1.5 2.5-3"/><circle cx="17.5" cy="6.5" r="3.5"/><path d="M3 17h7m4 0h7"/></svg><span>Choices</span><span class="nav-num">02</span></a>
+<a href="#buttons"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="4"/><path d="M8 12h8"/></svg><span>Buttons</span><span class="nav-num">03</span></a>
+<a href="#transfers-list"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Transfers list</span><span class="nav-num">04</span></a>
+<a href="#messages"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a8 8 0 0 1-8 8H7l-5 3 2-6a8 8 0 0 1-1-5 9 9 0 0 1 18 0Z"/><path d="M8 11h8"/></svg><span>Messages</span><span class="nav-num">05</span></a>
+<a href="#transfer-form"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4"/></svg><span>Transfer form</span><span class="nav-num">06</span></a>
+</nav><div class="side-bottom"><div class="system-state">A shared language for Harbor</div><p>Designed for confidence.<br>Built with care.</p><p>Component library · v1.0</p></div></aside>
+<main id="main" tabindex="-1">
+<div class="topbar"><div class="breadcrumb"><span>Design system</span><span aria-hidden="true">/</span><span>Component states</span></div><div class="topbar-right"><span>Web components</span><span class="version">v1.0</span></div></div>
+<header class="page-header"><p class="eyebrow">The details make the difference</p><h1>Harbor Bank component states</h1><p class="page-description">Form and feedback components, each shown in every state.</p><div class="header-note"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><path d="m4.5 6 1.5 1.5 2.5-3"/><circle cx="17.5" cy="6.5" r="3.5"/><path d="M3 17h7m4 0h7"/></svg>All states, side by side <span aria-hidden="true"></span> Static previews <span aria-hidden="true"></span> Ready for review</div></header>
+<section id="text-fields" aria-labelledby="fields-heading"><div class="section-head"><div><div class="section-title"><span class="section-number">01</span><h2 id="fields-heading">Text fields</h2></div><p>A clear starting point. Helpful guidance at every step.</p></div><span class="section-meta">07 states</span></div><div class="panel fields-grid">
+<div class="field-sample"><p class="state-label">Default</p><label class="field-label" for="account-default">Account number</label><span class="hint" id="account-default-hint">10 digits</span><div class="input-wrap"><input type="text" id="account-default" class="control" inputmode="numeric" autocomplete="off" aria-describedby="account-default-hint"></div>
+</div>
+<div class="field-sample"><p class="state-label">Focused</p><label class="field-label" for="account-focused">Account number</label><span class="hint" id="account-focused-hint">10 digits</span><div class="input-wrap"><input type="text" id="account-focused" class="control is-focused" inputmode="numeric" autocomplete="off" aria-describedby="account-focused-hint"></div>
+</div>
+<div class="field-sample"><p class="state-label">Filled</p><label class="field-label" for="account-filled">Account number</label><span class="hint" id="account-filled-hint">10 digits</span><div class="input-wrap"><input type="text" id="account-filled" class="control" inputmode="numeric" autocomplete="off" aria-describedby="account-filled-hint" value="4021957310"></div>
+</div>
+<div class="field-sample"><p class="state-label">Disabled</p><label class="field-label" for="account-disabled">Account number</label><span class="hint" id="account-disabled-hint">10 digits</span><div class="input-wrap"><input type="text" id="account-disabled" class="control" inputmode="numeric" autocomplete="off" aria-describedby="account-disabled-hint" disabled></div>
+</div>
+<div class="field-sample"><p class="state-label">Read-only</p><label class="field-label" for="account-read-only">Account number</label><span class="hint" id="account-read-only-hint">10 digits</span><div class="input-wrap"><input type="text" id="account-read-only" class="control" inputmode="numeric" autocomplete="off" aria-describedby="account-read-only-hint" value="4021957310" readonly></div>
+</div>
+<div class="field-sample"><p class="state-label">Error</p><label class="field-label" for="account-error">Account number</label><span class="hint" id="account-error-hint">10 digits</span><div class="input-wrap invalid"><input type="text" id="account-error" class="control" inputmode="numeric" autocomplete="off" aria-describedby="account-error-hint account-error-feedback" aria-invalid="true" value="402195"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg></div>
+<p id="account-error-feedback" class="feedback">Enter a 10-digit account number.</p>
+</div>
+<div class="field-sample"><p class="state-label">Success</p><label class="field-label" for="account-success">Account number</label><span class="hint" id="account-success-hint">10 digits</span><div class="input-wrap"><input type="text" id="account-success" class="control" inputmode="numeric" autocomplete="off" aria-describedby="account-success-hint account-success-feedback" value="4021957310"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></div>
+<p id="account-success-feedback" class="feedback good">Account verified.</p>
+</div>
+<div class="field-annotation"><strong>Clarity in every state</strong>Persistent labels and hints.<br>Feedback that explains the next step.</div></div></section>
+<section id="choices" aria-labelledby="choices-heading"><div class="section-head"><div><div class="section-title"><span class="section-number">02</span><h2 id="choices-heading">Choices</h2></div><p>Simple decisions, with unmistakable selection and focus.</p></div><span class="section-meta">04 components</span></div><div class="choices-grid">
+<div class="panel component-card"><h3>Checkbox</h3><p class="component-subtitle">For an independent choice.</p>
+<div class="choice-row"><p class="state-label">Unchecked</p><div><label class="choice-label"><input id="checkbox-unchecked" type="checkbox" class="choice-input">Send me paper statements</label>
+</div></div>
+<div class="choice-row"><p class="state-label">Checked</p><div><label class="choice-label"><input id="checkbox-checked" type="checkbox" class="choice-input" checked>Send me paper statements</label>
+</div></div>
+<div class="choice-row"><p class="state-label">Focused</p><div><label class="choice-label"><input id="checkbox-focused" type="checkbox" class="choice-input is-focused">Send me paper statements</label>
+</div></div>
+<div class="choice-row"><p class="state-label">Disabled</p><div><label class="choice-label"><input id="checkbox-disabled" type="checkbox" class="choice-input" disabled>Send me paper statements</label>
+</div></div>
+<div class="choice-row"><p class="state-label">Error</p><div><label class="choice-label"><input id="checkbox-error" type="checkbox" class="choice-input" aria-invalid="true" aria-describedby="checkbox-error-message">Send me paper statements</label>
+<p class="feedback" id="checkbox-error-message"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg>Accept the terms to continue.</p>
+</div></div>
+</div><div class="panel component-card"><h3>Statement frequency</h3><p class="component-subtitle">Radio group · One option from a set.</p>
+<div class="choice-row"><p class="state-label">None selected</p><fieldset><legend class="sr-only">Statement frequency — None selected</legend><div class="radio-options">
+<label class="choice-label"><input type="radio" name="radio-none-selected" value="Monthly" class="choice-input">Monthly</label>
+<label class="choice-label"><input type="radio" name="radio-none-selected" value="Quarterly" class="choice-input">Quarterly</label>
+<label class="choice-label"><input type="radio" name="radio-none-selected" value="Yearly" class="choice-input">Yearly</label>
+</div>
+</fieldset></div>
+<div class="choice-row"><p class="state-label">Selected</p><fieldset><legend class="sr-only">Statement frequency — Selected</legend><div class="radio-options">
+<label class="choice-label"><input type="radio" name="radio-selected" value="Monthly" class="choice-input" checked>Monthly</label>
+<label class="choice-label"><input type="radio" name="radio-selected" value="Quarterly" class="choice-input">Quarterly</label>
+<label class="choice-label"><input type="radio" name="radio-selected" value="Yearly" class="choice-input">Yearly</label>
+</div>
+</fieldset></div>
+<div class="choice-row"><p class="state-label">Focused</p><fieldset><legend class="sr-only">Statement frequency — Focused</legend><div class="radio-options">
+<label class="choice-label"><input type="radio" name="radio-focused" value="Monthly" class="choice-input is-focused">Monthly</label>
+<label class="choice-label"><input type="radio" name="radio-focused" value="Quarterly" class="choice-input">Quarterly</label>
+<label class="choice-label"><input type="radio" name="radio-focused" value="Yearly" class="choice-input">Yearly</label>
+</div>
+</fieldset></div>
+<div class="choice-row"><p class="state-label">Disabled</p><fieldset disabled><legend class="sr-only">Statement frequency — Disabled</legend><div class="radio-options">
+<label class="choice-label"><input type="radio" name="radio-disabled" value="Monthly" class="choice-input" disabled>Monthly</label>
+<label class="choice-label"><input type="radio" name="radio-disabled" value="Quarterly" class="choice-input" disabled>Quarterly</label>
+<label class="choice-label"><input type="radio" name="radio-disabled" value="Yearly" class="choice-input" disabled>Yearly</label>
+</div>
+</fieldset></div>
+<div class="choice-row"><p class="state-label">Error</p><fieldset aria-invalid="true" aria-describedby="radio-error-message"><legend class="sr-only">Statement frequency — Error</legend><div class="radio-options">
+<label class="choice-label"><input type="radio" name="radio-error" value="Monthly" class="choice-input" aria-invalid="true">Monthly</label>
+<label class="choice-label"><input type="radio" name="radio-error" value="Quarterly" class="choice-input" aria-invalid="true">Quarterly</label>
+<label class="choice-label"><input type="radio" name="radio-error" value="Yearly" class="choice-input" aria-invalid="true">Yearly</label>
+</div>
+<p class="feedback" id="radio-error-message"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg>Choose a frequency.</p>
+</fieldset></div>
+</div><div class="panel component-card"><h3>Toggle</h3><p class="component-subtitle">A preference that is on or off.</p>
+<div class="choice-row"><p class="state-label">Off</p><label class="choice-label switch-label"><input type="checkbox" role="switch" class="switch">Notify me of transfers over $500</label></div>
+<div class="choice-row"><p class="state-label">On</p><label class="choice-label switch-label"><input type="checkbox" role="switch" class="switch" checked>Notify me of transfers over $500</label></div>
+<div class="choice-row"><p class="state-label">Focused</p><label class="choice-label switch-label"><input type="checkbox" role="switch" class="switch is-focused">Notify me of transfers over $500</label></div>
+<div class="choice-row"><p class="state-label">Disabled</p><label class="choice-label switch-label"><input type="checkbox" role="switch" class="switch" disabled>Notify me of transfers over $500</label></div>
+<div class="panel-footnote"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.01"/></svg>The setting takes effect immediately.</div></div><div class="panel component-card"><h3>Transfer from</h3><p class="component-subtitle">Select · Choose an account from a list.</p>
+<div class="choice-row select-row"><p class="state-label">Closed</p><div><label class="sr-only" for="select-closed">Transfer from — Closed</label>
+<div class="select-shell"><select id="select-closed" class="control"><option value="">Choose an account</option><option>Everyday account</option><option>Savings account</option><option>Joint account</option></select><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+</div></div>
+<div class="choice-row select-row"><p class="state-label">Open</p><div><label class="sr-only" id="select-open-label">Transfer from — Open</label>
+<div class="select-preview"><div class="select-preview-header"><span>Choose an account</span><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div><ul class="open-options" aria-labelledby="select-open-label"><li>Everyday account</li><li>Savings account</li><li>Joint account</li></ul></div>
+</div></div>
+<div class="choice-row select-row"><p class="state-label">Focused</p><div><label class="sr-only" for="select-focused">Transfer from — Focused</label>
+<div class="select-shell"><select id="select-focused" class="control is-focused"><option value="">Choose an account</option><option>Everyday account</option><option>Savings account</option><option>Joint account</option></select><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+</div></div>
+<div class="choice-row select-row"><p class="state-label">Disabled</p><div><label class="sr-only" for="select-disabled">Transfer from — Disabled</label>
+<div class="select-shell"><select id="select-disabled" class="control" disabled><option value="">Choose an account</option><option>Everyday account</option><option>Savings account</option><option>Joint account</option></select><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+</div></div>
+<div class="choice-row select-row"><p class="state-label">Error</p><div><label class="sr-only" for="select-error">Transfer from — Error</label>
+<div class="select-shell"><select id="select-error" class="control" aria-invalid="true" aria-describedby="select-error-message"><option value="">Choose an account</option><option>Everyday account</option><option>Savings account</option><option>Joint account</option></select><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+<p class="feedback" id="select-error-message"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg>Choose an account.</p>
+</div></div>
+</div></div></section>
+<section id="buttons" aria-labelledby="buttons-heading"><div class="section-head"><div><div class="section-title"><span class="section-number">03</span><h2 id="buttons-heading">Buttons</h2></div><p>A consistent hierarchy for every kind of action.</p></div><span class="section-meta">18 samples</span></div><div class="panel"><table class="button-table"><caption class="sr-only">Primary, secondary, and destructive buttons in six states</caption><thead><tr><th scope="col">Variant</th>
+<th scope="col">Default</th>
+<th scope="col">Hover</th>
+<th scope="col">Focused</th>
+<th scope="col">Pressed</th>
+<th scope="col">Disabled</th>
+<th scope="col">Loading</th>
+</tr></thead><tbody>
+<tr><th scope="row">Primary<small>Main action</small></th>
+<td data-state="Default"><button type="button" class="btn primary " data-preview="true">Send transfer</button></td>
+<td data-state="Hover"><button type="button" class="btn primary is-hover" data-preview="true">Send transfer</button></td>
+<td data-state="Focused"><button type="button" class="btn primary is-focused" data-preview="true">Send transfer</button></td>
+<td data-state="Pressed"><button type="button" class="btn primary is-pressed" data-preview="true">Send transfer</button></td>
+<td data-state="Disabled"><button type="button" class="btn primary " disabled>Send transfer</button></td>
+<td data-state="Loading"><button type="button" class="btn primary " aria-disabled="true" aria-busy="true"><span class="spinner" aria-hidden="true"></span>Send transfer</button></td>
+</tr>
+<tr><th scope="row">Secondary<small>Supporting action</small></th>
+<td data-state="Default"><button type="button" class="btn secondary " data-preview="true">Save draft</button></td>
+<td data-state="Hover"><button type="button" class="btn secondary is-hover" data-preview="true">Save draft</button></td>
+<td data-state="Focused"><button type="button" class="btn secondary is-focused" data-preview="true">Save draft</button></td>
+<td data-state="Pressed"><button type="button" class="btn secondary is-pressed" data-preview="true">Save draft</button></td>
+<td data-state="Disabled"><button type="button" class="btn secondary " disabled>Save draft</button></td>
+<td data-state="Loading"><button type="button" class="btn secondary " aria-disabled="true" aria-busy="true"><span class="spinner" aria-hidden="true"></span>Save draft</button></td>
+</tr>
+<tr><th scope="row">Destructive<small>Irreversible action</small></th>
+<td data-state="Default"><button type="button" class="btn destructive " data-preview="true">Close account</button></td>
+<td data-state="Hover"><button type="button" class="btn destructive is-hover" data-preview="true">Close account</button></td>
+<td data-state="Focused"><button type="button" class="btn destructive is-focused" data-preview="true">Close account</button></td>
+<td data-state="Pressed"><button type="button" class="btn destructive is-pressed" data-preview="true">Close account</button></td>
+<td data-state="Disabled"><button type="button" class="btn destructive " disabled>Close account</button></td>
+<td data-state="Loading"><button type="button" class="btn destructive " aria-disabled="true" aria-busy="true"><span class="spinner" aria-hidden="true"></span>Close account</button></td>
+</tr>
+</tbody></table><div class="panel-footnote"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.01"/></svg>Hover, focus and pressed styles are pinned for comparison. Loading keeps the action label visible.</div></div></section>
+<section id="transfers-list" aria-labelledby="list-heading"><div class="section-head"><div><div class="section-title"><span class="section-number">04</span><h2 id="list-heading">Transfers list</h2></div><p>From the first request to the most recent activity.</p></div><span class="section-meta">04 states</span></div><div class="transfer-grid">
+<div class="panel list-panel"><p class="state-label">Loading</p><div class="list-header"><h3>Recent transfers</h3><div class="search"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" class="control" placeholder="Search transfers" aria-label="Search transfers — Loading"></div></div>
+<div class="list-body skeleton-list" aria-busy="true" aria-label="Loading recent transfers"><span class="sr-only">Loading transfers.</span>
+<div class="skeleton-row" aria-hidden="true"><div class="skeleton-circle"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div><div class="skeleton-amount"></div></div>
+<div class="skeleton-row" aria-hidden="true"><div class="skeleton-circle"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div><div class="skeleton-amount"></div></div>
+<div class="skeleton-row" aria-hidden="true"><div class="skeleton-circle"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div><div class="skeleton-amount"></div></div>
+<div class="skeleton-row" aria-hidden="true"><div class="skeleton-circle"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div><div class="skeleton-amount"></div></div>
+</div>
+</div>
+<div class="panel list-panel"><p class="state-label">Empty</p><div class="list-header"><h3>Recent transfers</h3><div class="search"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" class="control" placeholder="Search transfers" aria-label="Search transfers — Empty"></div></div>
+<div class="list-body center-state"><div class="state-icon"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l2 12v4H2v-4L4 4Z"/><path d="M2 15h6l2 3h4l2-3h6"/></svg></div><p>No transfers match your search.</p><small>Try a different name or amount.</small></div>
+</div>
+<div class="panel list-panel"><p class="state-label">Error</p><div class="list-header"><h3>Recent transfers</h3><div class="search"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" class="control" placeholder="Search transfers" aria-label="Search transfers — Error"></div></div>
+<div class="list-body center-state"><div class="state-icon error"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg></div><p>Transfers could not be loaded.</p><small>Please try again in a moment.</small><button type="button" class="btn secondary " id="retry-transfers"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 6a8 8 0 0 1 13 4M5 14a8 8 0 0 0 13 4"/></svg>Try again</button></div>
+</div>
+<div class="panel list-panel"><p class="state-label">Populated</p><div class="list-header"><h3>Recent transfers</h3><div class="search"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" class="control" placeholder="Search transfers" aria-label="Search transfers — Populated" id="transfer-search"></div></div>
+<div class="list-body"><table class="transfer-table"><caption class="sr-only">Recent transfers: date, recipient, amount, and status</caption><thead><tr><th scope="col">Date</th><th scope="col">Recipient</th><th scope="col">Amount</th><th scope="col">Status</th></tr></thead><tbody id="transfer-rows">
+<tr><td>14 Oct 2026</td><td>Nora Jansen</td><td>$120.00</td><td><span class="status "><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Completed</span></td></tr>
+<tr><td>12 Oct 2026</td><td>Elm Street Rentals</td><td>$1,450.00</td><td><span class="status "><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Completed</span></td></tr>
+<tr><td>9 Oct 2026</td><td>City Power &amp; Water</td><td>$86.40</td><td><span class="status pending"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M7 3v4m10-4v4"/></svg>Pending</span></td></tr>
+<tr><td>3 Oct 2026</td><td>Kaito Mori</td><td>$250.00</td><td><span class="status failed"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>Failed</span></td></tr>
+</tbody></table><p class="table-empty" id="search-empty" hidden>No transfers match your search.</p></div>
+</div>
+</div></section>
+<section id="messages" aria-labelledby="messages-heading"><div class="section-head"><div><div class="section-title"><span class="section-number">05</span><h2 id="messages-heading">Messages</h2></div><p>The right feedback, in the right moment.</p></div><span class="section-meta">Alerts · Toasts · Dialog</span></div><div class="messages-layout"><div class="panel alerts-panel"><h3 class="mini-heading">Inline alerts <span>04 types</span></h3>
+<div class="alert information"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.01"/></svg><div><strong>Information</strong><p>Transfers made after 6 pm are processed the next business day.</p></div></div>
+<div class="alert success"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><div><strong>Success</strong><p>Your transfer was scheduled.</p></div></div>
+<div class="alert warning"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5m0 3v.01"/></svg><div><strong>Warning</strong><p>Your daily transfer limit is almost reached.</p></div></div>
+<div class="alert error"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg><div><strong>Error</strong><p>Your transfer could not be sent.</p></div></div>
+</div><div class="message-right"><div class="panel toasts-panel"><h3 class="mini-heading">Toast notifications <span>In-place previews</span></h3>
+<div class="toast success" id="toast-success"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><strong>Transfer scheduled</strong><button class="icon-button" type="button" data-dismiss="toast-success" aria-label="Dismiss transfer scheduled notification"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><div class="toast-undo" id="undo-toast-success" hidden><span>Notification dismissed.</span><button class="link-button" type="button" data-restore="toast-success">Undo</button></div>
+<div class="toast error" id="toast-error"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg><strong>Transfer failed</strong><button class="icon-button" type="button" data-dismiss="toast-error" aria-label="Dismiss transfer failed notification"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><div class="toast-undo" id="undo-toast-error" hidden><span>Notification dismissed.</span><button class="link-button" type="button" data-restore="toast-error">Undo</button></div>
+</div><div class="panel dialog-panel"><p class="mini-heading">Confirmation dialog <span>Open preview</span></p><dialog open aria-modal="false" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div class="dialog-title"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5m0 3v.01"/></svg><h3 id="dialog-title">Close account?</h3></div><p id="dialog-description">This action cannot be undone. Your remaining balance will be sent to your linked account.</p><div class="dialog-actions"><button type="button" class="btn secondary " data-preview="true">Cancel</button><button type="button" class="btn destructive " data-preview="true">Close account</button></div></dialog></div></div></div></section>
+<section id="transfer-form" aria-labelledby="form-heading"><div class="section-head"><div><div class="section-title"><span class="section-number">06</span><h2 id="form-heading">Transfer form</h2></div><p>Individual components, working together.</p></div><span class="section-meta">02 outcomes</span></div><div class="form-grid"><div class="panel form-panel"><p class="state-label">Error state</p><form class="transfer-form" id="transfer-preview" novalidate><h3>Send a transfer</h3><p class="form-intro">Move money with a few simple details.</p><div class="error-summary" id="form-errors" tabindex="-1"><p><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg>Fix 2 errors to continue.</p><ul><li><a href="#to-account">Enter a 10-digit account number.</a></li><li><a href="#transfer-amount">Enter an amount greater than $0.00.</a></li></ul></div><div class="form-field"><label class="field-label" for="from-account">From account</label><div class="select-shell"><select class="control" id="from-account"><option>Everyday account</option><option>Savings account</option><option>Joint account</option></select><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div><div class="form-field"><label class="field-label" for="to-account">To account number</label><div class="input-wrap invalid"><input class="control" id="to-account" type="text" inputmode="numeric" value="402195" aria-invalid="true" aria-describedby="to-account-error" autocomplete="off"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4v.01"/></svg></div><p class="feedback" id="to-account-error">Enter a 10-digit account number.</p></div><div class="two-fields"><div class="form-field"><label class="field-label" for="transfer-amount">Amount</label><div class="prefix-wrap"><span aria-hidden="true">$</span><input class="control" id="transfer-amount" type="text" inputmode="decimal" value="0.00" aria-invalid="true" aria-describedby="amount-error" aria-label="Amount in dollars"></div><p class="feedback" id="amount-error">Enter an amount greater than $0.00.</p></div><div class="form-field"><label class="field-label" for="send-on">Send on</label><input class="control" id="send-on" type="date" value="2026-10-18"></div></div><div class="form-field"><label class="field-label" for="transfer-note">Note <span class="optional">(optional)</span></label><textarea class="control" id="transfer-note" placeholder="What is this transfer for?"></textarea><span class="hint">Visible to you and the recipient.</span></div><div class="form-actions"><button type="button" class="btn secondary " data-preview="true">Save draft</button><button type="submit" class="btn primary">Send transfer<svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></button></div></form></div>
+<div class="panel form-panel"><p class="state-label">Success state</p><div class="success-preview"><div class="success-content"><div class="success-mark"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></div><h3>Transfer scheduled</h3><p>$250.00 to Kaito Mori on 18 Oct 2026</p><dl class="receipt"><div><dt>From</dt><dd>Everyday account</dd></div><div><dt>Recipient</dt><dd>Kaito Mori</dd></div><div><dt>Amount</dt><dd>$250.00</dd></div><div><dt>Send on</dt><dd>18 Oct 2026</dd></div><div><dt>Status</dt><dd><span class="status"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Scheduled</span></dd></div></dl><button type="button" class="btn primary " id="make-another">Make another transfer</button><div class="success-note"><svg class="icon " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v2"/></svg>Your transfer details are securely saved.</div></div></div></div></div></section>
+<footer><span>© 2026 Harbor Bank</span><nav aria-label="Legal"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Accessibility</a></nav></footer>
+</main>
+<div class="live-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+<script>
+(function () {
+  'use strict';
+  var notice = document.querySelector('.live-feedback');
+  var noticeTimer;
+  function announce(message) {
+    clearTimeout(noticeTimer);
+    notice.textContent = message;
+    noticeTimer = setTimeout(function () { notice.textContent = ''; }, 5000);
+  }
+  document.querySelectorAll('[data-preview]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      announce('Component preview. No account action was taken.');
+    });
+  });
+  document.querySelectorAll('[aria-busy="true"].btn').forEach(function (button) {
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+    });
+  });
+  document.querySelectorAll('[data-dismiss]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var id = button.getAttribute('data-dismiss');
+      document.getElementById(id).hidden = true;
+      var undo = document.getElementById('undo-' + id);
+      undo.hidden = false;
+      undo.querySelector('button').focus();
+    });
+  });
+  document.querySelectorAll('[data-restore]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var id = button.getAttribute('data-restore');
+      document.getElementById('undo-' + id).hidden = true;
+      var toast = document.getElementById(id);
+      toast.hidden = false;
+      toast.querySelector('button').focus();
+    });
+  });
+  var search = document.getElementById('transfer-search');
+  search.addEventListener('input', function () {
+    var query = search.value.trim().toLowerCase();
+    var count = 0;
+    document.querySelectorAll('#transfer-rows tr').forEach(function (row) {
+      row.hidden = row.textContent.toLowerCase().indexOf(query) === -1;
+      if (!row.hidden) count++;
+    });
+    document.getElementById('search-empty').hidden = count !== 0;
+    announce(count + (count === 1 ? ' transfer found.' : ' transfers found.'));
+  });
+  document.getElementById('retry-transfers').addEventListener('click', function () {
+    announce('This is the error-state preview. No live account is connected.');
+  });
+  document.getElementById('transfer-preview').addEventListener('submit', function (event) {
+    event.preventDefault();
+    document.getElementById('form-errors').focus();
+    announce('Validation preview: fix 2 errors to continue.');
+  });
+  document.getElementById('make-another').addEventListener('click', function () {
+    document.getElementById('from-account').focus();
+    announce('Transfer form ready. The error samples stay visible for reference.');
+  });
+  var links = document.querySelectorAll('.nav a');
+  links.forEach(function (link) {
+    link.addEventListener('click', function () {
+      links.forEach(function (other) { other.removeAttribute('aria-current'); });
+      link.setAttribute('aria-current', 'location');
+    });
+  });
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          links.forEach(function (link) {
+            if (link.getAttribute('href') === '#' + entry.target.id) {
+              link.setAttribute('aria-current', 'location');
+            } else {
+              link.removeAttribute('aria-current');
+            }
+          });
+        }
+      });
+    }, { rootMargin: '-5% 0px -75% 0px' });
+    document.querySelectorAll('main > section').forEach(function (section) { observer.observe(section); });
+  }
+})();
+</script>
+</body>
+</html>

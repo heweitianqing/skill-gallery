@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harbor Bank component states</title>
+<meta name="description" content="Form and feedback components, each shown in every state.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --surface-2: #f7f9fa;
+    --surface-3: #eef2f5;
+    --ink: #13202d;
+    --ink-2: #364452;
+    --muted: #56636f;
+    --line: #dce2e8;
+    --line-2: #c4cdd6;
+    --field-border: #74818d;
+    --field-border-hover: #46535f;
+    --control-border: #5b6874;
+
+    --brand: #0b5269;
+    --brand-hover: #084256;
+    --brand-press: #052f3e;
+    --brand-50: #e8f2f5;
+    --brand-100: #cbe2ea;
+    --navy: #0a2230;
+
+    --focus: #4338ca;
+
+    --err: #b42318;
+    --err-hover: #912018;
+    --err-press: #741a14;
+    --err-bg: #fef3f2;
+    --err-line: #f5bdb7;
+    --ok: #067647;
+    --ok-bg: #ecfdf3;
+    --ok-line: #a5e3c1;
+    --warn: #8a3a0c;
+    --warn-icon: #c25a07;
+    --warn-bg: #fff8eb;
+    --warn-line: #f6d38a;
+    --info: #1849a9;
+    --info-bg: #eff5ff;
+    --info-line: #b6cdf4;
+
+    --dis-bg: #eceff2;
+    --dis-line: #ccd4dc;
+    --dis-ink: #7b8691;
+
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 2px rgba(19, 32, 45, .06), 0 1px 1px rgba(19, 32, 45, .04);
+    --shadow-lg: 0 12px 32px rgba(10, 34, 48, .18), 0 2px 6px rgba(10, 34, 48, .08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  a { color: var(--brand); }
+  a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+  svg { display: block; }
+  code { font-family: var(--mono); }
+
+  .sr-only {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+
+  .skip-link {
+    position: absolute; left: 16px; top: -60px; z-index: 100;
+    background: #fff; color: var(--brand); padding: 10px 16px; border-radius: var(--radius-sm);
+    font-weight: 600; box-shadow: var(--shadow-lg);
+  }
+  .skip-link:focus { top: 12px; }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 28px 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header__waves {
+    position: absolute; right: -40px; bottom: -10px; width: 560px; max-width: 80%;
+    opacity: .5; pointer-events: none;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .01em; }
+  .brand svg { width: 32px; height: 32px; }
+  .brand__tag {
+    font: 500 .75rem/1 var(--mono); color: #a9c4cf; border: 1px solid rgba(255,255,255,.22);
+    padding: 4px 8px; border-radius: 999px; margin-left: 4px;
+  }
+  .site-header h1 {
+    margin-top: 36px;
+    font-size: clamp(1.875rem, 4.2vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    position: relative;
+  }
+  .lede { margin-top: 10px; font-size: 1.125rem; color: #c9dbe2; max-width: 46ch; position: relative; }
+  .header-meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .875rem; color: #a9c4cf; position: relative; }
+  .header-meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .header-meta .dot { width: 8px; height: 8px; border-radius: 50%; background: #5fd3a5; }
+
+  .toc { background: var(--surface); border-bottom: 1px solid var(--line); }
+  @media (min-width: 768px) {
+    .toc { position: sticky; top: 0; z-index: 30; box-shadow: 0 1px 0 rgba(19,32,45,.02); }
+  }
+  .toc__inner { display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+  .toc__label { font: 500 .75rem/1 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .toc ul { display: flex; flex-wrap: wrap; gap: 6px 8px; list-style: none; margin: 0; padding: 0; }
+  .toc a {
+    display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px;
+    border-radius: 999px; color: var(--ink-2); text-decoration: none; font-weight: 500; font-size: .9375rem;
+    border: 1px solid var(--line); background: var(--surface);
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .toc a:hover { background: var(--brand-50); border-color: var(--brand-100); color: var(--brand); }
+  .toc a[aria-current="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .toc a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 999px; }
+
+  /* ---------- Sections ---------- */
+  main { padding-bottom: 24px; }
+  .section { padding: 56px 0 8px; scroll-margin-top: 72px; }
+  @media (max-width: 767px) { .section { scroll-margin-top: 8px; padding-top: 44px; } }
+  .section__head { display: flex; flex-direction: column; gap: 8px; max-width: 72ch; }
+  .section__num { font: 500 .8125rem/1 var(--mono); color: var(--brand); letter-spacing: .04em; }
+  .section h2 { font-size: clamp(1.5rem, 2.6vw, 1.875rem); letter-spacing: -.015em; }
+  .section__desc { color: var(--muted); }
+
+  .component { margin-top: 32px; }
+  .component__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 14px; }
+  .component h3 { font-size: 1.125rem; }
+  .component__spec { font-size: .875rem; color: var(--muted); }
+
+  .states { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
+  .states--choices { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+  .states--wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 20px; }
+
+  .state {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); display: flex; flex-direction: column; min-width: 0;
+  }
+  .state__meta {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .state__name { font-size: .8125rem; font-weight: 700; color: var(--ink-2); letter-spacing: .01em; }
+  h3.state__name, h4.state__name { font-size: .8125rem; }
+  .state__code {
+    font: 400 .75rem/1.2 var(--mono); color: var(--muted); background: var(--surface-3);
+    padding: 3px 6px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  .state__stage { padding: 18px; flex: 1; }
+
+  /* ---------- Fields ---------- */
+  .field { display: flex; flex-direction: column; min-width: 0; }
+  .label { display: block; font-weight: 600; font-size: .9375rem; color: var(--ink); margin-bottom: 6px; }
+  .label .optional { font-weight: 400; color: var(--muted); }
+  .hint { margin: -2px 0 8px; color: var(--muted); font-size: .875rem; }
+  .input {
+    width: 100%; min-height: 44px; padding: 0 12px;
+    font: 400 1rem/1.4 var(--font); color: var(--ink);
+    background: var(--surface); border: 1.5px solid var(--field-border); border-radius: var(--radius-sm);
+    transition: border-color .15s, box-shadow .15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .input::placeholder { color: #6c7884; opacity: 1; }
+  .input:hover:not(:disabled):not([readonly]) { border-color: var(--field-border-hover); }
+  .input:focus { outline: none; }
+  .input:focus-visible, .input.is-focus {
+    border-color: var(--focus);
+    box-shadow: 0 0 0 1px var(--focus), 0 0 0 4px rgba(67, 56, 202, .18);
+  }
+  .input[aria-invalid="true"] { border-color: var(--err); box-shadow: inset 0 0 0 1px var(--err); }
+  .input[aria-invalid="true"]:focus-visible { box-shadow: 0 0 0 1px var(--err), 0 0 0 4px rgba(180, 35, 24, .18); }
+  .input.is-valid { border-color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok); }
+  .input:disabled { background: var(--dis-bg); border-color: var(--dis-line); color: var(--dis-ink); cursor: not-allowed; -webkit-text-fill-color: var(--dis-ink); }
+  .input[readonly] { background: var(--surface-2); border-style: dashed; border-color: var(--line-2); color: var(--ink-2); }
+  .field:has(input:disabled, select:disabled, textarea:disabled) .label { color: var(--dis-ink); }
+  .field:has(input:disabled, select:disabled, textarea:disabled) .hint { color: var(--dis-ink); }
+  textarea.input { min-height: 92px; padding: 10px 12px; resize: vertical; }
+  input[type="date"].input { padding-right: 8px; }
+
+  .readonly-wrap { position: relative; }
+  .readonly-wrap .input { padding-right: 38px; }
+  .readonly-wrap svg { position: absolute; right: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+
+  .valid-wrap { position: relative; }
+  .valid-wrap .input { padding-right: 40px; }
+  .valid-wrap svg { position: absolute; right: 12px; top: 50%; width: 20px; height: 20px; transform: translateY(-50%); color: var(--ok); pointer-events: none; }
+
+  .affix { position: relative; }
+  .affix__prefix { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 500; pointer-events: none; }
+  .affix .input { padding-left: 28px; }
+
+  .msg { display: flex; gap: 6px; align-items: flex-start; margin: 8px 0 0; font-size: .875rem; font-weight: 500; line-height: 1.4; }
+  .msg svg { width: 18px; height: 18px; flex: none; margin-top: 0; }
+  .msg--error { color: var(--err); }
+  .msg--success { color: var(--ok); }
+
+  /* ---------- Checkbox & radio ---------- */
+  .check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-size: .9375rem; line-height: 1.45; }
+  .check + .check { margin-top: 10px; }
+  .check input {
+    appearance: none; -webkit-appearance: none; margin: 0; flex: none;
+    width: 20px; height: 20px; border: 2px solid var(--control-border); border-radius: 5px;
+    background: var(--surface); cursor: pointer; transition: background-color .12s, border-color .12s;
+  }
+  .check input[type="radio"] { border-radius: 50%; }
+  .check:hover input:not(:disabled) { border-color: var(--ink); }
+  .check input:checked {
+    background-color: var(--brand); border-color: var(--brand);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.4l2.9 2.9 6.1-6.6' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-size: 14px; background-position: center; background-repeat: no-repeat;
+  }
+  .check input[type="radio"]:checked { background: radial-gradient(circle, var(--brand) 0 4.5px, var(--surface) 5px); border-color: var(--brand); }
+  .check input:focus { outline: none; }
+  .check input:focus-visible, .check input.is-focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .check input[aria-invalid="true"] { border-color: var(--err); box-shadow: 0 0 0 1px var(--err); }
+  .check input:disabled { border-color: var(--dis-line); background-color: var(--dis-bg); cursor: not-allowed; }
+  .check input[type="radio"]:disabled:checked { background: radial-gradient(circle, #a2adb8 0 4.5px, var(--dis-bg) 5px); }
+  .check:has(input:disabled) { color: var(--dis-ink); cursor: not-allowed; }
+  .check-msg { margin-left: 30px; }
+
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  legend { padding: 0; font-weight: 600; font-size: .9375rem; margin-bottom: 10px; }
+  fieldset:disabled legend { color: var(--dis-ink); }
+
+  /* ---------- Switch ---------- */
+  .switch {
+    display: inline-flex; align-items: center; gap: 12px; padding: 4px 0;
+    background: none; border: 0; font: inherit; font-size: .9375rem; color: var(--ink); text-align: left; cursor: pointer;
+    line-height: 1.4;
+  }
+  .switch__track {
+    position: relative; flex: none; width: 46px; height: 26px; border-radius: 999px;
+    background: #66727e; transition: background-color .15s;
+  }
+  .switch__thumb {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25);
+    display: grid; place-items: center; transition: transform .15s;
+  }
+  .switch__thumb svg { width: 12px; height: 12px; color: var(--brand); opacity: 0; transition: opacity .15s; }
+  .switch[aria-checked="true"] .switch__track { background: var(--brand); }
+  .switch[aria-checked="true"] .switch__thumb { transform: translateX(20px); }
+  .switch[aria-checked="true"] .switch__thumb svg { opacity: 1; }
+  .switch:hover:not(:disabled) .switch__track { background: #4d5965; }
+  .switch[aria-checked="true"]:hover:not(:disabled) .switch__track { background: var(--brand-hover); }
+  .switch:focus { outline: none; }
+  .switch:focus-visible .switch__track, .switch.is-focus .switch__track { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .switch:disabled { color: var(--dis-ink); cursor: not-allowed; }
+  .switch:disabled .switch__track { background: var(--dis-line); }
+  .switch:disabled .switch__thumb { background: #f6f8f9; box-shadow: none; }
+  .switch__state { display: block; font-size: .8125rem; color: var(--muted); margin-top: 2px; }
+  .switch:disabled .switch__state { color: var(--dis-ink); }
+
+  /* ---------- Select ---------- */
+  .select { position: relative; }
+  .select select { appearance: none; -webkit-appearance: none; padding-right: 40px; cursor: pointer; }
+  .select select:disabled { cursor: not-allowed; }
+  .select select.is-placeholder { color: #5f6b77; }
+  .select select option { color: var(--ink); }
+  .select__icon { position: absolute; right: 12px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--ink-2); pointer-events: none; transition: transform .15s; }
+  .select:has(select:disabled) .select__icon { color: var(--dis-ink); }
+  .select-trigger {
+    display: flex; align-items: center; text-align: left; cursor: pointer;
+    border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); color: #5f6b77;
+  }
+  .select-trigger + .select__icon, .select--open .select__icon { transform: translateY(-50%) rotate(180deg); }
+  .listbox {
+    list-style: none; margin: 6px 0 0; padding: 4px; background: var(--surface);
+    border: 1px solid var(--line-2); border-radius: var(--radius-sm); box-shadow: 0 10px 24px rgba(10, 34, 48, .14);
+  }
+  .listbox:focus { outline: none; }
+  .listbox li { display: flex; align-items: center; justify-content: space-between; padding: 9px 10px; border-radius: 6px; font-size: .9375rem; cursor: pointer; }
+  .listbox li.is-active { background: var(--brand-50); color: var(--brand); font-weight: 600; box-shadow: inset 3px 0 0 var(--brand); }
+  .listbox li:hover { background: var(--surface-3); }
+  .listbox li.is-active:hover { background: var(--brand-50); }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 0 18px; border-radius: var(--radius-sm); border: 1.5px solid transparent;
+    font: 600 .9375rem/1.1 var(--font); white-space: nowrap; cursor: pointer; text-decoration: none;
+    transition: background-color .12s, border-color .12s, color .12s, box-shadow .12s, transform .06s;
+  }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn:focus { outline: none; }
+  .btn:focus-visible, .btn.is-focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .btn--primary { background: var(--brand); color: #fff; }
+  .btn--primary:hover:not(:disabled):not(.is-loading), .btn--primary.is-hover { background: var(--brand-hover); }
+  .btn--primary:active:not(:disabled):not(.is-loading), .btn--primary.is-pressed { background: var(--brand-press); }
+
+  .btn--secondary { background: var(--surface); color: var(--brand); border-color: var(--brand); }
+  .btn--secondary:hover:not(:disabled):not(.is-loading), .btn--secondary.is-hover { background: var(--brand-50); color: var(--brand-hover); border-color: var(--brand-hover); }
+  .btn--secondary:active:not(:disabled):not(.is-loading), .btn--secondary.is-pressed { background: var(--brand-100); color: var(--brand-press); border-color: var(--brand-press); }
+
+  .btn--danger { background: var(--err); color: #fff; }
+  .btn--danger:hover:not(:disabled):not(.is-loading), .btn--danger.is-hover { background: var(--err-hover); }
+  .btn--danger:active:not(:disabled):not(.is-loading), .btn--danger.is-pressed { background: var(--err-press); }
+
+  .btn:active:not(:disabled):not(.is-loading), .btn.is-pressed { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .22); }
+  .btn--secondary:active:not(:disabled):not(.is-loading), .btn--secondary.is-pressed { box-shadow: inset 0 2px 4px rgba(5, 47, 62, .16); }
+
+  .btn:disabled { background: var(--dis-bg); color: var(--dis-ink); border-color: var(--dis-line); cursor: not-allowed; box-shadow: none; transform: none; }
+  .btn--primary:disabled, .btn--danger:disabled { border-color: transparent; }
+  .btn.is-loading { cursor: progress; }
+
+  .btn--sm { min-height: 36px; padding: 0 12px; font-size: .875rem; }
+  .btn--block { width: 100%; }
+
+  .spinner {
+    width: 16px; height: 16px; flex: none; border-radius: 50%;
+    border: 2px solid currentColor; border-right-color: transparent; opacity: .95;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
+  .btn-matrix { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .btn-matrix__head, .btn-matrix__row { display: grid; grid-template-columns: 200px repeat(3, minmax(0, 1fr)); align-items: center; }
+  .btn-matrix__head { background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .btn-matrix__head span { padding: 12px 18px; font-size: .8125rem; font-weight: 700; color: var(--ink-2); }
+  .btn-matrix__head span small { display: block; font: 400 .75rem/1.3 var(--mono); color: var(--muted); }
+  .btn-matrix__row + .btn-matrix__row { border-top: 1px solid var(--line); }
+  .btn-matrix__state { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .btn-matrix__cell { padding: 16px 18px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .btn-matrix__variant { font: 400 .75rem/1 var(--mono); color: var(--muted); }
+  @media (min-width: 761px) { .btn-matrix__variant { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
+  @media (max-width: 760px) {
+    .btn-matrix { background: none; border: 0; box-shadow: none; overflow: visible; display: grid; gap: 14px; }
+    .btn-matrix__head { display: none; }
+    .btn-matrix__row { display: flex; flex-wrap: wrap; gap: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 0 0 16px; }
+    .btn-matrix__row + .btn-matrix__row { border-top: 1px solid var(--line); }
+    .btn-matrix__state { flex: 1 0 100%; flex-direction: row; justify-content: space-between; align-items: center; padding: 9px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; }
+    .btn-matrix__cell { padding: 0 0 0 14px; }
+    .btn-matrix__cell:last-child { padding-right: 14px; }
+  }
+
+  /* ---------- Transfers list ---------- */
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .tl { container: tl / inline-size; display: flex; flex-direction: column; flex: 1; }
+  .tl__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 18px 18px 14px; }
+  .tl__title { font-size: 1.0625rem; }
+  .search { position: relative; flex: 1 1 220px; max-width: 280px; }
+  .search svg { position: absolute; left: 12px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .search .input { padding-left: 38px; min-height: 40px; font-size: .9375rem; }
+  .search .input::-webkit-search-cancel-button { cursor: pointer; }
+  @container tl (max-width: 420px) { .search { max-width: none; flex-basis: 100%; } }
+  .tl__body { border-top: 1px solid var(--line); flex: 1; min-height: 300px; display: flex; flex-direction: column; }
+  .tl__foot { border-top: 1px solid var(--line); padding: 10px 18px; font-size: .8125rem; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  .skeleton-row { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; padding: 14px 18px; }
+  .skeleton-row + .skeleton-row { border-top: 1px solid var(--surface-3); }
+  .sk { display: block; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #e6ebef 0%, #f3f6f8 40%, #e6ebef 80%); background-size: 300% 100%; animation: shimmer 1.6s ease-in-out infinite; }
+  .sk--circle { width: 32px; height: 32px; border-radius: 50%; }
+  .sk-lines { display: flex; flex-direction: column; gap: 8px; }
+  .sk-end { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+  @media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+  .loading-note { display: flex; align-items: center; gap: 8px; padding: 12px 18px 16px; margin-top: auto; color: var(--muted); font-size: .875rem; }
+  .loading-note .spinner { width: 14px; height: 14px; color: var(--brand); }
+
+  .tl-empty, .tl-error { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px 24px; gap: 6px; }
+  .tl-empty svg { width: 88px; height: 72px; margin-bottom: 8px; }
+  .tl-error__icon { width: 52px; height: 52px; border-radius: 50%; background: var(--err-bg); color: var(--err); display: grid; place-items: center; margin-bottom: 8px; border: 1px solid var(--err-line); }
+  .tl-error__icon svg { width: 26px; height: 26px; }
+  .tl-empty strong, .tl-error strong { font-size: 1rem; font-weight: 600; }
+  .tl-empty p, .tl-error p { color: var(--muted); font-size: .875rem; max-width: 34ch; }
+  .tl-error .btn, .tl-empty .btn { margin-top: 12px; }
+
+  .tx { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+  .tx th { text-align: left; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 10px 18px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .tx td { padding: 12px 18px; border-bottom: 1px solid var(--surface-3); vertical-align: middle; }
+  .tx tbody tr:last-child td { border-bottom: 0; }
+  .tx tbody tr:hover td { background: #fafbfc; }
+  .tx .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tx td.num { font-weight: 600; }
+  .tx td.date { color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .who { display: flex; align-items: center; gap: 10px; font-weight: 500; min-width: 0; }
+  .avatar { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: .75rem; font-weight: 700; color: var(--brand); background: var(--brand-50); border: 1px solid var(--brand-100); }
+  .tx-failed .num { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 7px; border-radius: 999px; font-size: .8125rem; font-weight: 600; border: 1px solid; white-space: nowrap; }
+  .badge svg { width: 14px; height: 14px; }
+  .badge--ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
+  .badge--pending { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); border-style: dashed; }
+  .badge--failed { color: var(--err); background: var(--err-bg); border-color: var(--err-line); }
+
+  @container tl (max-width: 520px) {
+    .tx thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .tx, .tx tbody { display: block; }
+    .tx tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "who amt" "date status"; gap: 4px 12px; padding: 12px 16px; border-bottom: 1px solid var(--surface-3); }
+    .tx tbody tr:last-child { border-bottom: 0; }
+    .tx td { display: block; padding: 0; border: 0; }
+    .tx td.who-cell { grid-area: who; }
+    .tx td.date { grid-area: date; padding-left: 42px; font-size: .8125rem; color: var(--muted); }
+    .tx td.num { grid-area: amt; }
+    .tx td.status { grid-area: status; justify-self: end; }
+    .tx tbody tr:hover td { background: none; }
+  }
+
+  /* ---------- Alerts ---------- */
+  .alert { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid; border-left-width: 4px; font-size: .9375rem; line-height: 1.45; }
+  .alert svg { width: 20px; height: 20px; flex: none; margin-top: 1px; }
+  .alert__title { font-weight: 700; display: block; margin-bottom: 2px; }
+  .alert--info { background: var(--info-bg); border-color: var(--info-line); border-left-color: var(--info); color: #0f2f6e; }
+  .alert--info svg { color: var(--info); }
+  .alert--success { background: var(--ok-bg); border-color: var(--ok-line); border-left-color: var(--ok); color: #054d2f; }
+  .alert--success svg { color: var(--ok); }
+  .alert--warning { background: var(--warn-bg); border-color: var(--warn-line); border-left-color: var(--warn-icon); color: #6a2c08; }
+  .alert--warning svg { color: var(--warn-icon); }
+  .alert--error { background: var(--err-bg); border-color: var(--err-line); border-left-color: var(--err); color: #7a1a14; }
+  .alert--error svg { color: var(--err); }
+
+  /* ---------- Toasts ---------- */
+  .toast-stage { background: repeating-linear-gradient(135deg, #f1f4f6 0 10px, #eceff2 10px 20px); border-radius: 0 0 var(--radius) var(--radius); display: flex; align-items: flex-start; justify-content: center; padding: 28px 18px; min-height: 150px; }
+  .toast {
+    width: 100%; max-width: 380px; display: flex; align-items: flex-start; gap: 12px;
+    background: #12232f; color: #fff; padding: 14px 10px 14px 16px; border-radius: 10px; box-shadow: var(--shadow-lg);
+    border-left: 4px solid;
+  }
+  .toast--success { border-left-color: #3ccf8e; }
+  .toast--error { border-left-color: #ff7a6b; }
+  .toast__icon { width: 22px; height: 22px; flex: none; margin-top: 1px; }
+  .toast--success .toast__icon { color: #5fe0a5; }
+  .toast--error .toast__icon { color: #ff9184; }
+  .toast__body { flex: 1; min-width: 0; }
+  .toast__title { font-weight: 700; font-size: .9375rem; }
+  .toast__text { font-size: .875rem; color: #c3d2db; margin-top: 2px; }
+  .toast__close {
+    flex: none; width: 36px; height: 36px; margin: -6px 0 -6px 0; display: grid; place-items: center;
+    background: none; border: 0; border-radius: 6px; color: #c3d2db; cursor: pointer;
+  }
+  .toast__close svg { width: 16px; height: 16px; }
+  .toast__close:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+  .toast__close:focus { outline: none; }
+  .toast__close:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 1px; }
+  .toast-restore { align-self: center; }
+
+  /* ---------- Dialog ---------- */
+  .dialog-stage { position: relative; min-height: 400px; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; display: grid; place-items: center; padding: 32px 16px; background: var(--surface-2); }
+  .faux-page { position: absolute; inset: 0; padding: 22px; display: grid; grid-template-columns: 1fr 2fr; gap: 18px; }
+  .faux-page > div { display: flex; flex-direction: column; gap: 12px; }
+  .faux-page i { display: block; height: 12px; border-radius: 999px; background: #dde3e8; }
+  .faux-page i.blk { height: 80px; border-radius: 10px; }
+  .backdrop { position: absolute; inset: 0; background: rgba(10, 34, 48, .55); }
+  .dialog {
+    position: relative; width: 100%; max-width: 440px; background: var(--surface); border-radius: 14px;
+    box-shadow: var(--shadow-lg); padding: 24px;
+  }
+  .dialog__icon { width: 44px; height: 44px; border-radius: 50%; background: var(--err-bg); color: var(--err); display: grid; place-items: center; margin-bottom: 14px; }
+  .dialog__icon svg { width: 24px; height: 24px; }
+  .dialog h4 { font-size: 1.25rem; }
+  .dialog p { margin-top: 8px; color: var(--ink-2); }
+  .dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+  @media (max-width: 480px) { .dialog__actions { flex-direction: column-reverse; } .dialog__actions .btn { width: 100%; } .faux-page { grid-template-columns: 1fr; } }
+
+  /* ---------- Transfer form ---------- */
+  .form-pair { display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 960px) { .form-pair { grid-template-columns: 1fr 1fr; } }
+  .form-card { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+  .form-card__title { font-size: 1.25rem; }
+  .form-card__sub { color: var(--muted); font-size: .9375rem; margin-top: 4px; }
+  .tform { display: grid; gap: 20px; margin-top: 20px; }
+  .tform__row { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+  .tform__actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px; }
+  .field.has-error { border-left: 3px solid var(--err); padding-left: 14px; }
+
+  .error-summary { border: 1.5px solid var(--err); border-radius: var(--radius-sm); background: var(--err-bg); padding: 16px 18px; display: flex; gap: 12px; }
+  .error-summary:focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .error-summary > svg { width: 22px; height: 22px; color: var(--err); flex: none; }
+  .error-summary h4 { font-size: 1rem; color: #7a1a14; }
+  .error-summary ul { margin: 8px 0 0; padding-left: 18px; }
+  .error-summary li + li { margin-top: 4px; }
+  .error-summary a { color: var(--err); font-weight: 600; text-underline-offset: 3px; }
+  .error-summary a:hover { color: var(--err-press); text-decoration-thickness: 2px; }
+
+  .confirm { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 28px 8px 8px; }
+  .confirm__icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-line); margin-bottom: 18px; }
+  .confirm__icon svg { width: 34px; height: 34px; }
+  .confirm h4 { font-size: 1.5rem; letter-spacing: -.01em; }
+  .confirm:focus { outline: none; }
+  .confirm__text { margin-top: 8px; font-size: 1.0625rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .confirm dl { margin: 22px 0 0; width: 100%; max-width: 360px; border: 1px solid var(--line); border-radius: var(--radius-sm); text-align: left; font-size: .9375rem; }
+  .confirm dl div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; }
+  .confirm dl div + div { border-top: 1px solid var(--line); }
+  .confirm dt { color: var(--muted); }
+  .confirm dd { margin: 0; font-weight: 600; text-align: right; }
+  .confirm__note { margin-top: 14px; font-size: .875rem; color: var(--muted); }
+  .confirm .btn { margin-top: 22px; }
+
+  /* ---------- Footer ---------- */
+  .site-footer { margin-top: 64px; background: var(--surface); border-top: 1px solid var(--line); padding: 28px 0; font-size: .9375rem; }
+  .site-footer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+  .site-footer p { color: var(--muted); }
+  .site-footer ul { display: flex; flex-wrap: wrap; gap: 4px 20px; list-style: none; margin: 0; padding: 0; }
+  .site-footer a { color: var(--ink-2); text-underline-offset: 3px; display: inline-block; padding: 6px 0; }
+  .site-footer a:hover { color: var(--brand); }
+</style>
+</head>
+<body>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-error" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 5.8v5.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14" r="1.1" fill="currentColor"/></symbol>
+  <symbol id="i-success" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.4 10.3l2.5 2.5 4.8-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.1v5.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="6.1" r="1.1" fill="currentColor"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 20 20"><path d="M8.68 3.4a1.5 1.5 0 0 1 2.64 0l6.36 11.3a1.5 1.5 0 0 1-1.31 2.24H3.63a1.5 1.5 0 0 1-1.31-2.24z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 7.6v3.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14.1" r="1.05" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.4l2.9 2.9 6.1-6.6" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.8V8l2.2 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-x-circle" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.9 5.9l4.2 4.2M10.1 5.9l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-check-circle-sm" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.2 8.2l1.9 1.9 3.7-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="8.75" cy="8.75" r="5.75" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13.2 13.2l3.8 3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 20 20"><path d="M16 10a6 6 0 1 1-1.76-4.24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14.8 2.8v3.4h-3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M7 18h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.3 9.2 4.5 4.5 0 0 0 7 18z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M4 4l16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+</svg>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <svg class="site-header__waves" viewBox="0 0 560 200" aria-hidden="true" focusable="false">
+    <path d="M0 120c46 0 46-24 93-24s47 24 93 24 47-24 94-24 46 24 93 24 47-24 93-24 47 24 94 24" fill="none" stroke="#1f5a6f" stroke-width="2"/>
+    <path d="M0 150c46 0 46-24 93-24s47 24 93 24 47-24 94-24 46 24 93 24 47-24 93-24 47 24 94 24" fill="none" stroke="#18495b" stroke-width="2"/>
+    <path d="M0 180c46 0 46-24 93-24s47 24 93 24 47-24 94-24 46 24 93 24 47-24 93-24 47 24 94 24" fill="none" stroke="#123a49" stroke-width="2"/>
+    <path d="M0 90c46 0 46-24 93-24s47 24 93 24 47-24 94-24 46 24 93 24 47-24 93-24 47 24 94 24" fill="none" stroke="#276a80" stroke-width="2"/>
+  </svg>
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="8" fill="#ffffff"/>
+        <path d="M16 6.5l3 4h-6z" fill="#0b5269"/>
+        <rect x="14" y="10.5" width="4" height="9" fill="#0b5269"/>
+        <path d="M6 21.5c2.5 0 2.5-1.8 5-1.8s2.5 1.8 5 1.8 2.5-1.8 5-1.8 2.5 1.8 5 1.8" fill="none" stroke="#0b5269" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M6 25.5c2.5 0 2.5-1.8 5-1.8s2.5 1.8 5 1.8 2.5-1.8 5-1.8 2.5 1.8 5 1.8" fill="none" stroke="#3a8fa8" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span>Harbor Bank</span>
+      <span class="brand__tag">Design system</span>
+    </div>
+    <h1>Harbor Bank component states</h1>
+    <p class="lede">Form and feedback components, each shown in every state.</p>
+    <div class="header-meta">
+      <span><span class="dot" aria-hidden="true"></span>Hover, focused and pressed states are static samples</span>
+      <span>Last updated 26 Oct 2026</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <div class="wrap toc__inner">
+    <span class="toc__label" aria-hidden="true">On this page</span>
+    <ul>
+      <li><a href="#text-fields">Text fields</a></li>
+      <li><a href="#choices">Choices</a></li>
+      <li><a href="#buttons">Buttons</a></li>
+      <li><a href="#transfers-list">Transfers list</a></li>
+      <li><a href="#messages">Messages</a></li>
+      <li><a href="#transfer-form">Transfer form</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ============ 1. Text fields ============ -->
+  <section class="section" id="text-fields" aria-labelledby="text-fields-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__num">01</span>
+        <h2 id="text-fields-title">Text fields</h2>
+        <p class="section__desc">Single-line input with the label above and the hint between label and input. Validation messages sit directly under the input and always pair colour with an icon.</p>
+      </div>
+
+      <div class="component">
+        <div class="component__head">
+          <h3>Account number</h3>
+          <span class="component__spec">7 states · 44px height · 1.5px border</span>
+        </div>
+        <div class="states">
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Default (empty)</span><code class="state__code">—</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="tf-default">Account number</label>
+                <p class="hint" id="tf-default-hint">10 digits</p>
+                <input class="input" id="tf-default" type="text" inputmode="numeric" maxlength="10" autocomplete="off" aria-describedby="tf-default-hint">
+              </div>
+            </div>
+          </div>
+
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Focused</span><code class="state__code">:focus-visible</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="tf-focus">Account number</label>
+                <p class="hint" id="tf-focus-hint">10 digits</p>
+                <input class="input is-focus" id="tf-focus" type="text" inputmode="numeric" maxlength="10" autocomplete="off" aria-describedby="tf-focus-hint">
+              </div>
+            </div>
+          </div>
+
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Filled</span><code class="state__code">value</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="tf-filled">Account number</label>
+                <p class="hint" id="tf-filled-hint">10 digits</p>
+                <input class="input" id="tf-filled" type="text" inputmode="numeric" maxlength="10" autocomplete="off" value="4021957310" aria-describedby="tf-filled-hint">
+              </div>
+            </div>
+          </div>
+
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Disabled</span><code class="state__code">disabled</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="tf-disabled">Account number</label>
+                <p class="hint" id="tf-disabled-hint">10 digits</p>
+                <input class="input" id="tf-disabled" type="text" inputmode="numeric" maxlength="10" disabled aria-describedby="tf-disabled-hint">
+              </div>
+            </div>
+          </div>
+
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Read-only</span><code class="state__code">readonly</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="tf-readonly">Account number</label>
+                <p class="hint" id="tf-readonly-hint">10 digits</p>
+                <div class="readonly-wrap">
+                  <input class="input" id="tf-readonly" type="text" readonly value="4021957310" aria-describedby="tf-readonly-hint">
+                  <svg aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Error</span><code class="state__code">aria-invalid="true"</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="tf-error">Account number</label>
+                <p class="hint" id="tf-error-hint">10 digits</p>
+                <input class="input" id="tf-error" type="text" inputmode="numeric" maxlength="10" autocomplete="off" value="402195" aria-invalid="true" aria-describedby="tf-error-hint tf-error-msg">
+                <p class="msg msg--error" id="tf-error-msg"><svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg><span><span class="sr-only">Error: </span>Enter a 10-digit account number.</span></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Success</span><code class="state__code">.is-valid</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="tf-success">Account number</label>
+                <p class="hint" id="tf-success-hint">10 digits</p>
+                <div class="valid-wrap">
+                  <input class="input is-valid" id="tf-success" type="text" inputmode="numeric" maxlength="10" autocomplete="off" value="4021957310" aria-describedby="tf-success-hint tf-success-msg">
+                  <svg aria-hidden="true" focusable="false"><use href="#i-success"/></svg>
+                </div>
+                <p class="msg msg--success" id="tf-success-msg"><svg aria-hidden="true" focusable="false"><use href="#i-success"/></svg><span>Account verified.</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. Choices ============ -->
+  <section class="section" id="choices" aria-labelledby="choices-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__num">02</span>
+        <h2 id="choices-title">Choices</h2>
+        <p class="section__desc">Checkbox, radio group, toggle and select. Selected controls use the brand colour; focus always uses the indigo ring so it never reads as a selection.</p>
+      </div>
+
+      <!-- Checkbox -->
+      <div class="component">
+        <div class="component__head">
+          <h3>Checkbox</h3>
+          <span class="component__spec">“Send me paper statements” · 20px box</span>
+        </div>
+        <div class="states states--choices">
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Unchecked</span><code class="state__code">—</code></div>
+            <div class="state__stage">
+              <label class="check"><input type="checkbox" id="cb-unchecked">Send me paper statements</label>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Checked</span><code class="state__code">:checked</code></div>
+            <div class="state__stage">
+              <label class="check"><input type="checkbox" id="cb-checked" checked>Send me paper statements</label>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Focused</span><code class="state__code">:focus-visible</code></div>
+            <div class="state__stage">
+              <label class="check"><input type="checkbox" id="cb-focus" class="is-focus">Send me paper statements</label>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Disabled</span><code class="state__code">disabled</code></div>
+            <div class="state__stage">
+              <label class="check"><input type="checkbox" id="cb-disabled" disabled>Send me paper statements</label>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Error</span><code class="state__code">aria-invalid="true"</code></div>
+            <div class="state__stage">
+              <label class="check"><input type="checkbox" id="cb-error" aria-invalid="true" aria-describedby="cb-error-msg">Send me paper statements</label>
+              <p class="msg msg--error check-msg" id="cb-error-msg"><svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg><span><span class="sr-only">Error: </span>Accept the terms to continue.</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Radio group -->
+      <div class="component">
+        <div class="component__head">
+          <h3>Radio group</h3>
+          <span class="component__spec">“Statement frequency” · Monthly, Quarterly, Yearly</span>
+        </div>
+        <div class="states states--choices">
+          <div class="state">
+            <div class="state__meta"><span class="state__name">None selected</span><code class="state__code">—</code></div>
+            <div class="state__stage">
+              <fieldset>
+                <legend>Statement frequency</legend>
+                <label class="check"><input type="radio" name="rd-none" value="monthly">Monthly</label>
+                <label class="check"><input type="radio" name="rd-none" value="quarterly">Quarterly</label>
+                <label class="check"><input type="radio" name="rd-none" value="yearly">Yearly</label>
+              </fieldset>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">One selected</span><code class="state__code">:checked</code></div>
+            <div class="state__stage">
+              <fieldset>
+                <legend>Statement frequency</legend>
+                <label class="check"><input type="radio" name="rd-selected" value="monthly">Monthly</label>
+                <label class="check"><input type="radio" name="rd-selected" value="quarterly" checked>Quarterly</label>
+                <label class="check"><input type="radio" name="rd-selected" value="yearly">Yearly</label>
+              </fieldset>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Focused</span><code class="state__code">:focus-visible</code></div>
+            <div class="state__stage">
+              <fieldset>
+                <legend>Statement frequency</legend>
+                <label class="check"><input type="radio" name="rd-focus" value="monthly" class="is-focus" checked>Monthly</label>
+                <label class="check"><input type="radio" name="rd-focus" value="quarterly">Quarterly</label>
+                <label class="check"><input type="radio" name="rd-focus" value="yearly">Yearly</label>
+              </fieldset>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Disabled</span><code class="state__code">fieldset[disabled]</code></div>
+            <div class="state__stage">
+              <fieldset disabled>
+                <legend>Statement frequency</legend>
+                <label class="check"><input type="radio" name="rd-disabled" value="monthly" checked>Monthly</label>
+                <label class="check"><input type="radio" name="rd-disabled" value="quarterly">Quarterly</label>
+                <label class="check"><input type="radio" name="rd-disabled" value="yearly">Yearly</label>
+              </fieldset>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Error</span><code class="state__code">aria-invalid="true"</code></div>
+            <div class="state__stage">
+              <fieldset aria-describedby="rd-error-msg">
+                <legend>Statement frequency</legend>
+                <label class="check"><input type="radio" name="rd-error" value="monthly" aria-invalid="true">Monthly</label>
+                <label class="check"><input type="radio" name="rd-error" value="quarterly" aria-invalid="true">Quarterly</label>
+                <label class="check"><input type="radio" name="rd-error" value="yearly" aria-invalid="true">Yearly</label>
+                <p class="msg msg--error" id="rd-error-msg"><svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg><span><span class="sr-only">Error: </span>Choose a frequency.</span></p>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggle -->
+      <div class="component">
+        <div class="component__head">
+          <h3>Toggle</h3>
+          <span class="component__spec">“Notify me of transfers over $500” · role="switch"</span>
+        </div>
+        <div class="states states--choices">
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Off</span><code class="state__code">aria-checked="false"</code></div>
+            <div class="state__stage">
+              <button type="button" class="switch" role="switch" aria-checked="false" id="sw-off">
+                <span class="switch__track" aria-hidden="true"><span class="switch__thumb"><svg focusable="false"><use href="#i-check"/></svg></span></span>
+                <span>Notify me of transfers over $500</span>
+              </button>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">On</span><code class="state__code">aria-checked="true"</code></div>
+            <div class="state__stage">
+              <button type="button" class="switch" role="switch" aria-checked="true" id="sw-on">
+                <span class="switch__track" aria-hidden="true"><span class="switch__thumb"><svg focusable="false"><use href="#i-check"/></svg></span></span>
+                <span>Notify me of transfers over $500</span>
+              </button>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Focused</span><code class="state__code">:focus-visible</code></div>
+            <div class="state__stage">
+              <button type="button" class="switch is-focus" role="switch" aria-checked="false" id="sw-focus">
+                <span class="switch__track" aria-hidden="true"><span class="switch__thumb"><svg focusable="false"><use href="#i-check"/></svg></span></span>
+                <span>Notify me of transfers over $500</span>
+              </button>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Disabled</span><code class="state__code">disabled</code></div>
+            <div class="state__stage">
+              <button type="button" class="switch" role="switch" aria-checked="false" id="sw-disabled" disabled>
+                <span class="switch__track" aria-hidden="true"><span class="switch__thumb"><svg focusable="false"><use href="#i-check"/></svg></span></span>
+                <span>Notify me of transfers over $500</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Select -->
+      <div class="component">
+        <div class="component__head">
+          <h3>Select</h3>
+          <span class="component__spec">“Transfer from” · Everyday, Savings, Joint account</span>
+        </div>
+        <div class="states states--choices">
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Closed (placeholder)</span><code class="state__code">—</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="sl-closed">Transfer from</label>
+                <div class="select">
+                  <select class="input is-placeholder" id="sl-closed">
+                    <option value="" selected disabled>Choose an account</option>
+                    <option>Everyday account</option>
+                    <option>Savings account</option>
+                    <option>Joint account</option>
+                  </select>
+                  <svg class="select__icon" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Open</span><code class="state__code">aria-expanded="true"</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <span class="label" id="sl-open-label">Transfer from</span>
+                <div class="select select--open">
+                  <button type="button" class="input select-trigger" aria-haspopup="listbox" aria-expanded="true" aria-controls="sl-open-list" aria-labelledby="sl-open-label sl-open-value"><span id="sl-open-value">Choose an account</span></button>
+                  <svg class="select__icon" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
+                </div>
+                <ul class="listbox" role="listbox" id="sl-open-list" aria-labelledby="sl-open-label" aria-activedescendant="sl-open-opt1" tabindex="-1">
+                  <li role="option" id="sl-open-opt1" aria-selected="false" class="is-active">Everyday account</li>
+                  <li role="option" id="sl-open-opt2" aria-selected="false">Savings account</li>
+                  <li role="option" id="sl-open-opt3" aria-selected="false">Joint account</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Focused</span><code class="state__code">:focus-visible</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="sl-focus">Transfer from</label>
+                <div class="select">
+                  <select class="input is-focus" id="sl-focus">
+                    <option value="" disabled>Choose an account</option>
+                    <option>Everyday account</option>
+                    <option selected>Savings account</option>
+                    <option>Joint account</option>
+                  </select>
+                  <svg class="select__icon" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Disabled</span><code class="state__code">disabled</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="sl-disabled">Transfer from</label>
+                <div class="select">
+                  <select class="input" id="sl-disabled" disabled>
+                    <option value="" selected>Choose an account</option>
+                    <option>Everyday account</option>
+                    <option>Savings account</option>
+                    <option>Joint account</option>
+                  </select>
+                  <svg class="select__icon" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Error</span><code class="state__code">aria-invalid="true"</code></div>
+            <div class="state__stage">
+              <div class="field">
+                <label class="label" for="sl-error">Transfer from</label>
+                <div class="select">
+                  <select class="input is-placeholder" id="sl-error" aria-invalid="true" aria-describedby="sl-error-msg">
+                    <option value="" selected disabled>Choose an account</option>
+                    <option>Everyday account</option>
+                    <option>Savings account</option>
+                    <option>Joint account</option>
+                  </select>
+                  <svg class="select__icon" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
+                </div>
+                <p class="msg msg--error" id="sl-error-msg"><svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg><span><span class="sr-only">Error: </span>Choose an account.</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. Buttons ============ -->
+  <section class="section" id="buttons" aria-labelledby="buttons-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__num">03</span>
+        <h2 id="buttons-title">Buttons</h2>
+        <p class="section__desc">Primary for the main action on a screen, secondary for alternatives, destructive for actions that remove money or access. Loading keeps the label and adds a spinner so the button does not change width.</p>
+      </div>
+
+      <div class="component">
+        <div class="btn-matrix">
+          <div class="btn-matrix__head" aria-hidden="true">
+            <span>State</span>
+            <span>Primary<small>.btn--primary</small></span>
+            <span>Secondary<small>.btn--secondary</small></span>
+            <span>Destructive<small>.btn--danger</small></span>
+          </div>
+
+          <div class="btn-matrix__row">
+            <div class="btn-matrix__state"><span class="state__name">Default</span><code class="state__code">—</code></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Primary</span><button type="button" class="btn btn--primary">Send transfer</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Secondary</span><button type="button" class="btn btn--secondary">Save draft</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Destructive</span><button type="button" class="btn btn--danger">Close account</button></div>
+          </div>
+
+          <div class="btn-matrix__row">
+            <div class="btn-matrix__state"><span class="state__name">Hover</span><code class="state__code">:hover</code></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Primary</span><button type="button" class="btn btn--primary is-hover">Send transfer</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Secondary</span><button type="button" class="btn btn--secondary is-hover">Save draft</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Destructive</span><button type="button" class="btn btn--danger is-hover">Close account</button></div>
+          </div>
+
+          <div class="btn-matrix__row">
+            <div class="btn-matrix__state"><span class="state__name">Focused</span><code class="state__code">:focus-visible</code></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Primary</span><button type="button" class="btn btn--primary is-focus">Send transfer</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Secondary</span><button type="button" class="btn btn--secondary is-focus">Save draft</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Destructive</span><button type="button" class="btn btn--danger is-focus">Close account</button></div>
+          </div>
+
+          <div class="btn-matrix__row">
+            <div class="btn-matrix__state"><span class="state__name">Pressed</span><code class="state__code">:active</code></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Primary</span><button type="button" class="btn btn--primary is-pressed">Send transfer</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Secondary</span><button type="button" class="btn btn--secondary is-pressed">Save draft</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Destructive</span><button type="button" class="btn btn--danger is-pressed">Close account</button></div>
+          </div>
+
+          <div class="btn-matrix__row">
+            <div class="btn-matrix__state"><span class="state__name">Disabled</span><code class="state__code">disabled</code></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Primary</span><button type="button" class="btn btn--primary" disabled>Send transfer</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Secondary</span><button type="button" class="btn btn--secondary" disabled>Save draft</button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Destructive</span><button type="button" class="btn btn--danger" disabled>Close account</button></div>
+          </div>
+
+          <div class="btn-matrix__row">
+            <div class="btn-matrix__state"><span class="state__name">Loading</span><code class="state__code">aria-busy="true"</code></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Primary</span><button type="button" class="btn btn--primary is-loading" aria-disabled="true" aria-busy="true"><span class="spinner" aria-hidden="true"></span>Send transfer<span class="sr-only">, loading</span></button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Secondary</span><button type="button" class="btn btn--secondary is-loading" aria-disabled="true" aria-busy="true"><span class="spinner" aria-hidden="true"></span>Save draft<span class="sr-only">, loading</span></button></div>
+            <div class="btn-matrix__cell"><span class="btn-matrix__variant">Destructive</span><button type="button" class="btn btn--danger is-loading" aria-disabled="true" aria-busy="true"><span class="spinner" aria-hidden="true"></span>Close account<span class="sr-only">, loading</span></button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. Transfers list ============ -->
+  <section class="section" id="transfers-list" aria-labelledby="transfers-list-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__num">04</span>
+        <h2 id="transfers-list-title">Transfers list</h2>
+        <p class="section__desc">The “Recent transfers” card in each data state. Status badges differ by colour, icon and border style, so they stay distinct without relying on colour alone.</p>
+      </div>
+
+      <div class="component">
+        <div class="states states--wide">
+
+          <!-- Loading -->
+          <div class="state">
+            <div class="state__meta"><h3 class="state__name">Loading</h3><code class="state__code">aria-busy="true"</code></div>
+            <div class="tl">
+              <div class="tl__head">
+                <h4 class="tl__title">Recent transfers</h4>
+                <div class="search" role="search">
+                  <svg aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+                  <label class="sr-only" for="tl-loading-search">Search transfers</label>
+                  <input class="input" type="search" id="tl-loading-search" placeholder="Search transfers">
+                </div>
+              </div>
+              <div class="tl__body" aria-busy="true">
+                <div aria-hidden="true">
+                  <div class="skeleton-row"><span class="sk sk--circle"></span><span class="sk-lines"><span class="sk" style="width:58%"></span><span class="sk" style="width:34%"></span></span><span class="sk-end"><span class="sk" style="width:64px"></span><span class="sk" style="width:80px;height:18px"></span></span></div>
+                  <div class="skeleton-row"><span class="sk sk--circle"></span><span class="sk-lines"><span class="sk" style="width:70%"></span><span class="sk" style="width:30%"></span></span><span class="sk-end"><span class="sk" style="width:76px"></span><span class="sk" style="width:80px;height:18px"></span></span></div>
+                  <div class="skeleton-row"><span class="sk sk--circle"></span><span class="sk-lines"><span class="sk" style="width:62%"></span><span class="sk" style="width:36%"></span></span><span class="sk-end"><span class="sk" style="width:58px"></span><span class="sk" style="width:72px;height:18px"></span></span></div>
+                  <div class="skeleton-row"><span class="sk sk--circle"></span><span class="sk-lines"><span class="sk" style="width:48%"></span><span class="sk" style="width:32%"></span></span><span class="sk-end"><span class="sk" style="width:66px"></span><span class="sk" style="width:64px;height:18px"></span></span></div>
+                </div>
+                <p class="loading-note"><span class="spinner" aria-hidden="true"></span>Loading transfers…</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty -->
+          <div class="state">
+            <div class="state__meta"><h3 class="state__name">Empty</h3><code class="state__code">0 results</code></div>
+            <div class="tl">
+              <div class="tl__head">
+                <h4 class="tl__title">Recent transfers</h4>
+                <div class="search" role="search">
+                  <svg aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+                  <label class="sr-only" for="tl-empty-search">Search transfers</label>
+                  <input class="input" type="search" id="tl-empty-search" placeholder="Search transfers" value="Northwind Gym">
+                </div>
+              </div>
+              <div class="tl__body">
+                <div class="tl-empty">
+                  <svg viewBox="0 0 88 72" aria-hidden="true" focusable="false">
+                    <rect x="8" y="6" width="54" height="60" rx="7" fill="#eef2f5" stroke="#c4cdd6" stroke-width="1.5"/>
+                    <rect x="17" y="18" width="30" height="5" rx="2.5" fill="#d3dae1"/>
+                    <rect x="17" y="30" width="22" height="5" rx="2.5" fill="#d3dae1"/>
+                    <rect x="17" y="42" width="26" height="5" rx="2.5" fill="#d3dae1"/>
+                    <circle cx="58" cy="44" r="14" fill="#ffffff" stroke="#0b5269" stroke-width="3"/>
+                    <path d="M68 54l10 10" stroke="#0b5269" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M53 44h10" stroke="#0b5269" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                  <strong>No transfers match your search.</strong>
+                  <p>Check the spelling, or search by a different name, amount or date.</p>
+                  <button type="button" class="btn btn--secondary btn--sm">Clear search</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div class="state">
+            <div class="state__meta"><h3 class="state__name">Error</h3><code class="state__code">request failed</code></div>
+            <div class="tl">
+              <div class="tl__head">
+                <h4 class="tl__title">Recent transfers</h4>
+                <div class="search" role="search">
+                  <svg aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+                  <label class="sr-only" for="tl-error-search">Search transfers</label>
+                  <input class="input" type="search" id="tl-error-search" placeholder="Search transfers">
+                </div>
+              </div>
+              <div class="tl__body">
+                <div class="tl-error">
+                  <span class="tl-error__icon"><svg aria-hidden="true" focusable="false"><use href="#i-cloud-off"/></svg></span>
+                  <strong>Transfers could not be loaded.</strong>
+                  <p>Check your connection, then try again. Your money and scheduled transfers are not affected.</p>
+                  <button type="button" class="btn btn--secondary btn--sm"><svg aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg>Try again</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Populated -->
+          <div class="state">
+            <div class="state__meta"><h3 class="state__name">Populated</h3><code class="state__code">4 results</code></div>
+            <div class="tl">
+              <div class="tl__head">
+                <h4 class="tl__title" id="tl-pop-title">Recent transfers</h4>
+                <div class="search" role="search">
+                  <svg aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+                  <label class="sr-only" for="tl-pop-search">Search transfers</label>
+                  <input class="input" type="search" id="tl-pop-search" placeholder="Search transfers">
+                </div>
+              </div>
+              <div class="tl__body">
+                <table class="tx" aria-labelledby="tl-pop-title">
+                  <thead>
+                    <tr><th scope="col">Date</th><th scope="col">Recipient</th><th scope="col" class="num">Amount</th><th scope="col">Status</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="date"><time datetime="2026-10-14">14 Oct 2026</time></td>
+                      <td class="who-cell"><span class="who"><span class="avatar" aria-hidden="true">NJ</span>Nora Jansen</span></td>
+                      <td class="num">$120.00</td>
+                      <td class="status"><span class="badge badge--ok"><svg aria-hidden="true" focusable="false"><use href="#i-check-circle-sm"/></svg>Completed</span></td>
+                    </tr>
+                    <tr>
+                      <td class="date"><time datetime="2026-10-12">12 Oct 2026</time></td>
+                      <td class="who-cell"><span class="who"><span class="avatar" aria-hidden="true">ES</span>Elm Street Rentals</span></td>
+                      <td class="num">$1,450.00</td>
+                      <td class="status"><span class="badge badge--ok"><svg aria-hidden="true" focusable="false"><use href="#i-check-circle-sm"/></svg>Completed</span></td>
+                    </tr>
+                    <tr>
+                      <td class="date"><time datetime="2026-10-09">9 Oct 2026</time></td>
+                      <td class="who-cell"><span class="who"><span class="avatar" aria-hidden="true">CP</span>City Power &amp; Water</span></td>
+                      <td class="num">$86.40</td>
+                      <td class="status"><span class="badge badge--pending"><svg aria-hidden="true" focusable="false"><use href="#i-clock"/></svg>Pending</span></td>
+                    </tr>
+                    <tr class="tx-failed">
+                      <td class="date"><time datetime="2026-10-03">3 Oct 2026</time></td>
+                      <td class="who-cell"><span class="who"><span class="avatar" aria-hidden="true">KM</span>Kaito Mori</span></td>
+                      <td class="num">$250.00</td>
+                      <td class="status"><span class="badge badge--failed"><svg aria-hidden="true" focusable="false"><use href="#i-x-circle"/></svg>Failed</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="tl__foot" style="margin-top:auto"><span>Showing 4 transfers</span><a href="#transfers-list">View all transfers</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. Messages ============ -->
+  <section class="section" id="messages" aria-labelledby="messages-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__num">05</span>
+        <h2 id="messages-title">Messages</h2>
+        <p class="section__desc">Inline alerts sit in the page flow. Toasts confirm the result of an action and can be dismissed. Dialogs ask for confirmation before an action that cannot be undone.</p>
+      </div>
+
+      <div class="component">
+        <div class="component__head">
+          <h3>Inline alerts</h3>
+          <span class="component__spec">4 types · icon + colour + left rule</span>
+        </div>
+        <div class="states states--wide">
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Information</span><code class="state__code">.alert--info</code></div>
+            <div class="state__stage">
+              <div class="alert alert--info"><svg aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><span class="sr-only">Information: </span>Transfers made after 6 pm are processed the next business day.</p></div>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Success</span><code class="state__code">.alert--success</code></div>
+            <div class="state__stage">
+              <div class="alert alert--success"><svg aria-hidden="true" focusable="false"><use href="#i-success"/></svg><p><span class="sr-only">Success: </span>Your transfer was scheduled.</p></div>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Warning</span><code class="state__code">.alert--warning</code></div>
+            <div class="state__stage">
+              <div class="alert alert--warning"><svg aria-hidden="true" focusable="false"><use href="#i-warning"/></svg><p><span class="sr-only">Warning: </span>Your daily transfer limit is almost reached.</p></div>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Error</span><code class="state__code">.alert--error</code></div>
+            <div class="state__stage">
+              <div class="alert alert--error"><svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg><p><span class="sr-only">Error: </span>Your transfer could not be sent.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="component">
+        <div class="component__head">
+          <h3>Toast notifications</h3>
+          <span class="component__spec">Shown in place · dismissible</span>
+        </div>
+        <div class="states states--wide">
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Success toast</span><code class="state__code">role="status"</code></div>
+            <div class="toast-stage" data-toast-slot>
+              <div class="toast toast--success">
+                <svg class="toast__icon" aria-hidden="true" focusable="false"><use href="#i-success"/></svg>
+                <div class="toast__body">
+                  <p class="toast__title">Transfer scheduled</p>
+                  <p class="toast__text">$250.00 to Kaito Mori on 18 Oct 2026.</p>
+                </div>
+                <button type="button" class="toast__close" data-dismiss aria-label="Dismiss notification: Transfer scheduled"><svg aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
+              </div>
+              <button type="button" class="btn btn--secondary btn--sm toast-restore" data-restore hidden>Show toast again</button>
+            </div>
+          </div>
+          <div class="state">
+            <div class="state__meta"><span class="state__name">Error toast</span><code class="state__code">role="alert"</code></div>
+            <div class="toast-stage" data-toast-slot>
+              <div class="toast toast--error">
+                <svg class="toast__icon" aria-hidden="true" focusable="false"><use href="#i-error"/></svg>
+                <div class="toast__body">
+                  <p class="toast__title">Transfer failed</p>
+                  <p class="toast__text">The recipient’s bank declined the payment. No money left your account.</p>
+                </div>
+                <button type="button" class="toast__close" data-dismiss aria-label="Dismiss notification: Transfer failed"><svg aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
+              </div>
+              <button type="button" class="btn btn--secondary btn--sm toast-restore" data-restore hidden>Show toast again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="component">
+        <div class="component__head">
+          <h3>Confirmation dialog</h3>
+          <span class="component__spec">Shown open inside its panel · destructive action</span>
+        </div>
+        <div class="state">
+          <div class="state__meta"><span class="state__name">Open</span><code class="state__code">role="dialog"</code></div>
+          <div class="dialog-stage">
+            <div class="faux-page" aria-hidden="true">
+              <div><i style="width:70%"></i><i style="width:50%"></i><i style="width:60%"></i><i class="blk"></i></div>
+              <div><i style="width:40%"></i><i class="blk"></i><i style="width:85%"></i><i style="width:65%"></i><i class="blk"></i></div>
+            </div>
+            <div class="backdrop" aria-hidden="true"></div>
+            <div class="dialog" role="dialog" aria-modal="false" aria-labelledby="dlg-title" aria-describedby="dlg-desc">
+              <div class="dialog__icon" aria-hidden="true"><svg focusable="false"><use href="#i-warning"/></svg></div>
+              <h4 id="dlg-title">Close account?</h4>
+              <p id="dlg-desc">This action cannot be undone. Your remaining balance will be sent to your linked account.</p>
+              <div class="dialog__actions">
+                <button type="button" class="btn btn--secondary">Cancel</button>
+                <button type="button" class="btn btn--danger">Close account</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. Transfer form ============ -->
+  <section class="section" id="transfer-form" aria-labelledby="transfer-form-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__num">06</span>
+        <h2 id="transfer-form-title">Transfer form</h2>
+        <p class="section__desc">The same form after submission: on the left with two validation errors and a summary that links to each field, on the right after a successful submission.</p>
+      </div>
+
+      <div class="component form-pair">
+        <!-- Error state -->
+        <div class="state">
+          <div class="state__meta"><h3 class="state__name">Error state</h3><code class="state__code">2 errors</code></div>
+          <div class="form-card">
+            <h4 class="form-card__title" id="fe-title">New transfer</h4>
+            <p class="form-card__sub">Send money from your Harbor Bank account.</p>
+            <form class="tform" id="form-error" novalidate aria-labelledby="fe-title">
+              <div class="error-summary" id="fe-summary" tabindex="-1" aria-labelledby="fe-summary-title">
+                <svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg>
+                <div>
+                  <h4 id="fe-summary-title">Fix 2 errors to continue.</h4>
+                  <ul>
+                    <li><a href="#fe-to" data-focus="fe-to">Enter a 10-digit account number.</a></li>
+                    <li><a href="#fe-amount" data-focus="fe-amount">Enter an amount greater than $0.00.</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label" for="fe-from">From account</label>
+                <div class="select">
+                  <select class="input" id="fe-from">
+                    <option value="" disabled>Choose an account</option>
+                    <option selected>Everyday account</option>
+                    <option>Savings account</option>
+                    <option>Joint account</option>
+                  </select>
+                  <svg class="select__icon" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
+                </div>
+              </div>
+
+              <div class="field has-error">
+                <label class="label" for="fe-to">To account number</label>
+                <p class="hint" id="fe-to-hint">10 digits</p>
+                <input class="input" id="fe-to" type="text" inputmode="numeric" maxlength="10" autocomplete="off" value="40219" aria-invalid="true" aria-describedby="fe-to-hint fe-to-msg">
+                <p class="msg msg--error" id="fe-to-msg"><svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg><span><span class="sr-only">Error: </span>Enter a 10-digit account number.</span></p>
+              </div>
+
+              <div class="tform__row">
+                <div class="field has-error">
+                  <label class="label" for="fe-amount">Amount</label>
+                  <div class="affix">
+                    <span class="affix__prefix" aria-hidden="true">$</span>
+                    <input class="input" id="fe-amount" type="text" inputmode="decimal" autocomplete="off" value="0.00" aria-invalid="true" aria-describedby="fe-amount-msg">
+                  </div>
+                  <p class="msg msg--error" id="fe-amount-msg"><svg aria-hidden="true" focusable="false"><use href="#i-error"/></svg><span><span class="sr-only">Error: </span>Enter an amount greater than $0.00.</span></p>
+                </div>
+                <div class="field">
+                  <label class="label" for="fe-date">Send on</label>
+                  <input class="input" id="fe-date" type="date" value="2026-10-18">
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label" for="fe-note">Note <span class="optional">(optional)</span></label>
+                <p class="hint" id="fe-note-hint">Up to 140 characters. The recipient can see this.</p>
+                <textarea class="input" id="fe-note" maxlength="140" aria-describedby="fe-note-hint">Concert tickets</textarea>
+              </div>
+
+              <div class="tform__actions">
+                <button type="submit" class="btn btn--primary">Send transfer</button>
+                <button type="button" class="btn btn--secondary">Save draft</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Success state -->
+        <div class="state">
+          <div class="state__meta"><h3 class="state__name">Success state</h3><code class="state__code">form replaced</code></div>
+          <div class="form-card">
+            <h4 class="form-card__title">New transfer</h4>
+            <p class="form-card__sub">Send money from your Harbor Bank account.</p>
+            <div class="confirm" tabindex="-1" aria-labelledby="fs-title">
+              <div class="confirm__icon" aria-hidden="true"><svg focusable="false"><use href="#i-success"/></svg></div>
+              <h4 id="fs-title">Transfer scheduled</h4>
+              <p class="confirm__text">$250.00 to Kaito Mori on 18 Oct 2026</p>
+              <dl>
+                <div><dt>From</dt><dd>Everyday account</dd></div>
+                <div><dt>Note</dt><dd>Concert tickets</dd></div>
+                <div><dt>Reference</dt><dd>HB-2026-48213</dd></div>
+              </dl>
+              <p class="confirm__note">You can cancel this transfer until 6 pm on 17 Oct 2026.</p>
+              <button type="button" class="btn btn--primary">Make another transfer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 Harbor Bank</p>
+    <nav aria-label="Legal">
+      <ul>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+        <li><a href="#">Accessibility</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Toggles flip their state on click.
+  document.querySelectorAll('.switch').forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      if (sw.disabled) return;
+      sw.setAttribute('aria-checked', sw.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+    });
+  });
+
+  // Selects drop their placeholder styling once a value is chosen.
+  document.querySelectorAll('select.is-placeholder').forEach(function (sel) {
+    sel.addEventListener('change', function () { sel.classList.toggle('is-placeholder', !sel.value); });
+  });
+
+  // Toasts can be dismissed and brought back.
+  document.querySelectorAll('[data-toast-slot]').forEach(function (slot) {
+    var toast = slot.querySelector('.toast');
+    var restore = slot.querySelector('[data-restore]');
+    slot.querySelector('[data-dismiss]').addEventListener('click', function () {
+      toast.hidden = true; restore.hidden = false; restore.focus();
+    });
+    restore.addEventListener('click', function () {
+      toast.hidden = false; restore.hidden = true; toast.querySelector('[data-dismiss]').focus();
+    });
+  });
+
+  // Error summary links move focus to the field.
+  document.querySelectorAll('[data-focus]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      var target = document.getElementById(link.getAttribute('data-focus'));
+      if (!target) return;
+      e.preventDefault();
+      target.focus({ preventScroll: true });
+      target.closest('.field').scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  });
+
+  // Reference forms never submit; the error form returns focus to its summary.
+  document.querySelectorAll('form').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var summary = form.querySelector('.error-summary');
+      if (summary) summary.focus();
+    });
+  });
+
+  // Highlight the section currently in view.
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  if ('IntersectionObserver' in window) {
+    var visible = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { visible[en.target.id] = en.isIntersecting; });
+      var current = null;
+      links.some(function (a) {
+        var id = a.getAttribute('href').slice(1);
+        if (visible[id]) { current = id; return true; }
+        return false;
+      });
+      links.forEach(function (a) {
+        if (a.getAttribute('href').slice(1) === current) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-80px 0px -55% 0px' });
+    links.forEach(function (a) {
+      var s = document.getElementById(a.getAttribute('href').slice(1));
+      if (s) io.observe(s);
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -184,7 +184,8 @@
     "index_html": true,
     "index_html_bytes": 63648,
     "index_html_sha256": "82a340e3bd14e1eb5576e4d904c8ec42f152167af6650a9cf7c6aaaeacdd501f",
-    "other_files": []
+    "other_files": [],
+    "missing_local_refs": []
   },
   "external_refs": {
     "count": 3,
@@ -306,5 +307,59 @@
       ]
     }
   },
-  "runtime_remote_images": []
+  "runtime_remote_images": [],
+  "a11y": {
+    "tool": "axe-core",
+    "version": "4.14.0",
+    "rule_set": "axe-core default (WCAG 2.0-2.2 A/AA and best practices; experimental rules off)",
+    "runner": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "violations": {
+      "critical": 0,
+      "serious": 1,
+      "moderate": 0,
+      "minor": 0
+    },
+    "violation_nodes": {
+      "critical": 0,
+      "serious": 7,
+      "moderate": 0,
+      "minor": 0
+    },
+    "rule_ids": [
+      "color-contrast"
+    ],
+    "rules": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": 7
+      }
+    ],
+    "scanned_at": "2026-10-26T05:49:47.035Z"
+  },
+  "video": {
+    "file": "scroll.webm",
+    "width": 720,
+    "height": 450,
+    "seconds": 8,
+    "bytes": 681966,
+    "codec": "vp9",
+    "bitrate": "700k",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "script": "hold 500 ms, mouse-wheel scroll for 7000 ms at constant speed, hold 500 ms",
+    "scroll_target": "document",
+    "scroll_distance": 4649,
+    "reached_bottom": true,
+    "tool": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "recorded_at": "2026-10-26T05:59:58.874Z"
+  }
 }

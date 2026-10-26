@@ -141,7 +141,8 @@
     "index_html": true,
     "index_html_bytes": 58329,
     "index_html_sha256": "80552c7f516a132ed827dc34c422d3910a80efc15e12a6cb787ce0f543797ed1",
-    "other_files": []
+    "other_files": [],
+    "missing_local_refs": []
   },
   "external_refs": {
     "count": 3,
@@ -255,5 +256,71 @@
       ]
     }
   },
-  "runtime_remote_images": []
+  "runtime_remote_images": [],
+  "a11y": {
+    "tool": "axe-core",
+    "version": "4.14.0",
+    "rule_set": "axe-core default (WCAG 2.0-2.2 A/AA and best practices; experimental rules off)",
+    "runner": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "violations": {
+      "critical": 1,
+      "serious": 2,
+      "moderate": 0,
+      "minor": 0
+    },
+    "violation_nodes": {
+      "critical": 1,
+      "serious": 92,
+      "moderate": 0,
+      "minor": 0
+    },
+    "rule_ids": [
+      "aria-allowed-attr",
+      "color-contrast",
+      "label-content-name-mismatch"
+    ],
+    "rules": [
+      {
+        "id": "aria-allowed-attr",
+        "impact": "critical",
+        "nodes": 1
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": 91
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "nodes": 1
+      }
+    ],
+    "scanned_at": "2026-10-26T05:48:51.421Z"
+  },
+  "video": {
+    "file": "scroll.webm",
+    "width": 720,
+    "height": 450,
+    "seconds": 8,
+    "bytes": 892216,
+    "codec": "vp9",
+    "bitrate": "700k",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "script": "hold 500 ms, mouse-wheel scroll for 7000 ms at constant speed, hold 500 ms",
+    "scroll_target": "document",
+    "scroll_distance": 755,
+    "reached_bottom": true,
+    "tool": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "recorded_at": "2026-10-26T05:57:10.001Z"
+  }
 }

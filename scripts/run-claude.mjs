@@ -21,7 +21,7 @@ import {
   CONFIG_DIR, REPO_ROOT, SCHEMA_VERSION, baseEnv, cleanup, collectOutput, copySkill, die, hostInfo,
   loadPrompt, log, makeRunDir, makeSanitizer, parseCellArgs, prepareOutDir, readJsonl, runProcess,
   shellQuote, skillSourceMeta, writeRunJson, writeTranscript, realKeychainState, createThrowawayKeychain,
-  deleteThrowawayKeychain, listTree,
+  deleteThrowawayKeychain, listTree, startEvidenceWatch,
 } from './lib/common.mjs';
 import { resolveSkill } from './lib/skills.mjs';
 
@@ -31,23 +31,37 @@ const MODEL = 'claude-opus-5-5';
 const EFFORT = 'high';
 const PERMISSION_MODE = 'bypassPermissions';
 
-function findClaude() {
-  if (process.env.CLAUDE_BIN) return process.env.CLAUDE_BIN;
+// Pinned so every cell runs the same CLI, including the native baselines that
+// later batches reuse. The desktop app updates itself and adds new version
+// folders, so the newest copy is never picked automatically.
+const CLAUDE_VERSION = process.env.SG_CLAUDE_VERSION || '2.1.308';
+
+function claudeVersionOf(bin) {
+  const probe = path.join(os.tmpdir(), 'skill-gallery-version-probe');
   try {
-    return execFileSync('/bin/sh', ['-c', 'command -v claude'], { encoding: 'utf8' }).trim();
-  } catch {}
-  // Fall back to the newest copy bundled with the Claude desktop app (macOS).
-  const base = path.join(os.homedir(), 'Library/Application Support/Claude/claude-code');
-  if (fs.existsSync(base)) {
-    const cmp = (a, b) => a.split('.').map(Number).reduce((r, x, i) => r || x - (Number(b.split('.')[i]) || 0), 0);
-    for (const ver of fs.readdirSync(base).filter((v) => /^\d+(\.\d+)*$/.test(v)).sort(cmp).reverse()) {
-      for (const build of fs.readdirSync(path.join(base, ver))) {
-        const bin = path.join(base, ver, build, 'claude.app/Contents/MacOS/claude');
-        if (fs.existsSync(bin)) return bin;
-      }
-    }
+    return execFileSync(bin, ['--version'], { encoding: 'utf8', env: { PATH: '/usr/bin:/bin', HOME: probe, CLAUDE_CONFIG_DIR: probe } }).trim().split(/\s/)[0];
+  } catch {
+    return null;
   }
-  die('Claude Code CLI not found. Install it or set CLAUDE_BIN.');
+}
+
+function findClaude() {
+  const candidates = [];
+  if (process.env.CLAUDE_BIN) candidates.push(process.env.CLAUDE_BIN);
+  else {
+    // The copy bundled with the Claude desktop app (macOS), at the pinned version.
+    const dir = path.join(os.homedir(), 'Library/Application Support/Claude/claude-code', CLAUDE_VERSION);
+    if (fs.existsSync(dir)) {
+      for (const build of fs.readdirSync(dir)) candidates.push(path.join(dir, build, 'claude.app/Contents/MacOS/claude'));
+    }
+    try {
+      candidates.push(execFileSync('/bin/sh', ['-c', 'command -v claude'], { encoding: 'utf8' }).trim());
+    } catch {}
+  }
+  for (const bin of candidates) {
+    if (bin && fs.existsSync(bin) && claudeVersionOf(bin) === CLAUDE_VERSION) return bin;
+  }
+  die(`Claude Code ${CLAUDE_VERSION} not found (checked: ${candidates.join(', ') || 'nothing'}). Set CLAUDE_BIN to that version, or SG_CLAUDE_VERSION to run another one.`);
 }
 
 function authEnv() {
@@ -152,14 +166,16 @@ async function main() {
   log(`claude ${cell.promptId} ${cell.variant}: running in ${dirs.runDir}`);
   const eventsFile = path.join(dirs.runDir, 'events.jsonl');
   const stderrFile = path.join(dirs.runDir, 'stderr.log');
+  const stopEvidenceWatch = startEvidenceWatch(dirs.work, path.join(dirs.runDir, 'evidence-snapshots'));
   const proc = await runProcess({ cmd: claudeBin, args, env, cwd: dirs.work, stdoutFile: eventsFile, stderrFile });
+  stopEvidenceWatch();
   const finishedAt = new Date().toISOString();
   log(`claude exited ${proc.exitCode} after ${Math.round(proc.durationMs / 1000)}s`);
 
   const events = readJsonl(eventsFile);
   const a = analyzeStream(events, cell.skill?.name);
   const init = a.init || {};
-  const output = collectOutput(dirs.work, out, ['.claude']);
+  const output = collectOutput(dirs.work, out, { ignoreTop: ['.claude'], sanitize: san.fix, snapshotDir: path.join(dirs.runDir, 'evidence-snapshots') });
   writeTranscript(events, path.join(out, 'transcript.jsonl'), san);
 
   const plugins = init.plugins || [];
@@ -191,6 +207,7 @@ async function main() {
   if (!a.result) failures.push('no_result_event');
   else if (r.is_error) failures.push(`result_error: ${String(r.result || r.subtype).slice(0, 200)}`);
   if (!output.index_html) failures.push('no_index_html');
+  if (output.missing_local_refs?.length) failures.push('broken_local_ref');
   if (!isolationOk) failures.push('isolation_check_failed');
   if (cell.skill && !skillTriggered) failures.push('skill_not_triggered');
 
@@ -210,6 +227,7 @@ async function main() {
     duration_ms: proc.durationMs,
     exit_code: proc.exitCode,
     timed_out: proc.timedOut,
+    timeout_min: proc.timeoutMin,
     usage: r.usage ? {
       input_tokens: r.usage.input_tokens ?? null,
       cache_creation_input_tokens: r.usage.cache_creation_input_tokens ?? null,
@@ -265,7 +283,11 @@ async function main() {
     },
     output: (({ external_refs, ...rest }) => rest)(output),
     external_refs: output.external_refs ?? null,
-    rule_violations: output.external_refs?.violations ?? [],
+    rule_violations: [
+      ...(output.external_refs?.violations ?? []),
+      ...(output.kept_assets?.length ? ['extra_files'] : []),
+      ...(output.assets_over_cap?.length ? ['assets_over_cap'] : []),
+    ],
     host: hostInfo(),
     stderr_tail: san.fix(fs.readFileSync(stderrFile, 'utf8').split('\n').filter((l) => l.trim()).slice(-15).join('\n')),
     screenshots: null,

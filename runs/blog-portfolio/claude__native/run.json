@@ -255,7 +255,8 @@
     "index_html": true,
     "index_html_bytes": 61387,
     "index_html_sha256": "f943f376bea139c3f94c81ee5fe8b541822ab5d040b7828c0edcd82379d17a18",
-    "other_files": []
+    "other_files": [],
+    "missing_local_refs": []
   },
   "external_refs": {
     "count": 3,
@@ -398,5 +399,59 @@
   "notes": [
     "Ran before the throwaway-keychain fix. The agent launched Google Chrome directly 6 time(s) with the empty throwaway HOME, which makes macOS show a \"keychain not found\" dialog; the keychain dialog may have delayed this run (duration_ms may be inflated). Not re-run."
   ],
-  "runtime_remote_images": []
+  "runtime_remote_images": [],
+  "a11y": {
+    "tool": "axe-core",
+    "version": "4.14.0",
+    "rule_set": "axe-core default (WCAG 2.0-2.2 A/AA and best practices; experimental rules off)",
+    "runner": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "violations": {
+      "critical": 0,
+      "serious": 1,
+      "moderate": 0,
+      "minor": 0
+    },
+    "violation_nodes": {
+      "critical": 0,
+      "serious": 1,
+      "moderate": 0,
+      "minor": 0
+    },
+    "rule_ids": [
+      "color-contrast"
+    ],
+    "rules": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": 1
+      }
+    ],
+    "scanned_at": "2026-10-26T05:49:59.977Z"
+  },
+  "video": {
+    "file": "scroll.webm",
+    "width": 720,
+    "height": 450,
+    "seconds": 8,
+    "bytes": 637537,
+    "codec": "vp9",
+    "bitrate": "700k",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "script": "hold 500 ms, mouse-wheel scroll for 7000 ms at constant speed, hold 500 ms",
+    "scroll_target": "document",
+    "scroll_distance": 7671,
+    "reached_bottom": true,
+    "tool": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "recorded_at": "2026-10-26T06:00:12.946Z"
+  }
 }

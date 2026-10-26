@@ -29,6 +29,19 @@ invoke:
   claude: "Use the frontend-design skill."   # interactive: /frontend-design <task>
   codex: "$frontend-design"                   # e.g. "... Use the $frontend-design skill."
 
+strengths:
+  - text: Distinctive, intentional visual design that doesn't read as templated defaults
+    source: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design/SKILL.md#L3
+  - text: Deliberate, opinionated palette, typography and layout choices specific to the brief, giving each client a distinct visual identity
+    source: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design/SKILL.md#L9
+  - text: Typography carries the personality of the page
+    source: https://github.com/anthropics/skills/blob/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design/SKILL.md#L19
+
+# "Building new UI or reshaping an existing one", no exclusions (research/batch2.md section 11).
+applies_to: [landing-saas, dashboard, blog-portfolio]
+out_of_scope_reason: Showcase prompt added for frontend-ui-engineering only.
+applies_to_note: Checked against the skill text after the v0 runs (not decided in advance); the text names no excluded page types.
+
 notes:
   - The same SKILL.md is also published in anthropics/claude-plugins-official and anthropics/claude-code; this repo uses anthropics/skills.
   - Upstream rewrote this skill several times in 2026, so always use the pinned commit.

@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales &amp; Operations · Kestrel Coffee Roasters</title>
+<style>
+/* Theme: Golden Hour (theme-factory)
+   Mustard #f4a900 · Terracotta #c1666b · Warm Beige #d4b896 · Chocolate #4a403a
+   Type: FreeSans Bold (headers) / FreeSans (body) */
+:root{
+  --mustard:#f4a900;
+  --terracotta:#c1666b;
+  --beige:#d4b896;
+  --choc:#4a403a;
+
+  --bg:#f6efe4;
+  --surface:#fffdf9;
+  --surface-2:#fbf6ee;
+  --border:#e8dccb;
+  --grid:#efe6d8;
+  --ink:#3a322d;
+  --ink-2:#5f544c;
+  --muted:#6e6259;
+
+  /* chart series (validated: lightness, chroma, CVD separation) */
+  --s-online:#e8a200;
+  --s-cafes:#a8484f;
+
+  /* status */
+  --good:#2f7a4c;  --good-bg:#e4f1e7;
+  --warn:#7a5200;  --warn-bg:#fdf0c8;
+  --bad:#a63a28;   --bad-bg:#f9e2dc;
+  --info:#4a403a;  --info-bg:#efe4d4;
+
+  --radius:14px;
+  --shadow:0 1px 2px rgba(74,64,58,.06),0 4px 16px rgba(74,64,58,.05);
+  --font:"FreeSans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --sidebar:248px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--font);
+  font-size:15px;
+  line-height:1.45;
+  color:var(--ink);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--font);font-weight:700;margin:0;color:var(--choc);letter-spacing:-.01em}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:focus-visible{outline:2px solid var(--choc);outline-offset:2px;box-shadow:0 0 0 5px rgba(244,169,0,.45);border-radius:6px}
+
+.skip{position:absolute;left:12px;top:-60px;background:var(--choc);color:#fff;padding:10px 14px;border-radius:8px;z-index:100;text-decoration:none}
+.skip:focus{top:12px}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  position:fixed;inset:0 auto 0 0;width:var(--sidebar);
+  background:var(--choc);color:#efe4d4;
+  display:flex;flex-direction:column;padding:22px 16px;z-index:40;
+}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 22px;text-decoration:none}
+.brand-mark{flex:none;width:40px;height:40px;border-radius:11px;background:var(--mustard);display:grid;place-items:center}
+.brand-name{font-weight:700;font-size:16px;line-height:1.15;color:#fff}
+.brand-name small{display:block;font-weight:400;font-size:12px;color:var(--beige);letter-spacing:.04em;text-transform:uppercase;margin-top:3px}
+.nav-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:#b9a994;padding:10px 12px 8px}
+.nav{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.nav a{
+  display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;
+  text-decoration:none;color:#e6dacb;font-size:15px;position:relative;
+}
+.nav a svg{flex:none;width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav a[aria-current="page"]{background:rgba(244,169,0,.16);color:#fff;font-weight:700}
+.nav a[aria-current="page"]::before{content:"";position:absolute;left:-16px;top:8px;bottom:8px;width:4px;border-radius:0 4px 4px 0;background:var(--mustard)}
+.nav a[aria-current="page"] svg{stroke:var(--mustard);opacity:1}
+.nav a:focus-visible{outline-color:var(--mustard);box-shadow:none}
+.sidebar-foot{margin-top:auto;padding:14px 12px 4px;border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;color:#cbbba6}
+.sidebar-foot strong{display:block;color:#fff;font-size:13px;margin-bottom:2px}
+.drawer-close{display:none}
+
+/* ---------- Main ---------- */
+.main{margin-left:var(--sidebar);min-height:100vh}
+.topbar{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;gap:20px;
+  padding:16px 32px;background:rgba(246,239,228,.92);
+  backdrop-filter:saturate(1.2) blur(8px);-webkit-backdrop-filter:saturate(1.2) blur(8px);
+  border-bottom:1px solid var(--border);
+}
+.menu-btn{display:none;flex:none;width:42px;height:42px;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;align-items:center;justify-content:center}
+.title-block h1{font-size:24px;line-height:1.15}
+.period{display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-size:13px;color:var(--muted)}
+.period .pill{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:2px 10px;color:var(--choc);font-weight:700}
+.search{margin-left:auto;position:relative;width:min(380px,100%)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
+.search input{
+  width:100%;height:42px;border-radius:10px;border:1px solid var(--border);background:var(--surface);
+  padding:0 14px 0 38px;font:inherit;font-size:14.5px;color:var(--ink);
+}
+.search input::placeholder{color:#8a7d72}
+.search input:focus{outline:2px solid var(--choc);outline-offset:1px;box-shadow:0 0 0 5px rgba(244,169,0,.35)}
+.user{display:flex;align-items:center;gap:10px;flex:none}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--terracotta);color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px;letter-spacing:.03em}
+.user-meta{line-height:1.2}
+.user-meta strong{display:block;font-size:14px;color:var(--choc)}
+.user-meta span{font-size:12.5px;color:var(--muted)}
+
+.content{padding:24px 32px 48px;max-width:1240px}
+.search-status{margin:0 0 14px;font-size:13.5px;color:var(--ink-2)}
+.search-status[hidden]{display:none}
+
+/* Alert */
+.alert{
+  display:flex;align-items:flex-start;gap:12px;
+  background:var(--bad-bg);border:1px solid #efc4b9;border-left:4px solid var(--bad);
+  border-radius:12px;padding:12px 16px;margin-bottom:20px;color:#5a2418;font-size:14px;
+}
+.alert svg{flex:none;width:20px;height:20px;margin-top:1px}
+.alert a{font-weight:700;color:var(--bad)}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-4{grid-column:span 4}
+.span-7{grid-column:span 7}.span-5{grid-column:span 5}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;min-width:0}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.card-head h2{font-size:17px}
+.card-sub{font-size:13px;color:var(--muted);margin-top:3px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-bottom:20px}
+.kpi{position:relative;overflow:hidden;padding:18px 18px 16px}
+.kpi::after{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--mustard);opacity:.9}
+.kpi-label{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.kpi-label svg{width:16px;height:16px;stroke:var(--terracotta);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kpi-value{font-size:30px;font-weight:700;color:var(--choc);margin:8px 0 10px;line-height:1.05;letter-spacing:-.02em}
+.kpi-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.delta{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:13px;padding:2px 8px;border-radius:999px}
+.delta svg{width:11px;height:11px}
+.delta.good{color:var(--good);background:var(--good-bg)}
+.delta.bad{color:var(--bad);background:var(--bad-bg)}
+
+/* Segmented */
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 12px;border-radius:7px;font-size:13.5px;cursor:pointer;color:var(--ink-2);display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.seg button:hover{color:var(--choc)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--choc);font-weight:700;box-shadow:0 1px 3px rgba(74,64,58,.15)}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+.sw.online{background:var(--s-online)}.sw.cafes{background:var(--s-cafes)}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin:-4px 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+.chart-wrap{position:relative;touch-action:pan-y}
+.chart-wrap:focus-visible{border-radius:8px}
+#revChart svg{display:block;width:100%;overflow:visible}
+.axis text{fill:var(--muted);font-size:12px;font-family:var(--font)}
+.tooltip{
+  position:absolute;pointer-events:none;z-index:5;min-width:170px;
+  background:var(--choc);color:#fff;border-radius:10px;padding:10px 12px;font-size:13px;
+  box-shadow:0 8px 24px rgba(58,50,45,.25);opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;
+}
+.tooltip.show{opacity:1;transform:none}
+.tooltip .tt-title{font-weight:700;margin-bottom:6px;color:#fff}
+.tooltip .tt-row{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tooltip .tt-row span:first-child{display:inline-flex;align-items:center;gap:7px;color:#e9dccb}
+.tooltip .tt-total{border-top:1px solid rgba(255,255,255,.2);margin-top:6px;padding-top:6px;font-weight:700}
+.chart-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+details.data-table{margin-top:10px;font-size:13.5px}
+details.data-table summary{cursor:pointer;color:var(--ink-2);font-weight:700;width:max-content}
+details.data-table table{margin-top:10px}
+
+/* Category bars */
+.cat-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.cat-row{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.cat-name{font-size:14px;color:var(--ink)}
+.cat-val{font-size:14px;font-weight:700;color:var(--choc)}
+.track{grid-column:1 / -1;height:10px;border-radius:4px;background:var(--grid);overflow:hidden}
+.fill{height:100%;border-radius:0 4px 4px 0;background:var(--terracotta)}
+.cat-row:hover .fill{background:#a8484f}
+
+/* Tables */
+.table-scroll{overflow-x:auto;margin:0 -22px;padding:0 22px}
+.table-scroll:focus-visible{outline-offset:-2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:11px 10px;text-align:left;border-bottom:1px solid var(--grid);white-space:nowrap}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border)}
+td.r,th.r{text-align:right}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+th:first-child,td:first-child{padding-left:0}
+th:last-child,td:last-child{padding-right:0}
+.sort-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font:inherit;text-transform:inherit;letter-spacing:inherit;color:inherit;border-radius:4px}
+.sort-btn:hover{color:var(--choc)}
+.sort-btn:focus-visible{outline:2px solid var(--choc);outline-offset:2px}
+.sort-btn svg{width:10px;height:12px;opacity:.45}
+th[aria-sort="ascending"] .sort-btn,th[aria-sort="descending"] .sort-btn{color:var(--choc)}
+th[aria-sort="ascending"] .sort-btn svg,th[aria-sort="descending"] .sort-btn svg{opacity:1}
+th[aria-sort="ascending"] .sort-btn .dn,th[aria-sort="descending"] .sort-btn .up{opacity:.2}
+.cafe-name strong{display:block;font-weight:700;color:var(--choc)}
+.cafe-name small{color:var(--muted);font-size:12px}
+.chg{font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.chg svg{width:10px;height:10px}
+.chg.good{color:var(--good)}.chg.bad{color:var(--bad)}
+.empty-row td{color:var(--muted);text-align:center;font-style:italic;padding:16px 0}
+
+.prod-name{white-space:normal;min-width:180px}
+.prod-name strong{font-weight:700;color:var(--choc);display:block}
+.mini-track{height:6px;border-radius:3px;background:var(--grid);margin-top:7px;max-width:220px;overflow:hidden}
+.mini-fill{height:100%;background:var(--s-online);border-radius:0 3px 3px 0}
+
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 10px 3px 8px;border-radius:999px;border:1px solid transparent}
+.status svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.status.shipped{color:var(--info);background:var(--info-bg);border-color:#ddcdb6}
+.status.paid{color:var(--good);background:var(--good-bg);border-color:#c6e0cd}
+.status.pending{color:var(--warn);background:var(--warn-bg);border-color:#f1d98c;border-style:dashed}
+.status.refunded{color:var(--bad);background:var(--bad-bg);border-color:#efc4b9}
+.channel{display:inline-flex;align-items:center;gap:6px}
+.order-id{font-weight:700;color:var(--choc)}
+
+/* Inventory */
+.inv-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.inv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.inv-name{font-weight:700;color:var(--choc);font-size:14.5px}
+.inv-right{display:flex;align-items:center;gap:10px;font-size:14px}
+.inv-days{font-weight:700}
+.inv-track{position:relative;height:12px;border-radius:4px;background:var(--grid)}
+.inv-fill{height:100%;border-radius:0 4px 4px 0;background:#8c7a6a}
+.inv-row.reorder .inv-fill{background:var(--bad)}
+.inv-threshold{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--choc)}
+.inv-scale{position:relative;height:18px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.inv-scale span{position:absolute;transform:translateX(-50%)}
+.inv-scale span:first-child{transform:none}
+.inv-scale span:last-child{transform:translateX(-100%)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:2px 9px 2px 7px;border-radius:999px}
+.badge svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.badge.reorder{background:var(--bad-bg);color:var(--bad)}
+.badge.ok{background:var(--good-bg);color:var(--good)}
+.inv-legend{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:16px;padding-top:14px;border-top:1px solid var(--grid)}
+.inv-legend i{display:inline-block;width:0;height:14px;border-left:2px dashed var(--choc)}
+
+.page-foot{margin-top:28px;font-size:12.5px;color:var(--muted)}
+
+.backdrop{display:none}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1280px){
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:1100px){
+  .span-8,.span-4,.span-7,.span-5{grid-column:span 12}
+}
+@media (max-width:1023px){
+  .main{margin-left:0}
+  .menu-btn{display:inline-flex}
+  .sidebar{
+    transform:translateX(-100%);visibility:hidden;
+    transition:transform .22s ease,visibility 0s linear .22s;
+    box-shadow:8px 0 30px rgba(0,0,0,.25);width:min(290px,84vw);
+  }
+  .sidebar.open{transform:none;visibility:visible;transition:transform .22s ease}
+  .drawer-close{display:inline-flex;position:absolute;right:12px;top:18px;width:38px;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:transparent;color:#fff;align-items:center;justify-content:center;cursor:pointer}
+  .drawer-close:focus-visible{outline-color:var(--mustard);box-shadow:none}
+  .backdrop{display:block;position:fixed;inset:0;background:rgba(40,33,29,.45);z-index:35;opacity:0;pointer-events:none;transition:opacity .2s}
+  .backdrop.show{opacity:1;pointer-events:auto}
+  .topbar{padding:12px 20px;gap:12px;flex-wrap:wrap}
+  .content{padding:20px 20px 40px}
+  .search{order:5;width:100%;flex-basis:100%}
+  .user{margin-left:auto}
+}
+@media (max-width:640px){
+  .topbar{padding:10px 14px}
+  .title-block h1{font-size:19px}
+  .period{font-size:12px;margin-top:2px}
+  .user-meta{display:none}
+  .content{padding:16px 14px 32px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .kpi:last-child{grid-column:span 2}
+  .kpi{padding:14px 14px 13px}
+  .kpi-value{font-size:24px}
+  .grid{gap:14px}
+  .card{padding:16px}
+  .table-scroll{margin:0 -16px;padding:0 16px}
+  .seg button{padding:7px 9px;font-size:13px}
+  .card-head .seg{width:100%}
+  .card-head .seg button{flex:1;justify-content:center}
+
+  /* Café table: compact so all five columns fit */
+  #cafeTable th,#cafeTable td{padding:10px 3px;font-size:12.5px}
+  #cafeTable .chg svg{display:none}
+  #cafeTable .sort-btn{gap:3px}
+  #cafeTable th{font-size:10.5px;letter-spacing:.03em;white-space:normal;vertical-align:bottom;line-height:1.25}
+  #cafeTable th:first-child,#cafeTable td:first-child{padding-left:0}
+  #cafeTable th:last-child,#cafeTable td:last-child{padding-right:0}
+  #cafeTable .cafe-name{white-space:normal}
+  #cafeTable .sort-btn svg{flex:none}
+
+  /* Recent orders: stacked cards */
+  .orders-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .orders-table,.orders-table tbody{display:block}
+  .orders-table tr[data-search]{display:grid;grid-template-columns:1fr auto;grid-template-areas:"id status" "cust total" "chan items";gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--grid)}
+  .orders-table tr[data-search]:last-of-type{border-bottom:0}
+  .orders-table td{display:block;border:0;padding:0!important;white-space:normal}
+  .orders-table tbody tr:hover td{background:none}
+  .orders-table .c-id{grid-area:id}
+  .orders-table .c-status{grid-area:status;justify-self:end}
+  .orders-table .c-cust{grid-area:cust;font-weight:700;color:var(--ink)}
+  .orders-table .c-total{grid-area:total;font-weight:700;color:var(--choc)}
+  .orders-table .c-chan{grid-area:chan;color:var(--ink-2);font-size:13.5px}
+  .orders-table .c-items{grid-area:items;color:var(--ink-2);font-size:13.5px}
+  .orders-table .c-items::after{content:" items"}
+  .orders-table .c-items.one::after{content:" item"}
+  .orders-table .empty-row{display:block}
+  .orders-table .empty-row[hidden]{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (forced-colors:active){
+  .fill,.inv-fill,.mini-fill{background:CanvasText}
+  .status,.badge,.delta{border:1px solid CanvasText}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to dashboard</a>
+
+<!-- ============ Sidebar navigation ============ -->
+<nav class="sidebar" id="sidebar" aria-label="Main">
+  <a class="brand" href="#" aria-label="Kestrel Coffee Roasters, Overview">
+    <span class="brand-mark" aria-hidden="true">
+      <svg width="26" height="26" viewBox="0 0 32 32">
+        <!-- stylised kestrel wing over a coffee bean -->
+        <ellipse cx="16" cy="18" rx="8.5" ry="11" transform="rotate(28 16 18)" fill="#4a403a"/>
+        <path d="M11 26c3-4 3.5-8 2-12s-.5-8 4-11" stroke="#f4a900" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M3 9c5-3 10-3 14 0 4-3 8-3 12 1-5 0-9 2-12 5-3-3-8-5-14-6z" fill="#fffdf9"/>
+      </svg>
+    </span>
+    <span class="brand-name">Kestrel Coffee Roasters<small>Ops console</small></span>
+  </a>
+  <button class="drawer-close" id="drawerClose" type="button" aria-label="Close navigation">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <div class="nav-label">Menu</div>
+  <ul class="nav">
+    <li><a href="#" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a></li>
+    <li><a href="#orders"><svg viewBox="0 0 24 24"><path d="M6 2l-2 4v14a2 2 0 002 2h12a2 2 0 002-2V6l-2-4z"/><path d="M4 6h16M16 10a4 4 0 01-8 0"/></svg>Orders</a></li>
+    <li><a href="#products"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>Products</a></li>
+    <li><a href="#customers"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M16 4a4 4 0 010 8M22 21c0-3-1.5-5-4-5.6"/></svg>Customers</a></li>
+    <li><a href="#inventory"><svg viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M7 21v-8h10v8M7 17h10"/></svg>Inventory</a></li>
+    <li><a href="#reports"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Reports</a></li>
+    <li><a href="#settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Settings</a></li>
+  </ul>
+  <div class="sidebar-foot">
+    <strong>Online store + 4 cafés</strong>
+    Harbor Street · Mill Lane · Station Square · Riverside
+  </div>
+</nav>
+<div class="backdrop" id="backdrop"></div>
+
+<div class="main">
+  <!-- ============ Top bar ============ -->
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a403a" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="title-block">
+      <h1>Sales &amp; Operations</h1>
+      <div class="period"><span class="pill">October 2026</span><span>vs September 2026</span></div>
+    </div>
+    <div class="search" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <label for="search" class="sr-only">Search orders, products, customers</label>
+      <input id="search" type="search" placeholder="Search orders, products, customers" autocomplete="off">
+    </div>
+    <div class="user">
+      <div class="avatar" aria-hidden="true">MK</div>
+      <div class="user-meta"><strong>Mara Kim</strong><span>Operations lead</span></div>
+      <span class="sr-only">Signed in as Mara Kim, Operations lead</span>
+    </div>
+  </header>
+
+  <main class="content" id="content">
+    <p class="search-status" id="searchStatus" role="status" aria-live="polite" hidden></p>
+
+    <div class="alert" role="note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#a63a28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+      <div><strong>2 green coffees need a reorder today.</strong> Brazil Cerrado has 3 days of stock left and Ethiopia Guji has 6 days at the current roasting rate. <a href="#inventory">Review inventory</a></div>
+    </div>
+
+    <!-- ============ KPIs ============ -->
+    <section aria-labelledby="kpi-h">
+      <h2 id="kpi-h" class="sr-only">Key figures, October 2026 compared with September 2026</h2>
+      <div class="kpis">
+        <article class="card kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Revenue</div>
+          <div class="kpi-value num">$184,320</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z" fill="currentColor"/></svg><span class="sr-only">Up </span>6.4%</span>vs Sep 2026</div>
+        </article>
+        <article class="card kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2l-2 4v14a2 2 0 002 2h12a2 2 0 002-2V6l-2-4z"/><path d="M4 6h16M16 10a4 4 0 01-8 0"/></svg>Orders</div>
+          <div class="kpi-value num">9,412</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z" fill="currentColor"/></svg><span class="sr-only">Up </span>3.1%</span>vs Sep 2026</div>
+        </article>
+        <article class="card kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l8.6-8.6a2 2 0 011.4-.4H20a2 2 0 012 2v7a2 2 0 01-.6 1.4L13 21a2 2 0 01-2.8 0L3 13.8a2 2 0 010-2.8z"/><circle cx="16.5" cy="7.5" r="1.5"/></svg>Average order value</div>
+          <div class="kpi-value num">$19.58</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z" fill="currentColor"/></svg><span class="sr-only">Up </span>3.2%</span>vs Sep 2026</div>
+        </article>
+        <article class="card kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Subscription customers</div>
+          <div class="kpi-value num">1,286</div>
+          <div class="kpi-foot"><span class="delta good"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z" fill="currentColor"/></svg><span class="sr-only">Up </span>+48 net</span>vs Sep 2026</div>
+        </article>
+        <article class="card kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg>Refund rate</div>
+          <div class="kpi-value num">1.9%</div>
+          <div class="kpi-foot"><span class="delta good" title="Lower is better"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10L2 4h8z" fill="currentColor"/></svg><span class="sr-only">Down </span>0.3 pp</span>vs Sep 2026 · lower is better</div>
+        </article>
+      </div>
+    </section>
+
+    <div class="grid">
+      <!-- ============ Revenue chart ============ -->
+      <section class="card span-8" aria-labelledby="rev-h">
+        <div class="card-head">
+          <div>
+            <h2 id="rev-h">Monthly revenue by channel</h2>
+            <div class="card-sub">November 2025 – October 2026 · thousands of US dollars</div>
+          </div>
+          <div class="seg" role="group" aria-label="Channels shown">
+            <button type="button" data-view="all" aria-pressed="true">All channels</button>
+            <button type="button" data-view="online" aria-pressed="false"><span class="sw online" aria-hidden="true"></span>Online only</button>
+            <button type="button" data-view="cafes" aria-pressed="false"><span class="sw cafes" aria-hidden="true"></span>Cafés only</button>
+          </div>
+        </div>
+        <div class="legend" id="legend" aria-hidden="true"></div>
+        <div class="chart-wrap" id="revChart" tabindex="0" role="group"
+             aria-label="Monthly revenue chart. Use the left and right arrow keys to read each month.">
+          <div class="tooltip" id="tooltip" aria-hidden="true"></div>
+        </div>
+        <p class="sr-only" id="chartLive" aria-live="polite"></p>
+        <div class="chart-note">Hover or tap a month to see exact values. October was the strongest online month of the year at $83k.</div>
+        <details class="data-table">
+          <summary>Show data table</summary>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Monthly revenue data">
+            <table>
+              <thead><tr><th scope="col">Month</th><th class="r" scope="col">Online ($k)</th><th class="r" scope="col">Cafés ($k)</th><th class="r" scope="col">Total ($k)</th></tr></thead>
+              <tbody id="revTable"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+
+      <!-- ============ Category ============ -->
+      <section class="card span-4" aria-labelledby="cat-h">
+        <div class="card-head">
+          <div>
+            <h2 id="cat-h">Revenue by category</h2>
+            <div class="card-sub">October 2026 · share of revenue</div>
+          </div>
+        </div>
+        <ul class="cat-list" id="catList"></ul>
+      </section>
+
+      <!-- ============ Café table ============ -->
+      <section class="card span-7" aria-labelledby="cafe-h">
+        <div class="card-head">
+          <div>
+            <h2 id="cafe-h">Café performance</h2>
+            <div class="card-sub">October 2026 · select a column header to sort</div>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="cafe-h">
+          <table id="cafeTable">
+            <caption class="sr-only">Café performance, October 2026. Sortable by column.</caption>
+            <thead>
+              <tr>
+                <th scope="col" data-key="name" data-type="text" aria-sort="none"><button class="sort-btn" type="button">Café<svg viewBox="0 0 10 12" aria-hidden="true"><path class="up" d="M5 0l4 5H1z" fill="currentColor"/><path class="dn" d="M5 12l4-5H1z" fill="currentColor"/></svg></button></th>
+                <th scope="col" class="r" data-key="revenue" data-type="num" aria-sort="descending"><button class="sort-btn" type="button">Revenue<svg viewBox="0 0 10 12" aria-hidden="true"><path class="up" d="M5 0l4 5H1z" fill="currentColor"/><path class="dn" d="M5 12l4-5H1z" fill="currentColor"/></svg></button></th>
+                <th scope="col" class="r" data-key="orders" data-type="num" aria-sort="none"><button class="sort-btn" type="button">Orders<svg viewBox="0 0 10 12" aria-hidden="true"><path class="up" d="M5 0l4 5H1z" fill="currentColor"/><path class="dn" d="M5 12l4-5H1z" fill="currentColor"/></svg></button></th>
+                <th scope="col" class="r" data-key="ticket" data-type="num" aria-sort="none"><button class="sort-btn" type="button">Average ticket<svg viewBox="0 0 10 12" aria-hidden="true"><path class="up" d="M5 0l4 5H1z" fill="currentColor"/><path class="dn" d="M5 12l4-5H1z" fill="currentColor"/></svg></button></th>
+                <th scope="col" class="r" data-key="change" data-type="num" aria-sort="none"><button class="sort-btn" type="button">Change vs Sep<svg viewBox="0 0 10 12" aria-hidden="true"><path class="up" d="M5 0l4 5H1z" fill="currentColor"/><path class="dn" d="M5 12l4-5H1z" fill="currentColor"/></svg></button></th>
+              </tr>
+            </thead>
+            <tbody id="cafeBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ Inventory ============ -->
+      <section class="card span-5" id="inventory" aria-labelledby="inv-h">
+        <div class="card-head">
+          <div>
+            <h2 id="inv-h">Green coffee inventory</h2>
+            <div class="card-sub">Days of stock left at the current roasting rate · fewest first</div>
+          </div>
+        </div>
+        <ul class="inv-list" id="invList"></ul>
+        <div class="inv-legend"><i aria-hidden="true"></i>Reorder threshold: under 7 days of stock</div>
+      </section>
+
+      <!-- ============ Top products ============ -->
+      <section class="card span-5" id="products" aria-labelledby="prod-h">
+        <div class="card-head">
+          <div>
+            <h2 id="prod-h">Top online products</h2>
+            <div class="card-sub">October 2026 · by revenue</div>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="prod-h">
+          <table>
+            <thead><tr><th scope="col">Product</th><th scope="col" class="r">Units</th><th scope="col" class="r">Revenue</th></tr></thead>
+            <tbody id="prodBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ Recent orders ============ -->
+      <section class="card span-7" id="orders" aria-labelledby="ord-h">
+        <div class="card-head">
+          <div>
+            <h2 id="ord-h">Recent orders</h2>
+            <div class="card-sub">Latest across the online store and cafés</div>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="ord-h">
+          <table class="orders-table">
+            <thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Channel</th><th scope="col" class="r">Items</th><th scope="col" class="r">Total</th><th scope="col">Status</th></tr></thead>
+            <tbody id="orderBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <p class="page-foot">Kestrel Coffee Roasters · Sales &amp; Operations overview for October 2026. Changes compare October 2026 with September 2026.</p>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Data (as provided) ---------------- */
+  var MONTHS = [
+    ["Nov","November 2025",61,88],["Dec","December 2025",74,102],["Jan","January 2026",58,81],
+    ["Feb","February 2026",60,84],["Mar","March 2026",63,89],["Apr","April 2026",66,93],
+    ["May","May 2026",68,97],["Jun","June 2026",70,99],["Jul","July 2026",72,96],
+    ["Aug","August 2026",75,95],["Sep","September 2026",79,94],["Oct","October 2026",83,101]
+  ].map(function(m){return {short:m[0],full:m[1],online:m[2],cafes:m[3]};});
+
+  var CATEGORIES = [["Whole bean",38],["Espresso drinks",27],["Filter & cold brew",14],["Pastries",12],["Equipment",6],["Gift cards",3]];
+
+  var CAFES = [
+    {name:"Harbor Street",note:"",revenue:31420,orders:1812,ticket:17.34,change:4.8},
+    {name:"Mill Lane",note:"",revenue:27960,orders:1655,ticket:16.89,change:2.1},
+    {name:"Station Square",note:"",revenue:24310,orders:1498,ticket:16.23,change:-1.7},
+    {name:"Riverside",note:"Opened June 2026",revenue:17630,orders:1127,ticket:15.64,change:9.6}
+  ];
+
+  var PRODUCTS = [
+    ["Morning Tide blend, 340 g",1104,16008],["Ridgeback espresso, 1 kg",412,14420],
+    ["Cold brew concentrate, 1 L",655,9170],["Ceramic pour-over set",138,6210],["Single-origin sampler",291,5529]
+  ];
+
+  var ORDERS = [
+    ["#48213","Ana Ruiz","Online",2,41.00,"Shipped"],["#48212","Tomás Berg","Harbor Street",3,14.75,"Paid"],
+    ["#48211","Priya Nair","Online",1,35.00,"Pending"],["#48210","Jonah Weiss","Mill Lane",2,9.40,"Paid"],
+    ["#48209","Lena Okafor","Online",4,63.50,"Refunded"],["#48208","Sam Choi","Riverside",1,5.25,"Paid"]
+  ];
+
+  var INVENTORY = [["Ethiopia Guji",6],["Colombia Huila",14],["Brazil Cerrado",3],["Kenya Nyeri",21]];
+  var REORDER_BELOW = 7;
+
+  /* ---------------- Helpers ---------------- */
+  var MINUS = "−";
+  function money(n,dp){return "$"+n.toLocaleString("en-US",{minimumFractionDigits:dp||0,maximumFractionDigits:dp||0});}
+  function int(n){return n.toLocaleString("en-US");}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag,attrs,parent){var e=document.createElementNS(SVGNS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+
+  /* ---------------- Mobile navigation ---------------- */
+  var sidebar=document.getElementById("sidebar"),menuBtn=document.getElementById("menuBtn"),
+      closeBtn=document.getElementById("drawerClose"),backdrop=document.getElementById("backdrop");
+  function openNav(){sidebar.classList.add("open");backdrop.classList.add("show");menuBtn.setAttribute("aria-expanded","true");
+    setTimeout(function(){var a=sidebar.querySelector(".nav a");a&&a.focus();},30);}
+  function closeNav(returnFocus){sidebar.classList.remove("open");backdrop.classList.remove("show");menuBtn.setAttribute("aria-expanded","false");if(returnFocus)menuBtn.focus();}
+  menuBtn.addEventListener("click",openNav);
+  closeBtn.addEventListener("click",function(){closeNav(true);});
+  backdrop.addEventListener("click",function(){closeNav(true);});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&sidebar.classList.contains("open"))closeNav(true);});
+  sidebar.querySelectorAll(".nav a").forEach(function(a){a.addEventListener("click",function(){if(sidebar.classList.contains("open"))closeNav(false);});});
+
+  /* ---------------- Revenue chart ---------------- */
+  var view="all", active=-1;
+  var chart=document.getElementById("revChart"), tip=document.getElementById("tooltip"),
+      live=document.getElementById("chartLive"), legend=document.getElementById("legend");
+  var geom=null;
+
+  function valueFor(m){return view==="online"?m.online:view==="cafes"?m.cafes:m.online+m.cafes;}
+  function niceScale(max){
+    var steps=[10,20,25,30,40,50];
+    for(var i=0;i<steps.length;i++){var top=Math.ceil(max/steps[i])*steps[i];if(top/steps[i]<=5)return {top:top,step:steps[i]};}
+    return {top:Math.ceil(max/50)*50,step:50};
+  }
+  // rect with rounded top corners only (data end), square at the baseline
+  function topRounded(x,y,w,h,r){
+    r=Math.min(r,w/2,h);
+    return "M"+x+","+(y+h)+"V"+(y+r)+"Q"+x+","+y+" "+(x+r)+","+y+"H"+(x+w-r)+"Q"+(x+w)+","+y+" "+(x+w)+","+(y+r)+"V"+(y+h)+"Z";
+  }
+
+  function renderLegend(){
+    var items=[];
+    if(view!=="cafes")items.push('<span><i class="sw online"></i>Online</span>');
+    if(view!=="online")items.push('<span><i class="sw cafes"></i>Cafés</span>');
+    legend.innerHTML=items.join("");
+  }
+
+  function renderChart(){
+    var old=chart.querySelector("svg"); if(old)old.remove();
+    var W=chart.clientWidth||600, narrow=W<520;
+    var H=narrow?250:300, m={t:22,r:6,b:narrow?42:40,l:42};
+    var pw=W-m.l-m.r, ph=H-m.t-m.b;
+    var max=Math.max.apply(null,MONTHS.map(valueFor));
+    var sc=niceScale(max);
+    var y=function(v){return m.t+ph-(v/sc.top)*ph;};
+    var band=pw/MONTHS.length, bw=Math.min(band*(narrow?0.62:0.56),44);
+
+    var svg=el("svg",{width:W,height:H,viewBox:"0 0 "+W+" "+H,"aria-hidden":"true",focusable:"false"});
+    chart.insertBefore(svg,tip);
+
+    var axis=el("g",{"class":"axis"},svg);
+    for(var v=0;v<=sc.top;v+=sc.step){
+      el("line",{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:v===0?"#cbb9a2":"#efe6d8","stroke-width":1},axis);
+      var t=el("text",{x:m.l-8,y:y(v)+4,"text-anchor":"end"},axis); t.textContent="$"+v+"k";
+    }
+
+    var hl=el("rect",{x:0,y:m.t-6,width:band,height:ph+6,rx:6,fill:"#4a403a",opacity:0},svg);
+    var bars=el("g",{},svg);
+
+    MONTHS.forEach(function(d,i){
+      var cx=m.l+band*i+band/2, x=cx-bw/2;
+      if(view==="all"){
+        // Cafés at the baseline, Online stacked on top, 2px surface gap between
+        var yc=y(d.cafes), yt=y(d.cafes+d.online);
+        el("rect",{x:x,y:yc,width:bw,height:y(0)-yc,fill:"#a8484f"},bars);
+        el("path",{d:topRounded(x,yt,bw,Math.max(0,yc-yt-2),4),fill:"#e8a200"},bars);
+      }else{
+        var val=valueFor(d), yy=y(val);
+        el("path",{d:topRounded(x,yy,bw,y(0)-yy,4),fill:view==="online"?"#e8a200":"#a8484f"},bars);
+      }
+      var lt=el("text",{x:cx,y:H-m.b+18,"text-anchor":"middle"},axis); lt.textContent=narrow?d.short.charAt(0):d.short;
+      if(i===0||d.short==="Jan"){
+        var yr=el("text",{x:cx,y:H-m.b+34,"text-anchor":"middle","font-weight":"700"},axis);
+        yr.textContent=i===0?"2025":"2026";
+      }
+    });
+
+    // Selective direct label: latest month total
+    var last=MONTHS[MONTHS.length-1], lx=m.l+band*(MONTHS.length-1)+band/2;
+    var dl=el("text",{x:lx,y:y(valueFor(last))-7,"text-anchor":"middle","font-size":"12","font-weight":"700",fill:"#4a403a"},svg);
+    dl.textContent="$"+valueFor(last)+"k";
+
+    // Hit layer
+    var hit=el("rect",{x:m.l,y:m.t,width:pw,height:ph,fill:"transparent",style:"cursor:crosshair"},svg);
+    geom={m:m,band:band,hl:hl,W:W,H:H,y:y,svg:svg,label:dl};
+
+    function idxFromEvent(e){
+      var r=svg.getBoundingClientRect(), px=e.clientX-r.left;
+      return Math.max(0,Math.min(MONTHS.length-1,Math.floor((px-m.l)/band)));
+    }
+    hit.addEventListener("pointermove",function(e){setActive(idxFromEvent(e));});
+    hit.addEventListener("pointerdown",function(e){setActive(idxFromEvent(e));});
+    hit.addEventListener("pointerleave",function(e){if(e.pointerType==="mouse")setActive(-1);});
+
+    if(active>=0)setActive(active,true);
+  }
+
+  function setActive(i,force){
+    if(i===active&&!force)return;
+    active=i;
+    if(!geom)return;
+    if(i<0){geom.hl.setAttribute("opacity",0);tip.classList.remove("show");geom.label.setAttribute("opacity",1);return;}
+    var d=MONTHS[i], g=geom;
+    g.hl.setAttribute("x",g.m.l+g.band*i);g.hl.setAttribute("width",g.band);g.hl.setAttribute("opacity",.07);
+    g.label.setAttribute("opacity",i===MONTHS.length-1?0:1);
+    var rows="";
+    if(view!=="cafes")rows+='<div class="tt-row"><span><i class="sw online"></i>Online</span><strong class="num">$'+d.online+'k</strong></div>';
+    if(view!=="online")rows+='<div class="tt-row"><span><i class="sw cafes"></i>Cafés</span><strong class="num">$'+d.cafes+'k</strong></div>';
+    if(view==="all")rows+='<div class="tt-row tt-total"><span>Total</span><span class="num">$'+(d.online+d.cafes)+'k</span></div>';
+    tip.innerHTML='<div class="tt-title">'+d.full+'</div>'+rows;
+    tip.classList.add("show");
+    var tw=tip.offsetWidth, th=tip.offsetHeight;
+    var cx=g.m.l+g.band*i+g.band/2;
+    var left=cx+g.band/2+8; if(left+tw>g.W)left=cx-g.band/2-8-tw; if(left<0)left=Math.max(0,Math.min(g.W-tw,cx-tw/2));
+    var top=Math.max(0,g.y(valueFor(d))-th/2); if(top+th>g.H)top=g.H-th;
+    tip.style.left=left+"px"; tip.style.top=top+"px";
+    var txt=d.full+": ";
+    if(view==="all")txt+="Online $"+d.online+" thousand, Cafés $"+d.cafes+" thousand, total $"+(d.online+d.cafes)+" thousand.";
+    else txt+=(view==="online"?"Online $"+d.online:"Cafés $"+d.cafes)+" thousand.";
+    live.textContent=txt;
+  }
+
+  chart.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+      e.preventDefault();
+      var n=active<0?(e.key==="ArrowRight"?0:MONTHS.length-1):Math.max(0,Math.min(MONTHS.length-1,active+(e.key==="ArrowRight"?1:-1)));
+      setActive(n);
+    }else if(e.key==="Home"){e.preventDefault();setActive(0);}
+    else if(e.key==="End"){e.preventDefault();setActive(MONTHS.length-1);}
+    else if(e.key==="Escape"){setActive(-1);}
+  });
+  chart.addEventListener("blur",function(){setActive(-1);});
+  document.addEventListener("pointerdown",function(e){if(!chart.contains(e.target))setActive(-1);});
+
+  document.querySelectorAll(".seg button").forEach(function(b){
+    b.addEventListener("click",function(){
+      view=b.getAttribute("data-view");
+      document.querySelectorAll(".seg button").forEach(function(o){o.setAttribute("aria-pressed",o===b?"true":"false");});
+      renderLegend(); renderChart();
+    });
+  });
+
+  document.getElementById("revTable").innerHTML=MONTHS.map(function(d){
+    return "<tr><th scope='row' style='text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);font-weight:400'>"+d.full+"</th><td class='r num'>"+d.online+"</td><td class='r num'>"+d.cafes+"</td><td class='r num'>"+(d.online+d.cafes)+"</td></tr>";
+  }).join("");
+
+  renderLegend(); renderChart();
+  var rT;
+  if(window.ResizeObserver){var lastW=chart.clientWidth;new ResizeObserver(function(){if(chart.clientWidth!==lastW){lastW=chart.clientWidth;clearTimeout(rT);rT=setTimeout(renderChart,60);}}).observe(chart);}
+  else window.addEventListener("resize",function(){clearTimeout(rT);rT=setTimeout(renderChart,100);});
+
+  /* ---------------- Category bars ---------------- */
+  var catMax=Math.max.apply(null,CATEGORIES.map(function(c){return c[1];}));
+  document.getElementById("catList").innerHTML=CATEGORIES.map(function(c){
+    return '<li class="cat-row" title="'+esc(c[0])+': '+c[1]+'% of October revenue"><span class="cat-name">'+esc(c[0])+'</span><span class="cat-val num">'+c[1]+'%</span>'+
+      '<div class="track" aria-hidden="true"><div class="fill" style="width:'+(c[1]/catMax*100)+'%"></div></div></li>';
+  }).join("");
+
+  /* ---------------- Café table (sortable) ---------------- */
+  var ARROW_UP='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2l4 6H2z" fill="currentColor"/></svg>';
+  var ARROW_DN='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10L2 4h8z" fill="currentColor"/></svg>';
+  var sortKey="revenue", sortDir="descending";
+  function renderCafes(){
+    var rows=CAFES.slice().sort(function(a,b){
+      var av=a[sortKey], bv=b[sortKey], r=(typeof av==="string")?av.localeCompare(bv):av-bv;
+      return sortDir==="ascending"?r:-r;
+    });
+    document.getElementById("cafeBody").innerHTML=rows.map(function(c){
+      var good=c.change>=0;
+      var chg=(good?"+":MINUS)+Math.abs(c.change).toFixed(1)+"%";
+      return '<tr data-search="'+esc((c.name+" "+c.note+" café").toLowerCase())+'">'+
+        '<td class="cafe-name"><strong>'+esc(c.name)+'</strong>'+(c.note?'<small>'+esc(c.note)+'</small>':'')+'</td>'+
+        '<td class="r num">'+money(c.revenue)+'</td><td class="r num">'+int(c.orders)+'</td><td class="r num">'+money(c.ticket,2)+'</td>'+
+        '<td class="r num"><span class="chg '+(good?"good":"bad")+'">'+(good?ARROW_UP:ARROW_DN)+'<span class="sr-only">'+(good?"Up ":"Down ")+'</span>'+chg+'</span></td></tr>';
+    }).join("")+'<tr class="empty-row" hidden><td colspan="5">No cafés match your search.</td></tr>';
+    document.querySelectorAll("#cafeTable th[data-key]").forEach(function(th){
+      th.setAttribute("aria-sort",th.getAttribute("data-key")===sortKey?sortDir:"none");
+    });
+    applySearch();
+  }
+  document.querySelectorAll("#cafeTable th[data-key] .sort-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var th=btn.closest("th"), key=th.getAttribute("data-key");
+      if(key===sortKey)sortDir=sortDir==="ascending"?"descending":"ascending";
+      else{sortKey=key;sortDir=th.getAttribute("data-type")==="text"?"ascending":"descending";}
+      renderCafes();
+    });
+  });
+
+  /* ---------------- Products ---------------- */
+  var prodMax=PRODUCTS[0][2];
+  document.getElementById("prodBody").innerHTML=PRODUCTS.map(function(p){
+    return '<tr data-search="'+esc(p[0].toLowerCase()+" online product")+'"><td class="prod-name"><strong>'+esc(p[0])+'</strong>'+
+      '<div class="mini-track" aria-hidden="true"><div class="mini-fill" style="width:'+(p[2]/prodMax*100)+'%"></div></div></td>'+
+      '<td class="r num">'+int(p[1])+'</td><td class="r num"><strong>'+money(p[2])+'</strong></td></tr>';
+  }).join("")+'<tr class="empty-row" hidden><td colspan="3">No products match your search.</td></tr>';
+
+  /* ---------------- Orders ---------------- */
+  var STATUS_ICON={
+    Shipped:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 4h13v11H1zM14 8h4l4 4v3h-8z"/><circle cx="5.5" cy="18" r="2"/><circle cx="18.5" cy="18" r="2"/></svg>',
+    Paid:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>',
+    Pending:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    Refunded:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg>'
+  };
+  var CH_ICON={
+    online:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6e6259" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>',
+    cafe:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6e6259" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h12v6a5 5 0 01-5 5H9a5 5 0 01-5-5zM16 10h2a2 2 0 010 4h-2M8 2v3M12 2v3"/></svg>'
+  };
+  document.getElementById("orderBody").innerHTML=ORDERS.map(function(o){
+    var s=o[5];
+    return '<tr data-search="'+esc((o.slice(0,3).join(" ")+" "+s).toLowerCase())+'">'+
+      '<td class="order-id num c-id">'+o[0]+'</td><td class="c-cust">'+esc(o[1])+'</td>'+
+      '<td class="c-chan"><span class="channel">'+(o[2]==="Online"?CH_ICON.online:CH_ICON.cafe)+esc(o[2])+'</span></td>'+
+      '<td class="r num c-items'+(o[3]===1?" one":"")+'">'+o[3]+'</td><td class="r num c-total">'+money(o[4],2)+'</td>'+
+      '<td class="c-status"><span class="status '+s.toLowerCase()+'">'+STATUS_ICON[s]+s+'</span></td></tr>';
+  }).join("")+'<tr class="empty-row" hidden><td colspan="6">No orders match your search.</td></tr>';
+
+  /* ---------------- Inventory ---------------- */
+  var INV_SCALE=28;
+  var inv=INVENTORY.slice().sort(function(a,b){return a[1]-b[1];});
+  document.getElementById("invList").innerHTML=inv.map(function(r){
+    var low=r[1]<REORDER_BELOW;
+    var badge=low
+      ?'<span class="badge reorder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Reorder</span>'
+      :'<span class="badge ok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>OK</span>';
+    return '<li class="inv-row'+(low?" reorder":"")+'">'+
+      '<div class="inv-top"><span class="inv-name">'+esc(r[0])+'</span><span class="inv-right"><span class="inv-days num">'+r[1]+' days</span>'+badge+'</span></div>'+
+      '<div class="inv-track" aria-hidden="true"><div class="inv-fill" style="width:'+(r[1]/INV_SCALE*100)+'%"></div>'+
+      '<span class="inv-threshold" style="left:'+(REORDER_BELOW/INV_SCALE*100)+'%"></span></div></li>';
+  }).join("")+
+  '<li aria-hidden="true"><div class="inv-scale"><span style="left:0">0</span><span style="left:'+(7/INV_SCALE*100)+'%">7</span><span style="left:'+(14/INV_SCALE*100)+'%">14</span><span style="left:'+(21/INV_SCALE*100)+'%">21</span><span style="left:100%">28 days</span></div></li>';
+
+  /* ---------------- Search (filters tables) ---------------- */
+  var search=document.getElementById("search"), status=document.getElementById("searchStatus");
+  function applySearch(){
+    var q=search.value.trim().toLowerCase(), total=0;
+    document.querySelectorAll("tbody").forEach(function(tb){
+      var rows=tb.querySelectorAll("tr[data-search]"); if(!rows.length)return;
+      var shown=0;
+      rows.forEach(function(tr){var ok=!q||tr.getAttribute("data-search").indexOf(q)>-1;tr.hidden=!ok;if(ok)shown++;});
+      var empty=tb.querySelector(".empty-row"); if(empty)empty.hidden=shown>0;
+      total+=shown;
+    });
+    if(q){status.hidden=false;status.textContent=total+" matching row"+(total===1?"":"s")+" for “"+search.value.trim()+"” across cafés, products and orders. Press Escape to clear.";}
+    else{status.hidden=true;status.textContent="";}
+  }
+  search.addEventListener("input",applySearch);
+  search.addEventListener("keydown",function(e){if(e.key==="Escape"){search.value="";applySearch();}});
+
+  renderCafes();
+})();
+</script>
+</body>
+</html>

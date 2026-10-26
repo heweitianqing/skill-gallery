@@ -184,7 +184,8 @@
     "index_html": true,
     "index_html_bytes": 67804,
     "index_html_sha256": "7b88c60713bb66f128b4d5be3970f7b7dabc36e9e671ca89db27b5d33f9ef0a4",
-    "other_files": []
+    "other_files": [],
+    "missing_local_refs": []
   },
   "external_refs": {
     "count": 3,
@@ -288,5 +289,77 @@
       ]
     }
   },
-  "runtime_remote_images": []
+  "runtime_remote_images": [],
+  "a11y": {
+    "tool": "axe-core",
+    "version": "4.14.0",
+    "rule_set": "axe-core default (WCAG 2.0-2.2 A/AA and best practices; experimental rules off)",
+    "runner": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "violations": {
+      "critical": 1,
+      "serious": 2,
+      "moderate": 1,
+      "minor": 0
+    },
+    "violation_nodes": {
+      "critical": 1,
+      "serious": 72,
+      "moderate": 1,
+      "minor": 0
+    },
+    "rule_ids": [
+      "aria-allowed-attr",
+      "color-contrast",
+      "label-content-name-mismatch",
+      "landmark-unique"
+    ],
+    "rules": [
+      {
+        "id": "aria-allowed-attr",
+        "impact": "critical",
+        "nodes": 1
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": 70
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "nodes": 2
+      },
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "nodes": 1
+      }
+    ],
+    "scanned_at": "2026-10-26T05:49:02.429Z"
+  },
+  "video": {
+    "file": "scroll.webm",
+    "width": 720,
+    "height": 450,
+    "seconds": 8,
+    "bytes": 878443,
+    "codec": "vp9",
+    "bitrate": "700k",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "script": "hold 500 ms, mouse-wheel scroll for 7000 ms at constant speed, hold 500 ms",
+    "scroll_target": "document",
+    "scroll_distance": 720,
+    "reached_bottom": true,
+    "tool": "playwright 1.64.1",
+    "browser": "playwright-chromium 156.0.8078.4",
+    "recorded_at": "2026-10-26T05:57:57.461Z"
+  }
 }

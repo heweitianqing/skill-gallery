@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maya Lindqvist, product designer and writer in Gothenburg</title>
+<meta name="description" content="Maya Lindqvist designs tools for people who work with data, and writes about how they get made. Freelance product designer in Gothenburg, Sweden.">
+<meta name="theme-color" content="#3d0012">
+<script>
+(function () {
+  var t;
+  try { t = localStorage.getItem('ml-theme'); } catch (e) {}
+  if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.documentElement.classList.add('js');
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens ---------- */
+:root {
+  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.25rem, 0.95rem + 1.1vw, 1.875rem);
+  --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
+  --step-display: clamp(5.25rem, 20vw, 18.5rem);
+
+  --m: clamp(18px, 2.8vw, 40px);
+  --gap: clamp(16px, 1.7vw, 24px);
+  --sec: clamp(104px, 11vw, 176px);
+  --head-h: 64px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 700ms;
+
+  --frame: #62102a;
+}
+:root[data-theme="dark"] {
+  --bg: #3d0012;
+  --surface: #4d0519;
+  --ink: #ff99d3;
+  --ink-2: #ff5c9e;
+  --muted: #d88db3;
+  --inv-bg: #ff99d3;
+  --inv-surface: #f585c3;
+  --inv-ink: #3d0012;
+  --inv-ink-2: #7a0631;
+  --inv-muted: #560c28;
+  --card: #ffe9f3;
+  --card-ink: #3d0012;
+  --card-field: #f8d3e5;
+  --card-muted: #6b1a3a;
+  --hl-a: #ff5c9e; --hl-a-ink: #3d0012;
+  --hl-b: #ffe9f3; --hl-b-ink: #3d0012;
+  --hl-c: #ff99d3; --hl-c-ink: #3d0012;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #fff0f6;
+  --surface: #fcdcea;
+  --ink: #3d0012;
+  --ink-2: #c4124f;
+  --muted: #74203f;
+  --inv-bg: #3d0012;
+  --inv-surface: #530a20;
+  --inv-ink: #ff99d3;
+  --inv-ink-2: #ff5c9e;
+  --inv-muted: #d88db3;
+  --card: #3d0012;
+  --card-ink: #ff99d3;
+  --card-field: #5a0c25;
+  --card-muted: #e7a6c8;
+  --hl-a: #c4124f; --hl-a-ink: #fff0f6;
+  --hl-b: #3d0012; --hl-b-ink: #ff99d3;
+  --hl-c: #ffb0d8; --hl-c-ink: #3d0012;
+  color-scheme: light;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--head-h) + 8px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-optical-sizing: auto;
+  font-size: var(--step-body);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+a { color: inherit; text-decoration-thickness: 0.08em; text-underline-offset: 0.18em; }
+button, input { font: inherit; color: inherit; }
+img, svg { display: block; max-width: 100%; }
+:focus-visible { outline: 3px solid var(--ink-2); outline-offset: 3px; }
+::selection { background: var(--ink); color: var(--bg); }
+.vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: var(--m); top: 8px; z-index: 100; background: var(--ink); color: var(--bg); padding: 12px 18px; font-weight: 600; }
+.skip:not(:focus) { width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.h2 { font-size: var(--step-head); line-height: 0.95; letter-spacing: -0.035em; font-weight: 600; text-wrap: balance; }
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
+.wrap { padding-inline: var(--m); }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Fields: each section sets its ground and remaps the inks */
+.f-bg { background: var(--bg); color: var(--ink); }
+.f-surface { background: var(--surface); color: var(--ink); }
+.f-inv {
+  --bg: var(--inv-bg); --surface: var(--inv-surface);
+  --ink: var(--inv-ink); --ink-2: var(--inv-ink-2); --muted: var(--inv-muted);
+  background: var(--bg); color: var(--ink);
+}
+
+/* Buttons and text links */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 52px; padding: 0 26px; border: 0; border-radius: 0;
+  background: var(--ink); color: var(--bg);
+  font-weight: 600; text-decoration: none; cursor: pointer;
+  transition: background-color 180ms ease, transform 180ms var(--ease-out);
+}
+.btn:hover { background: var(--ink-2); }
+.btn:active { transform: translateY(1px) scale(0.98); }
+.btn .arrow { transition: transform 240ms var(--ease-out); }
+.btn:hover .arrow { transform: translateX(4px); }
+.tlink { font-weight: 500; text-decoration: underline; text-decoration-thickness: 2px; transition: color 160ms ease, text-underline-offset 200ms var(--ease-out); }
+.tlink:hover { color: var(--ink-2); text-underline-offset: 0.3em; }
+
+/* ---------- Header ---------- */
+.site-head {
+  position: sticky; top: 0; z-index: 50;
+  height: var(--head-h);
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding-inline: var(--m);
+  background: var(--bg); color: var(--ink);
+}
+.wordmark { font-weight: 600; font-size: var(--step-body); letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
+.head-right { display: flex; align-items: center; gap: clamp(16px, 2.2vw, 36px); }
+.nav ul { display: flex; gap: clamp(16px, 2.2vw, 32px); }
+.nav a { text-decoration: none; font-weight: 500; padding: 10px 0; display: inline-block; transition: color 160ms ease; }
+.nav a:hover { color: var(--ink-2); text-decoration: underline; text-decoration-thickness: 2px; }
+.icon-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 2px; border: 0; background: none; cursor: pointer;
+  font-weight: 500; white-space: nowrap;
+  transition: color 160ms ease;
+}
+.icon-btn:hover { color: var(--ink-2); }
+.icon-btn svg { width: 20px; height: 20px; flex: none; transition: transform 400ms var(--ease-out); }
+.icon-btn:active svg { transform: rotate(-30deg) scale(0.92); }
+.theme-btn .moon-fill { fill: currentColor; transition: opacity 200ms ease; }
+:root[data-theme="light"] .theme-btn .moon-fill { opacity: 0; }
+.theme-btn .ring { fill: none; stroke: currentColor; stroke-width: 2.4; }
+.menu-btn { display: none; }
+
+/* ---------- Hero ---------- */
+.hero {
+  min-height: max(600px, calc(100svh - var(--head-h)));
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap);
+  grid-template-rows: auto 1fr auto;
+  padding: 0 var(--m) clamp(28px, 4.5vh, 44px);
+}
+.hero-name {
+  grid-column: 1 / -1; grid-row: 1;
+  padding-top: clamp(40px, 9vh, 110px);
+  font-size: var(--step-display); line-height: 0.82; letter-spacing: -0.05em; font-weight: 600;
+  margin-left: -0.04em;
+}
+.hero-name .l2 [data-line] { color: var(--ink-2); }
+.lines .line { display: block; overflow: hidden; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+.lines [data-line] { display: block; }
+.hero-foot { grid-column: 7 / 13; grid-row: 3; align-self: end; padding-top: 48px; }
+.statement { font-size: var(--step-lead); line-height: 1.18; letter-spacing: -0.015em; font-weight: 500; max-width: 26ch; text-wrap: pretty; }
+.status { margin-top: 24px; }
+.status .dot { position: relative; display: inline-block; width: 11px; height: 11px; margin-right: 10px; border-radius: 50%; background: var(--ink-2); transform: translateY(-1px); }
+.status .when { display: block; padding-left: 21px; }
+.status .dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--ink-2); }
+.status .when { color: var(--muted); }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 28px; margin-top: 32px; }
+
+/* ---------- Work ---------- */
+.work { padding-block: var(--sec); }
+.sec-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); align-items: end; row-gap: 20px; }
+.work .sec-head { margin-bottom: clamp(64px, 8vw, 120px); }
+.work .sec-head h2 { grid-column: 1 / 8; }
+.work .sec-head p { grid-column: 9 / 13; max-width: 34ch; }
+.case { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); padding-inline: var(--m); }
+.case + .case { margin-top: 140px; }
+.case-art {
+  grid-column: 1 / 8; margin-left: calc(-1 * var(--m));
+  height: var(--h, 80svh); min-height: 460px; max-height: 860px;
+  background: var(--frame); overflow: clip;
+}
+.case-art svg { width: 100%; height: 100%; transform-origin: 50% 55%; transition: transform 1.2s var(--ease-out); }
+.case:hover .case-art svg { transform: scale(1.03); }
+.case-info { grid-column: 9 / 13; align-self: end; display: flex; flex-direction: column; }
+.case-detail { aspect-ratio: 16 / 10; background: var(--frame); overflow: clip; margin-bottom: 32px; }
+.case-detail svg { width: 100%; height: 100%; }
+.case-info h3 { font-size: var(--step-head); line-height: 0.95; letter-spacing: -0.035em; font-weight: 600; text-wrap: balance; }
+.case-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 20px; margin-top: 24px; }
+.case-meta dt { color: var(--muted); }
+.case-meta dd { font-weight: 500; }
+.case-sum { margin-top: 18px; max-width: 40ch; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.tags li { background: var(--bg); padding: 5px 12px 6px; font-size: var(--step-small); font-weight: 500; }
+
+/* ---------- Writing ---------- */
+.writing { padding-block: var(--sec); }
+.writing .sec-head h2 { grid-column: 1 / 6; }
+.filters { grid-column: 6 / 13; justify-self: end; display: flex; flex-wrap: wrap; gap: 8px; }
+.filters button {
+  min-height: 44px; padding: 0 18px; border: 0; border-radius: 0; cursor: pointer;
+  background: var(--surface); color: var(--ink); font-weight: 500;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms var(--ease-out);
+}
+.filters button:hover { background: var(--ink-2); color: var(--bg); }
+.filters button:active { transform: scale(0.96); }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.count { margin-top: 20px; color: var(--muted); }
+.posts { margin-top: clamp(40px, 5vw, 72px); }
+.post {
+  display: grid; grid-template-columns: 19% minmax(0, 1fr) 12% 7%; column-gap: var(--gap);
+  padding-block: 20px; font-size: var(--step-lead); line-height: 1.2; letter-spacing: -0.015em;
+  transition: background-color 200ms ease;
+}
+.post[hidden] { display: none; }
+.post time { color: var(--muted); }
+.post h3 { font-size: inherit; font-weight: 500; text-wrap: balance; }
+.post h3 a { text-decoration: none; transition: color 160ms ease; }
+.post h3 a:hover { color: var(--ink-2); text-decoration: underline; text-decoration-thickness: 2px; }
+.post .excerpt { font-size: var(--step-body); line-height: 1.5; letter-spacing: 0; color: var(--muted); margin-top: 8px; max-width: 58ch; }
+.post .ptag { color: var(--ink-2); }
+.post .rt { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.post.entering { animation: row-in 420ms var(--ease-out) both; animation-delay: calc(var(--n, 0) * 50ms); }
+@keyframes row-in { from { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- Featured post ---------- */
+.featured { padding-block: var(--sec); }
+.fp-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); margin-bottom: clamp(56px, 6vw, 96px); }
+.fp-head h2 { grid-column: 1 / 11; }
+.fp-meta { grid-column: 1 / 11; margin-top: 24px; display: flex; flex-wrap: wrap; gap: 4px 22px; font-weight: 500; }
+.fp-meta span:first-child { color: var(--ink-2); }
+.fp-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); align-items: start; }
+.fp-body { grid-column: 1 / 8; max-width: 40em; font-size: var(--step-body); line-height: 1.6; }
+.fp-body p + p { margin-top: 1.1em; }
+.fp-body p:first-child { font-size: var(--step-lead); line-height: 1.3; letter-spacing: -0.012em; }
+.fp-body h3 { font-size: var(--step-lead); line-height: 1.15; letter-spacing: -0.02em; font-weight: 600; margin: 2.2em 0 0.7em; }
+.fp-body blockquote {
+  margin: 1.8em 0; padding: 32px 36px;
+  background: var(--surface);
+  font-size: var(--step-lead); line-height: 1.22; letter-spacing: -0.015em; font-weight: 500; text-wrap: balance;
+}
+.fp-body blockquote p { font-size: inherit !important; line-height: inherit !important; }
+.fp-body pre {
+  margin: 1.4em 0; padding: 22px 24px; overflow-x: auto;
+  background: var(--surface);
+  font: 500 0.875rem/1.7 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  tab-size: 2;
+}
+.fp-body pre .dim { opacity: 0.7; }
+.fp-body pre .gap { background: var(--ink); color: var(--bg); }
+.fp-body code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.9em; }
+.fp-aside { grid-column: 9 / 13; position: sticky; top: calc(var(--head-h) + 32px); }
+
+/* The tide gauge: a small interface fragment */
+.tide { background: var(--surface); padding: 28px; }
+.tide h3 { font-size: var(--step-lead); line-height: 1.1; letter-spacing: -0.02em; font-weight: 600; }
+.tide-sub { margin-top: 8px; color: var(--muted); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; margin-top: 20px; }
+.seg button {
+  min-height: 44px; border: 0; border-radius: 0; cursor: pointer; padding: 0 6px;
+  background: var(--bg); color: var(--ink); font-weight: 500;
+  transition: background-color 150ms ease, color 150ms ease, transform 150ms var(--ease-out);
+}
+.seg button:hover { background: var(--ink-2); color: var(--bg); }
+.seg button:active { transform: scale(0.95); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg-label { display: block; margin-top: 22px; font-weight: 500; }
+.seg-label + .seg { margin-top: 8px; }
+.tide-body { margin-top: 18px; min-height: 196px; background: var(--bg); padding: 18px 20px; }
+.tide-body.swap { animation: fade-swap 360ms var(--ease-out); }
+@keyframes fade-swap { from { opacity: 0; transform: translateY(6px); } }
+.tide table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tide th { text-align: left; font-weight: 500; color: var(--muted); padding: 0 0 8px; }
+.tide td { padding: 7px 0; font-weight: 500; }
+.tide th:last-child, .tide td:last-child { text-align: right; }
+.tide .bar { display: inline-block; height: 10px; background: var(--ink-2); vertical-align: middle; margin-right: 10px; }
+.tide .bar.neg { background: var(--muted); }
+.empty-blank { display: grid; place-items: center; min-height: 160px; color: var(--muted); }
+.empty-written p { line-height: 1.45; }
+.empty-written p + p { margin-top: 10px; }
+.empty-written strong { font-weight: 600; }
+.empty-written .pred { color: var(--muted); }
+
+/* ---------- About ---------- */
+.about { padding-block: var(--sec); }
+.about h2 { margin-bottom: clamp(40px, 5vw, 72px); }
+.bio {
+  columns: 2; column-gap: calc(var(--gap) * 2);
+  font-size: var(--step-lead); line-height: 1.22; letter-spacing: -0.012em;
+  text-align: justify; hyphens: auto; -webkit-hyphens: auto;
+}
+.bio .me { font-weight: 600; }
+.hl { padding: 0 0.12em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.hl-a { background: var(--hl-a); color: var(--hl-a-ink); }
+.hl-b { background: var(--hl-b); color: var(--hl-b-ink); }
+.hl-c { background: var(--hl-c); color: var(--hl-c-ink); }
+a.hl-final { background: var(--ink); color: var(--bg); text-decoration: none; font-weight: 500; transition: background-color 160ms ease; }
+a.hl-final:hover { background: var(--ink-2); }
+.facts { margin-top: clamp(80px, 9vw, 140px); }
+.facts > div { grid-column: span 4; }
+.facts h3 { font-size: var(--step-lead); line-height: 1.1; letter-spacing: -0.02em; font-weight: 600; margin-bottom: 24px; }
+.timeline li + li { margin-top: 22px; }
+.timeline .yrs { color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .role { font-weight: 500; }
+.track { position: relative; height: 12px; background: var(--surface); margin-top: 10px; }
+.track span { position: absolute; top: 0; bottom: 0; left: calc(var(--s) * 1%); width: calc(var(--w) * 1%); background: var(--ink-2); transform-origin: left; }
+.track-scale { display: flex; justify-content: space-between; margin-top: 6px; font-size: var(--step-small); color: var(--muted); font-variant-numeric: tabular-nums; }
+.skills li { font-size: var(--step-lead); line-height: 1.3; letter-spacing: -0.015em; }
+.talks li + li { margin-top: 22px; }
+.talks .t { font-size: var(--step-lead); line-height: 1.15; letter-spacing: -0.015em; font-weight: 500; }
+.talks .w { color: var(--muted); margin-top: 4px; }
+
+/* ---------- Newsletter ---------- */
+.news {
+  position: relative; overflow: clip;
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap);
+  padding: clamp(96px, 9vw, 140px) var(--m) 0;
+}
+.news-copy { grid-column: 1 / 5; align-self: end; padding-bottom: 64px; }
+.news-copy p { font-size: var(--step-lead); line-height: 1.25; letter-spacing: -0.012em; }
+.news-copy p + p { margin-top: 18px; font-size: var(--step-body); color: var(--muted); line-height: 1.5; letter-spacing: 0; }
+.card {
+  grid-column: 6 / 13; justify-self: end; align-self: end;
+  width: min(44vw, 660px); aspect-ratio: 7 / 5;
+  margin-bottom: -60px; padding: 48px 48px 84px;
+  background: var(--card); color: var(--card-ink);
+  transform: rotate(2deg); transform-origin: 70% 100%;
+  display: flex; flex-direction: column; justify-content: center; text-align: center;
+  transition: transform 600ms var(--ease-out);
+}
+.card:hover, .card:focus-within { transform: rotate(0.6deg) translateY(-8px); }
+.card h2 { color: var(--card-ink); }
+.card .desc { margin-top: 12px; }
+.card form { margin-top: 28px; display: grid; gap: 10px; text-align: left; }
+.card label { font-weight: 500; }
+.card input {
+  min-height: 56px; width: 100%; padding: 0 18px; border: 0; border-radius: 0;
+  background: var(--card-field); color: var(--card-ink); font-size: var(--step-body);
+}
+.card input::placeholder { color: var(--card-muted); opacity: 1; }
+.card input:focus-visible { outline: 3px solid var(--ink-2); outline-offset: 0; }
+.card .btn { width: 100%; min-height: 56px; background: var(--card-ink); color: var(--card); margin-top: 4px; }
+.card .btn:hover { background: var(--ink-2); color: var(--card); }
+.form-note { margin-top: 6px; color: var(--card-muted); text-align: center; font-size: var(--step-small); min-height: 1.5em; }
+.form-note.ok { color: var(--card-ink); font-weight: 500; }
+
+/* ---------- Contact ---------- */
+.contact {
+  min-height: 100svh;
+  display: grid; grid-template-rows: auto 1fr auto auto;
+  padding: clamp(64px, 8vw, 120px) var(--m) clamp(24px, 3vw, 40px);
+}
+.contact-top { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); align-items: end; row-gap: 20px; }
+.contact-top h2 { grid-column: 1 / 6; }
+.contact-top p { grid-column: 7 / 12; font-size: var(--step-lead); line-height: 1.22; letter-spacing: -0.012em; max-width: 30ch; }
+.email {
+  grid-row: 3; display: block; margin: 0 0 12vh -0.03em;
+  font-size: 7.4vw; font-weight: 400; line-height: 1; letter-spacing: -0.045em;
+  text-decoration: none; white-space: nowrap; transition: color 200ms ease;
+}
+.email .fl { display: inline-block; transition: transform 500ms var(--ease-out); }
+.email:hover { color: var(--ink-2); }
+.email:hover .fl { transform: translateX(0.04em); }
+.contact-foot { grid-row: 4; display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 16px 40px; }
+.contact-foot ul { display: flex; gap: 28px; }
+.contact-foot a { font-weight: 500; }
+
+/* ---------- Footer ---------- */
+.site-foot { padding: clamp(128px, 12vw, 176px) var(--m) 32px; overflow: clip; }
+.foot-name { display: block; font-size: 13.6vw; line-height: 0.86; letter-spacing: -0.05em; font-weight: 600; white-space: nowrap; margin-left: -0.04em; }
+.foot-name .l2 { color: var(--ink-2); }
+.foot-row { margin-top: 72px; }
+.places { grid-column: 1 / 6; }
+.places li { font-size: var(--step-lead); line-height: 1.3; letter-spacing: -0.015em; }
+.places a { color: var(--ink-2); text-decoration: none; }
+.places a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+.foot-links { grid-column: 7 / 13; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.foot-links h3 { font-size: var(--step-body); font-weight: 600; margin-bottom: 10px; }
+.foot-links li + li { margin-top: 6px; }
+.foot-links a { text-decoration: none; transition: color 150ms ease; }
+.foot-links a:hover { color: var(--ink-2); text-decoration: underline; }
+.legal { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 32px; margin-top: 96px; font-size: var(--step-small); color: var(--muted); }
+.legal a { color: var(--ink); }
+
+/* ---------- Drawings ---------- */
+.art text { font-family: inherit; }
+.k0 { fill: #62102a; } .k1 { fill: #3d0012; } .k2 { fill: #ff99d3; } .k3 { fill: #ff5c9e; }
+.k4 { fill: #ffe9f3; } .k5 { fill: #8c1d44; } .k6 { fill: #c4447a; } .k7 { fill: #4a0a1f; }
+.k8 { fill: #f6cfe2; } .k9 { fill: #24000b; }
+.ln { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.s2 { stroke: #ff99d3; } .s3 { stroke: #ff5c9e; } .s4 { stroke: #ffe9f3; } .s5 { stroke: #8c1d44; } .s6 { stroke: #c4447a; } .s1 { stroke: #3d0012; }
+.b { font-weight: 600; }
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero-name [data-line] { transform: translateY(105%); animation: line-up 950ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 110ms + 120ms); }
+  .js .hero-foot > * { opacity: 0; transform: translateY(18px); animation: rise 700ms var(--ease-out) forwards; animation-delay: calc(560ms + var(--i, 0) * 80ms); }
+  .js [data-reveal] { opacity: 0; transform: translateY(26px); transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out); transition-delay: calc(var(--i, 0) * 75ms); }
+  .js [data-reveal].in { opacity: 1; transform: none; }
+  .js .case-art[data-reveal] { opacity: 1; transform: none; clip-path: inset(0 0 100% 0); transition: clip-path 1.1s var(--ease-out); }
+  .js .case-art[data-reveal] svg { transform: scale(0.94); transition: transform 1.6s var(--ease-out); }
+  .js .case-art[data-reveal].in { clip-path: inset(0); }
+  .js .case-art[data-reveal].in svg { transform: none; }
+  .js .case:hover .case-art[data-reveal].in svg { transform: scale(1.03); }
+  .js .track span { transform: scaleX(0); transition: transform 1.1s var(--ease-out) 200ms; }
+  .js .timeline.in .track span { transform: scaleX(1); }
+  .status .dot::after { animation: ping 2.4s var(--ease-out) infinite; }
+  .drift-a { animation: drift 9s linear infinite; }
+  .drift-b { animation: drift 13s linear infinite reverse; }
+  .bob { animation: bob 4.5s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+  .blink { animation: blink 1.1s steps(1) infinite; }
+}
+@keyframes line-up { to { transform: none; } }
+@keyframes rise { to { opacity: 1; transform: none; } }
+@keyframes ping { 0% { transform: scale(1); opacity: 0.6; } 70%, 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes drift { to { transform: translateX(-160px); } }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(6px) rotate(3deg); } }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1100px) {
+  .case-art { grid-column: 1 / 13; height: auto; aspect-ratio: 840 / 760; min-height: 0; margin-right: calc(-1 * var(--m)); }
+  .case-info { grid-column: 1 / 13; display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--gap); margin-top: 32px; }
+  .case-info > * { grid-column: 1; }
+  .case-detail { grid-column: 2; grid-row: 1 / span 4; margin: 0; align-self: start; }
+  .fp-body { grid-column: 1 / 13; }
+  .fp-aside { grid-column: 1 / 13; position: static; margin-top: 64px; max-width: 520px; }
+  .news-copy { grid-column: 1 / 13; align-self: start; padding-bottom: 48px; }
+  .card { grid-column: 1 / 13; justify-self: center; width: min(90%, 560px); aspect-ratio: auto; }
+  .facts > div { grid-column: span 6; }
+  .facts > div:last-child { grid-column: 1 / 13; margin-top: 56px; }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 760px) {
+  .menu-btn { display: inline-flex; }
+  .js .nav { display: none; }
+  .js .nav.open {
+    display: block; position: absolute; top: var(--head-h); left: 0; right: 0;
+    background: var(--surface); padding: 12px var(--m) 28px;
+  }
+  .nav.open ul { flex-direction: column; gap: 0; }
+  .nav.open a { font-size: var(--step-head); line-height: 1.1; font-weight: 600; letter-spacing: -0.03em; padding: 8px 0; }
+  html:not(.js) .site-head { height: auto; flex-wrap: wrap; padding-block: 12px; }
+  .theme-btn .lbl { display: none; }
+
+  .hero-name { font-size: 24vw; padding-top: 9vh; }
+  .hero-foot { grid-column: 1 / -1; }
+  .statement { max-width: none; }
+
+  .work .sec-head h2, .work .sec-head p, .writing .sec-head h2, .filters { grid-column: 1 / -1; justify-self: start; }
+  .case + .case { margin-top: 88px; }
+  .case-art { aspect-ratio: 4 / 5; margin-right: calc(-1 * var(--m)); }
+  .case-info { display: flex; }
+  .case-detail { order: 9; width: 70%; align-self: flex-end; margin-top: 32px; }
+
+  .post { grid-template-columns: auto auto 1fr; row-gap: 6px; padding-block: 18px; }
+  .post time, .post .ptag, .post .rt { font-size: var(--step-small); line-height: 1.4; letter-spacing: 0; }
+  .post time { grid-column: 1; grid-row: 1; }
+  .post .ptag { grid-column: 2; grid-row: 1; }
+  .post .rt { grid-column: 3; grid-row: 1; }
+  .post > div { grid-column: 1 / -1; grid-row: 2; }
+
+  .fp-head h2 { grid-column: 1 / -1; font-size: 1.5rem; line-height: 1.08; }
+  .fp-meta { grid-column: 1 / -1; }
+  .fp-body blockquote { padding: 24px; margin-inline: calc(-1 * var(--m) + 4px); }
+  .fp-body pre { margin-inline: calc(-1 * var(--m)); }
+  .tide { padding: 22px 18px; margin-inline: calc(-1 * var(--m) + 4px); }
+
+  .bio { columns: 1; text-align: left; hyphens: manual; line-height: 1.25; }
+  .facts > div { grid-column: 1 / -1; }
+  .facts > div + div { margin-top: 56px; }
+
+  .news { padding-top: var(--sec); }
+  .card { width: 100%; transform: rotate(1deg); padding: 36px 24px 80px; }
+  .card h2 { font-size: var(--step-head); }
+
+  .contact { min-height: 86svh; }
+  .contact-top h2, .contact-top p { grid-column: 1 / -1; }
+  .email { white-space: normal; margin-bottom: 8vh; }
+  .email .fl { display: block; }
+  .contact-foot { flex-direction: column; align-items: start; }
+
+  .places, .foot-links { grid-column: 1 / -1; }
+  .foot-links { grid-template-columns: 1fr 1fr; margin-top: 48px; }
+  .legal { margin-top: 64px; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <a class="wordmark" href="#top">Maya Lindqvist</a>
+  <div class="head-right">
+    <nav class="nav" id="nav" aria-label="Main">
+      <ul>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#writing">Writing</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="icon-btn theme-btn" id="theme" type="button" aria-pressed="true">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle class="ring" cx="10" cy="10" r="7.6"/><path class="moon-fill" d="M10 2.4a7.6 7.6 0 0 0 0 15.2z"/></svg>
+      <span class="lbl">Dark mode</span><span class="vh"> (toggle colour scheme)</span>
+    </button>
+    <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="5" width="16" height="2.4" fill="currentColor"/><rect x="2" y="12.6" width="16" height="2.4" fill="currentColor"/></svg>
+      <span>Menu</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- Hero / introduction -->
+<section class="hero f-bg" id="top" aria-labelledby="hero-title">
+  <h1 class="hero-name lines" id="hero-title">
+    <span class="line"><span data-line style="--i:0">Maya</span></span>
+    <span class="line l2"><span data-line style="--i:1">Lindqvist</span></span>
+  </h1>
+  <div class="hero-foot">
+    <p class="statement" style="--i:0">I design tools for people who work with data, and I write about how they get made.</p>
+    <p class="status" style="--i:1"><span class="dot" aria-hidden="true"></span><span>Available for new projects from January 2027.</span><span class="when" id="countdown"></span></p>
+    <div class="actions" style="--i:2">
+      <a class="btn" href="#contact">Start a project <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="tlink" href="#work">See selected work</a>
+    </div>
+  </div>
+</section>
+
+<!-- Selected work -->
+<section class="work f-surface" id="work" aria-labelledby="work-title">
+  <div class="sec-head wrap">
+    <h2 class="h2" id="work-title" data-reveal>Selected work</h2>
+    <p data-reveal>Four projects from 2024 to 2026, used on a boat deck, at a bank counter, at a tram stop and in a town hall.</p>
+  </div>
+
+  <!-- Tidepool -->
+  <article class="case" aria-labelledby="c1">
+    <div class="case-art" style="--h:80svh" data-reveal>
+      <svg class="art" viewBox="0 0 840 760" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Drawing of the Tidepool app on a phone at sea: station 14 in the Koster fjord, an offline banner saying 23 samples are saved on the phone, today's tide curve, four logged samples and a large Log sample button.">
+        <g id="art-tidepool">
+          <rect class="k0" x="-200" y="-200" width="1240" height="1160"/>
+          <circle class="k2" cx="702" cy="132" r="38"/>
+          <circle class="k0" cx="718" cy="122" r="34"/>
+          <text class="k2" x="40" y="64" font-size="17" font-weight="600">Field trial, Koster fjord</text>
+          <text class="k6" x="40" y="88" font-size="14">58.88° N, 11.10° E</text>
+          <path class="k5" d="M-10 500 L-10 462 Q40 436 92 456 Q130 424 188 450 Q226 438 262 468 L292 500 Z"/>
+          <rect class="k7" x="-200" y="498" width="1240" height="460"/>
+          <g class="drift-a"><path class="k5" d="M-160 548 q40 -16 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 V960 H-160 Z"/></g>
+          <g class="drift-b"><path class="k1" d="M-160 640 q40 -18 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 V960 H-160 Z"/></g>
+          <g class="bob">
+            <rect class="k5" x="684" y="476" width="6" height="34"/>
+            <circle class="k3" cx="687" cy="472" r="7"/>
+            <path class="k3" d="M664 510 h46 l-6 40 h-34 z"/>
+            <rect class="k4" x="666" y="522" width="42" height="9"/>
+          </g>
+          <g transform="rotate(-4 440 380)">
+            <rect class="k9" x="290" y="60" width="300" height="600" rx="42"/>
+            <rect class="k4" x="304" y="74" width="272" height="572" rx="31"/>
+            <text class="k1 b" x="324" y="104" font-size="14">09:41</text>
+            <text class="k5" x="556" y="104" font-size="13" text-anchor="end">No signal</text>
+            <text class="k1 b" x="322" y="146" font-size="27">Station 14</text>
+            <text class="k5" x="322" y="168" font-size="13">Kosterfjorden, tidepool transect</text>
+            <rect class="k3" x="318" y="184" width="244" height="54" rx="10"/>
+            <text class="k1 b" x="332" y="207" font-size="14">Offline</text>
+            <text class="k1" x="332" y="227" font-size="13">23 samples saved on this phone</text>
+            <text class="k5" x="322" y="266" font-size="12">Tide today, cm</text>
+            <path class="k8" d="M322 322 C 360 282, 400 282, 440 306 S 520 346, 558 300 L558 344 L322 344 Z"/>
+            <path class="ln s5" stroke-width="4" d="M322 322 C 360 282, 400 282, 440 306 S 520 346, 558 300"/>
+            <rect class="k1" x="438" y="276" width="3" height="68"/>
+            <circle class="k3" cx="440" cy="306" r="7"/>
+            <text class="k1 b" x="450" y="292" font-size="12">+14 now</text>
+            <rect class="k8" x="318" y="358" width="244" height="36" rx="6"/>
+            <text class="k1 b" x="330" y="381" font-size="13">08:12</text><text class="k1" x="380" y="381" font-size="13">Quadrat 3</text><text class="k5" x="550" y="381" font-size="13" text-anchor="end">12 species</text>
+            <rect class="k8" x="318" y="400" width="244" height="36" rx="6"/>
+            <text class="k1 b" x="330" y="423" font-size="13">08:47</text><text class="k1" x="380" y="423" font-size="13">Quadrat 4</text><text class="k5" x="550" y="423" font-size="13" text-anchor="end">9 species</text>
+            <rect class="k8" x="318" y="442" width="244" height="36" rx="6"/>
+            <text class="k1 b" x="330" y="465" font-size="13">09:15</text><text class="k1" x="380" y="465" font-size="13">Quadrat 5</text><text class="k5" x="550" y="465" font-size="13" text-anchor="end">14 species</text>
+            <rect class="k8" x="318" y="484" width="244" height="36" rx="6"/>
+            <text class="k1 b" x="330" y="507" font-size="13">09:33</text><text class="k1" x="380" y="507" font-size="13">Water sample</text><text class="k5" x="550" y="507" font-size="13" text-anchor="end">1 vial</text>
+            <rect class="k1" x="318" y="548" width="244" height="70" rx="14"/>
+            <text class="k2 b" x="440" y="590" font-size="21" text-anchor="middle">Log sample</text>
+            <rect class="k5" x="400" y="630" width="80" height="5" rx="2.5"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="case-info">
+      <div class="case-detail" data-reveal>
+        <svg class="art" viewBox="300 176 288 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#art-tidepool"/></svg>
+      </div>
+      <h3 id="c1" data-reveal>Tidepool</h3>
+      <dl class="case-meta" data-reveal>
+        <dt>Client</dt><dd>Nordic Ocean Institute</dd>
+        <dt>Year</dt><dd class="tnum">2026</dd>
+        <dt>Role</dt><dd>Lead designer</dd>
+      </dl>
+      <p class="case-sum" data-reveal>A field app that lets marine biologists log samples on a boat with no signal and syncs everything once they are back in the harbour.</p>
+      <ul class="tags" aria-label="Tags" data-reveal><li>Mobile</li><li>Offline</li><li>Research</li></ul>
+    </div>
+  </article>
+
+  <!-- Ledger rewrite -->
+  <article class="case" aria-labelledby="c2">
+    <div class="case-art" style="--h:62svh" data-reveal>
+      <svg class="art" viewBox="0 0 840 760" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Drawing of the Ledger rewrite: an old green-screen member maintenance terminal behind the new change-of-address form, with a dotted line mapping the old address field to the new one and a postcode field asking for five digits.">
+        <g id="art-ledger">
+          <rect class="k0" x="-200" y="-200" width="1240" height="1160"/>
+          <rect class="k9" x="40" y="70" width="450" height="350"/>
+          <rect class="k1" x="40" y="70" width="450" height="36"/>
+          <text class="k6" x="58" y="94" font-size="13" font-weight="600">MBR400 MEMBER MAINTENANCE</text>
+          <text class="k6" x="472" y="94" font-size="13" text-anchor="end">2003</text>
+          <g font-size="15">
+            <text class="k3" x="60" y="152">MEMBER NO</text><text class="k2" x="220" y="152">40213</text>
+            <text class="k3" x="60" y="184">NAME</text><text class="k2" x="220" y="184">BERG ANNA</text>
+            <text class="k3" x="60" y="216">ADDR 1</text><rect class="k2 blink" x="220" y="202" width="11" height="18"/>
+            <text class="k3" x="60" y="248">ADDR 2</text>
+            <text class="k3" x="60" y="280">POSTCODE</text><text class="k2" x="220" y="280">41117</text>
+            <text class="k3" x="60" y="312">CODE 7</text><text class="k2" x="220" y="312">Y</text>
+          </g>
+          <text class="k6" x="60" y="396" font-size="13">F5 SAVE   F7 NEXT   F12 CANCEL</text>
+          <path class="ln s3" stroke-width="3" stroke-dasharray="2 9" d="M240 212 C 280 250, 300 300, 352 360"/>
+          <circle class="k3" cx="240" cy="212" r="5"/>
+          <rect class="k4" x="300" y="200" width="500" height="510"/>
+          <text class="k1 b" x="336" y="256" font-size="31">Change of address</text>
+          <text class="k5" x="336" y="284" font-size="15">Member 40213, Anna Berg</text>
+          <text class="k1 b" x="336" y="328" font-size="14">Street address</text>
+          <rect class="k8" x="336" y="338" width="428" height="48"/>
+          <text class="k1" x="352" y="369" font-size="17">Vegagatan 12</text>
+          <text class="k1 b" x="336" y="418" font-size="14">Postcode</text>
+          <rect class="k8" x="336" y="428" width="200" height="48"/>
+          <rect class="k3" x="336" y="428" width="6" height="48"/>
+          <text class="k1" x="356" y="459" font-size="17">4111</text>
+          <rect class="k1" x="478" y="444" width="2" height="18"/>
+          <circle class="k3" cx="344" cy="497" r="8"/>
+          <text class="k1 b" x="344" y="502" font-size="12" text-anchor="middle">!</text>
+          <text class="k1 b" x="360" y="502" font-size="14">Needs five digits, like 411 17</text>
+          <text class="k1 b" x="560" y="418" font-size="14">City</text>
+          <rect class="k8" x="560" y="428" width="204" height="48"/>
+          <text class="k1" x="576" y="459" font-size="17">Gothenburg</text>
+          <text class="k1 b" x="336" y="544" font-size="14">Moving date</text>
+          <rect class="k8" x="336" y="554" width="220" height="48"/>
+          <text class="k1" x="352" y="585" font-size="16">1 December 2025</text>
+          <rect class="k1" x="336" y="632" width="184" height="52"/>
+          <text class="k2 b" x="428" y="664" font-size="17" text-anchor="middle">Save change</text>
+          <text class="k5" x="764" y="664" font-size="14" text-anchor="end">Draft saved 10:02</text>
+          <text class="k5" x="764" y="585" font-size="13" text-anchor="end">Code 7 kept</text>
+        </g>
+      </svg>
+    </div>
+    <div class="case-info">
+      <div class="case-detail" data-reveal>
+        <svg class="art" viewBox="326 400 440 275" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#art-ledger"/></svg>
+      </div>
+      <h3 id="c2" data-reveal>Ledger rewrite</h3>
+      <dl class="case-meta" data-reveal>
+        <dt>Client</dt><dd>Västkust Credit Union</dd>
+        <dt>Year</dt><dd class="tnum">2025</dd>
+        <dt>Role</dt><dd>Product designer</dd>
+      </dl>
+      <p class="case-sum" data-reveal>Replacing a 20-year-old member banking system for a community credit union without losing a single rule its staff relied on.</p>
+      <ul class="tags" aria-label="Tags" data-reveal><li>Finance</li><li>Forms</li><li>Accessibility</li></ul>
+    </div>
+  </article>
+
+  <!-- Delay map -->
+  <article class="case" aria-labelledby="c3">
+    <div class="case-art" style="--h:90svh" data-reveal>
+      <svg class="art" viewBox="0 0 840 760" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Drawing of the Delay map: a schematic of Gothenburg's tram and bus lines across the Göta älv river, with delay circles sized by minutes at Frihamnen, Lindholmen and Linnéplatsen, a live delays panel and vehicles moving along the lines.">
+        <g id="art-delay">
+          <rect class="k0" x="-200" y="-200" width="1240" height="1160"/>
+          <path class="k7" d="M-200 300 C 150 280, 260 360, 420 340 S 700 250, 1040 290 L1040 384 C 700 344, 560 424, 420 432 S 150 382, -200 404 Z"/>
+          <text class="k6" x="640" y="330" font-size="16" font-style="italic" transform="rotate(-6 640 330)">Göta älv</text>
+          <path id="dl1" class="ln s2" stroke-width="10" d="M40 720 L200 560 L330 470 L420 260 L520 130 L560 20"/>
+          <path id="dl2" class="ln s3" stroke-width="10" d="M10 520 L180 500 L330 470 L520 470 L700 520 L830 610"/>
+          <path id="dl3" class="ln s4" stroke-width="10" d="M260 236 L330 470 L380 640 L460 750"/>
+          <path id="dl4" class="ln s6" stroke-width="8" stroke-dasharray="20 12" d="M600 20 L620 220 L520 470 L566 720"/>
+          <g>
+            <rect class="k4" x="-11" y="-6" width="22" height="12" rx="4"><animateMotion dur="16s" repeatCount="indefinite" rotate="auto"><mpath href="#dl1"/></animateMotion></rect>
+            <rect class="k4" x="-11" y="-6" width="22" height="12" rx="4"><animateMotion dur="20s" begin="-7s" repeatCount="indefinite" rotate="auto"><mpath href="#dl2"/></animateMotion></rect>
+            <rect class="k3" x="-11" y="-6" width="22" height="12" rx="4"><animateMotion dur="13s" begin="-3s" repeatCount="indefinite" rotate="auto"><mpath href="#dl3"/></animateMotion></rect>
+            <rect class="k4" x="-9" y="-6" width="18" height="12" rx="3"><animateMotion dur="24s" begin="-11s" repeatCount="indefinite" rotate="auto"><mpath href="#dl4"/></animateMotion></rect>
+          </g>
+          <g class="k4">
+            <circle cx="200" cy="560" r="8"/><circle cx="420" cy="260" r="8"/><circle cx="520" cy="470" r="8"/>
+            <circle cx="700" cy="520" r="8"/><circle cx="260" cy="236" r="8"/><circle cx="620" cy="220" r="8"/><circle cx="380" cy="640" r="8"/>
+          </g>
+          <circle class="k4" cx="330" cy="470" r="17"/><circle class="k1" cx="330" cy="470" r="9"/>
+          <g font-size="15" class="k4">
+            <text class="b" x="352" y="506">Brunnsparken</text>
+            <text x="246" y="241" text-anchor="end">Backaplan</text>
+            <text x="406" y="246" text-anchor="end">Frihamnen</text>
+            <text x="636" y="206">Lindholmen</text>
+            <text x="536" y="494">Järntorget</text>
+            <text x="716" y="548">Linnéplatsen</text>
+            <text x="186" y="586" text-anchor="end">Hjalmar Brantingsplatsen</text>
+            <text x="396" y="664">Valand</text>
+          </g>
+          <circle class="k3" cx="452" cy="232" r="27"/><text class="k1 b" x="452" y="238" font-size="16" text-anchor="middle">+7</text>
+          <circle class="k3" cx="660" cy="250" r="36"/><text class="k1 b" x="660" y="257" font-size="19" text-anchor="middle">+12</text>
+          <circle class="k3" cx="726" cy="498" r="18"/><text class="k1 b" x="726" y="503" font-size="13" text-anchor="middle">+3</text>
+          <rect class="k4" x="40" y="40" width="300" height="168"/>
+          <text class="k1 b" x="60" y="78" font-size="21">Live delays</text>
+          <text class="k5" x="322" y="78" font-size="13" text-anchor="end">08:14</text>
+          <rect class="k2" x="60" y="98" width="30" height="22"/><text class="k1 b" x="75" y="114" font-size="13" text-anchor="middle">6</text>
+          <text class="k1" x="102" y="114" font-size="14">Frihamnen</text><text class="k1 b" x="322" y="114" font-size="14" text-anchor="end">+7 min</text>
+          <rect class="k6" x="60" y="132" width="30" height="22"/><text class="k1 b" x="75" y="148" font-size="13" text-anchor="middle">16</text>
+          <text class="k1" x="102" y="148" font-size="14">Lindholmen</text><text class="k1 b" x="322" y="148" font-size="14" text-anchor="end">+12 min</text>
+          <rect class="k3" x="60" y="166" width="30" height="22"/><text class="k1 b" x="75" y="182" font-size="13" text-anchor="middle">3</text>
+          <text class="k1" x="102" y="182" font-size="14">Linnéplatsen</text><text class="k1 b" x="322" y="182" font-size="14" text-anchor="end">+3 min</text>
+        </g>
+      </svg>
+    </div>
+    <div class="case-info">
+      <div class="case-detail" data-reveal>
+        <svg class="art" viewBox="368 152 352 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#art-delay"/></svg>
+      </div>
+      <h3 id="c3" data-reveal>Delay map</h3>
+      <dl class="case-meta" data-reveal>
+        <dt>Client</dt><dd>Region Väst Transit</dd>
+        <dt>Year</dt><dd class="tnum">2025</dd>
+        <dt>Role</dt><dd>Design and front-end</dd>
+      </dl>
+      <p class="case-sum" data-reveal>A live map of tram and bus delays that commuters read at the stop and dispatchers keep open all day.</p>
+      <ul class="tags" aria-label="Tags" data-reveal><li>Maps</li><li>Data visualization</li></ul>
+    </div>
+  </article>
+
+  <!-- Open Data Handbook -->
+  <article class="case" aria-labelledby="c4">
+    <div class="case-art" style="--h:72svh" data-reveal>
+      <svg class="art" viewBox="0 0 840 760" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Drawing of the Open Data Handbook: the pink cover behind an open spread with a five-point checklist called Before you publish and a table of a town's first five datasets with their formats and update rhythm.">
+        <g id="art-handbook">
+          <rect class="k0" x="-200" y="-200" width="1240" height="1160"/>
+          <g transform="rotate(-6 250 330)">
+            <rect class="k2" x="80" y="80" width="330" height="460"/>
+            <rect class="k6" x="80" y="80" width="26" height="460"/>
+            <text class="k1 b" x="134" y="170" font-size="46" letter-spacing="-1.5">Open Data</text>
+            <text class="k1 b" x="134" y="216" font-size="46" letter-spacing="-1.5">Handbook</text>
+            <text class="k5" x="134" y="256" font-size="17">Publishing your first</text>
+            <text class="k5" x="134" y="278" font-size="17">dataset, step by step</text>
+            <rect class="k1" x="134" y="320" width="76" height="26"/><rect class="k1" x="214" y="320" width="56" height="26"/><rect class="k1" x="274" y="320" width="66" height="26"/>
+            <rect class="k4" x="134" y="350" width="76" height="26"/><rect class="k3" x="214" y="350" width="56" height="26"/><rect class="k4" x="274" y="350" width="66" height="26"/>
+            <rect class="k4" x="134" y="380" width="76" height="26"/><rect class="k4" x="214" y="380" width="56" height="26"/><rect class="k3" x="274" y="380" width="66" height="26"/>
+            <rect class="k4" x="134" y="410" width="76" height="26"/><rect class="k3" x="214" y="410" width="56" height="26"/><rect class="k4" x="274" y="410" width="66" height="26"/>
+            <text class="k1 b" x="134" y="500" font-size="16">Maya Lindqvist</text>
+            <text class="k5" x="134" y="522" font-size="14">Free edition, 2024</text>
+          </g>
+          <rect class="k4" x="320" y="262" width="250" height="430"/>
+          <rect class="k8" x="570" y="262" width="250" height="430"/>
+          <rect class="k6" x="564" y="262" width="8" height="430"/>
+          <path class="k3" d="M770 244 h18 v76 l-9 -10 l-9 10 z"/>
+          <text class="k1 b" x="344" y="310" font-size="20">Before you publish</text>
+          <g font-size="14">
+            <rect class="k1" x="344" y="336" width="22" height="22"/><path class="ln s2" stroke-width="3" d="M349 347 l5 5 l8 -10"/>
+            <text class="k1" x="378" y="352">Pick one wanted dataset</text>
+            <rect class="k1" x="344" y="380" width="22" height="22"/><path class="ln s2" stroke-width="3" d="M349 391 l5 5 l8 -10"/>
+            <text class="k1" x="378" y="396">Name its owner</text>
+            <rect class="k1" x="344" y="424" width="22" height="22"/><path class="ln s2" stroke-width="3" d="M349 435 l5 5 l8 -10"/>
+            <text class="k1" x="378" y="440">Describe every column</text>
+            <rect class="k8" x="344" y="468" width="22" height="22"/>
+            <text class="k1" x="378" y="484">Choose an open licence</text>
+            <rect class="k8" x="344" y="512" width="22" height="22"/>
+            <text class="k1" x="378" y="528">Set the next update date</text>
+          </g>
+          <text class="k5" x="344" y="580" font-size="13">Three of five done.</text>
+          <rect class="k8" x="344" y="592" width="200" height="10"/><rect class="k3" x="344" y="592" width="120" height="10"/>
+          <text class="k5" x="344" y="672" font-size="12">14</text>
+          <text class="k1 b" x="592" y="310" font-size="20">Your first five</text>
+          <g font-size="12" class="k5"><text x="592" y="340">Dataset</text><text x="700" y="340">Format</text><text x="798" y="340" text-anchor="end">Updated</text></g>
+          <rect class="k4" x="586" y="350" width="220" height="28"/>
+          <rect class="k4" x="586" y="410" width="220" height="28"/>
+          <rect class="k4" x="586" y="470" width="220" height="28"/>
+          <g font-size="13" class="k1">
+            <text x="592" y="369">Bus stops</text><text x="700" y="369">CSV</text><text x="798" y="369" text-anchor="end">Weekly</text>
+            <text x="592" y="399">Playgrounds</text><text x="700" y="399">GeoJSON</text><text x="798" y="399" text-anchor="end">Yearly</text>
+            <text x="592" y="429">Library loans</text><text x="700" y="429">CSV</text><text x="798" y="429" text-anchor="end">Monthly</text>
+            <text x="592" y="459">Air quality</text><text x="700" y="459">JSON</text><text x="798" y="459" text-anchor="end">Hourly</text>
+            <text x="592" y="489">Budget 2024</text><text x="700" y="489">CSV</text><text x="798" y="489" text-anchor="end">Yearly</text>
+          </g>
+          <text class="k5" x="592" y="534" font-size="12">Downloads in the first month</text>
+          <rect class="k3" x="592" y="548" width="140" height="14"/><text class="k1" x="740" y="560" font-size="12">Bus stops</text>
+          <rect class="k6" x="592" y="568" width="96" height="14"/><text class="k1" x="696" y="580" font-size="12">Air quality</text>
+          <rect class="k6" x="592" y="588" width="62" height="14"/><text class="k1" x="662" y="600" font-size="12">Playgrounds</text>
+          <rect class="k5" x="592" y="608" width="38" height="14"/><text class="k1" x="638" y="620" font-size="12">Budget</text>
+          <rect class="k5" x="592" y="628" width="20" height="14"/><text class="k1" x="620" y="640" font-size="12">Library loans</text>
+          <text class="k5" x="798" y="672" font-size="12" text-anchor="end">15</text>
+        </g>
+      </svg>
+    </div>
+    <div class="case-info">
+      <div class="case-detail" data-reveal>
+        <svg class="art" viewBox="330 284 236 148" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#art-handbook"/></svg>
+      </div>
+      <h3 id="c4" data-reveal>Open Data Handbook</h3>
+      <dl class="case-meta" data-reveal>
+        <dt>Client</dt><dd>Self-initiated</dd>
+        <dt>Year</dt><dd class="tnum">2024</dd>
+        <dt>Role</dt><dd>Author and designer</dd>
+      </dl>
+      <p class="case-sum" data-reveal>A free guide that walks municipalities through publishing their first datasets, from choosing one to keeping it up to date.</p>
+      <ul class="tags" aria-label="Tags" data-reveal><li>Writing</li><li>Open data</li></ul>
+    </div>
+  </article>
+</section>
+
+<!-- Writing -->
+<section class="writing f-bg wrap" id="writing" aria-labelledby="writing-title">
+  <div class="sec-head">
+    <h2 class="h2" id="writing-title" data-reveal>Writing</h2>
+    <div class="filters" role="group" aria-label="Filter posts by tag" data-reveal>
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="Design" aria-pressed="false">Design</button>
+      <button type="button" data-filter="Data" aria-pressed="false">Data</button>
+      <button type="button" data-filter="Freelancing" aria-pressed="false">Freelancing</button>
+      <button type="button" data-filter="Field notes" aria-pressed="false">Field notes</button>
+    </div>
+  </div>
+  <p class="count" id="post-count" aria-live="polite" data-reveal>Six posts from 2026.</p>
+  <ol class="posts" id="posts">
+    <li class="post" data-tag="Design" data-reveal>
+      <time datetime="2026-10-02">2 October 2026</time>
+      <div><h3><a href="#featured">What a tide table taught me about empty states</a></h3>
+      <p class="excerpt">A sensor on a harbour wall went quiet, and a two-word message sent a research team the wrong way.</p></div>
+      <span class="ptag">Design</span><span class="rt">7 min</span>
+    </li>
+    <li class="post" data-tag="Field notes" data-reveal>
+      <time datetime="2026-09-11">11 September 2026</time>
+      <div><h3><a href="#writing">Designing for gloves: touch targets in the field</a></h3>
+      <p class="excerpt">Wet neoprene, a rolling deck and a 44-pixel button: what I measured during the Tidepool field trials.</p></div>
+      <span class="ptag">Field notes</span><span class="rt">5 min</span>
+    </li>
+    <li class="post" data-tag="Design" data-reveal>
+      <time datetime="2026-08-20">20 August 2026</time>
+      <div><h3><a href="#writing">Notes from rebuilding a 20-year-old banking form</a></h3>
+      <p class="excerpt">The old change-of-address screen had 31 fields and three rules nobody had written down. This is how we found them.</p></div>
+      <span class="ptag">Design</span><span class="rt">9 min</span>
+    </li>
+    <li class="post" data-tag="Data" data-reveal>
+      <time datetime="2026-07-03">3 July 2026</time>
+      <div><h3><a href="#writing">Why I stopped using pie charts in client reports</a></h3>
+      <p class="excerpt">Clients kept asking which slice was bigger, and a sorted bar chart answers that before anyone has to ask.</p></div>
+      <span class="ptag">Data</span><span class="rt">4 min</span>
+    </li>
+    <li class="post" data-tag="Field notes" data-reveal>
+      <time datetime="2026-05-28">28 May 2026</time>
+      <div><h3><a href="#writing">A month of sketching on the tram</a></h3>
+      <p class="excerpt">Thirty mornings between Majorna and Brunnsparken, one sketchbook, and what riders read on a delay screen.</p></div>
+      <span class="ptag">Field notes</span><span class="rt">6 min</span>
+    </li>
+    <li class="post" data-tag="Freelancing" data-reveal>
+      <time datetime="2026-04-15">15 April 2026</time>
+      <div><h3><a href="#writing">Pricing freelance work by the problem, not the hour</a></h3>
+      <p class="excerpt">Hourly rates reward slow work, so I scope a fixed price around the problem a client actually has.</p></div>
+      <span class="ptag">Freelancing</span><span class="rt">8 min</span>
+    </li>
+  </ol>
+</section>
+
+<!-- Featured post -->
+<section class="featured f-inv wrap" id="featured" aria-labelledby="fp-title">
+  <article>
+    <header class="fp-head">
+      <h2 class="h2" id="fp-title" data-reveal>What a tide table taught me about empty states</h2>
+      <p class="fp-meta" data-reveal><span>Featured post</span><span><time datetime="2026-10-02">2 October 2026</time></span><span>7 min read</span><span>Design</span></p>
+    </header>
+    <div class="fp-grid">
+      <div class="fp-body">
+        <p data-reveal>Last autumn I spent three days on a research boat in the Koster fjord with the team from the Nordic Ocean Institute. They were testing Tidepool, the field app we had built for them, and I was there to watch where it broke. It broke somewhere I had not designed at all: the tide table.</p>
+        <p data-reveal>On the Swedish west coast the tide is a matter of centimetres. Wind and air pressure move the water more than the moon does, so the biologists check the gauge readings before every dive. Our table pulled those readings from a sensor on the harbour wall. When the sensor went quiet, the table showed two words: “No data.”</p>
+
+        <h3 data-reveal>Blank is a message too</h3>
+        <p data-reveal>Nobody on deck read “No data” as a neutral statement. One researcher took it to mean the app was broken and restarted it twice. Another took it to mean the water was calm, and planned a sample run around it. The empty state was the most-read screen of the day, and it said nothing true.</p>
+
+        <blockquote data-reveal><p>An empty state is the screen people see at the exact moment they most need help.</p></blockquote>
+
+        <p data-reveal>Here is what the sync log actually held for that Wednesday morning:</p>
+<pre data-reveal><code><span class="dim">station,time,level_cm,status</span>
+torshamnen,02:50,+14,ok
+torshamnen,03:10,<span class="gap">     </span>,offline
+torshamnen,15:40,<span class="gap">     </span>,offline
+torshamnen,16:00,+9,ok</code></pre>
+        <p data-reveal>That is not an absence of data. It says when the gap started, when it ended, and what the water was doing on either side. Every part of it is useful to someone standing on a deck.</p>
+
+        <h3 data-reveal>What we shipped instead</h3>
+        <p data-reveal>The new empty state answers three questions in plain sentences: what is missing, why, and what to do meanwhile. It names the gauge and the hours it was offline. It shows the predicted tide in a lighter tone, labelled as a prediction. And it says when the next reading is due, so nobody restarts the app to check.</p>
+        <p data-reveal>None of this needed new engineering. The information was already in the log; we had simply decided, without noticing, that an empty table was not worth writing. Now I start every project by listing the screens that will be empty on day one, and I write those first. They are usually the ones people remember.</p>
+      </div>
+
+      <aside class="fp-aside" aria-label="Tide table example from the post">
+        <figure class="tide" data-ui data-reveal>
+          <h3>Torshamnen tide gauge</h3>
+          <p class="tide-sub">Field trial week, in cm against mean sea level.</p>
+          <div class="seg" role="group" aria-label="Day" id="tide-days">
+            <button type="button" data-day="mon" aria-pressed="false">Mon</button>
+            <button type="button" data-day="tue" aria-pressed="false">Tue</button>
+            <button type="button" data-day="wed" aria-pressed="true">Wed</button>
+            <button type="button" data-day="thu" aria-pressed="false">Thu</button>
+          </div>
+          <div class="tide-body" id="tide-body" aria-live="polite">
+            <div class="empty-blank">No data</div>
+          </div>
+          <span class="seg-label" id="ver-label">Empty state</span>
+          <div class="seg" role="group" aria-labelledby="ver-label" id="tide-ver">
+            <button type="button" data-ver="before" aria-pressed="true">Before</button>
+            <button type="button" data-ver="after" aria-pressed="false">After</button>
+          </div>
+        </figure>
+      </aside>
+    </div>
+  </article>
+</section>
+
+<!-- About -->
+<section class="about f-bg wrap" id="about" aria-labelledby="about-title">
+  <h2 class="h2" id="about-title" data-reveal>About</h2>
+  <p class="bio" data-reveal><span class="me">I’m Maya Lindqvist,</span> a product designer and writer based in <mark class="hl hl-a">Gothenburg</mark>. I spent five years at Kartverk Studio and Norrsken Analytics designing <mark class="hl hl-b">maps, dashboards</mark> and the forms behind them. Since <mark class="hl hl-c">2024</mark> I have worked independently for research institutes, transit agencies, a credit union and city governments. My work starts where the data is messiest: <mark class="hl hl-a">offline sync</mark>, records older than the staff who use them, live feeds that drop out. I <mark class="hl hl-b">prototype in code</mark> so clients can test with their own numbers in the first weeks, and I run workshops that put engineers, analysts and the people who use the tool every day in one room. I write about all of it here, and once a month in <mark class="hl hl-c">Field Notes</mark>. <a class="hl hl-final" href="#contact">Tell me about your project.</a></p>
+
+  <div class="facts grid">
+    <div>
+      <h3 data-reveal>Experience</h3>
+      <ol class="timeline" data-reveal reversed>
+        <li>
+          <div class="yrs">2024 to now</div><div class="role">Independent</div>
+          <div class="track" aria-hidden="true"><span style="--s:62.5;--w:37.5"></span></div>
+        </li>
+        <li>
+          <div class="yrs">2021 to 2024</div><div class="role">Senior product designer, Norrsken Analytics</div>
+          <div class="track" aria-hidden="true"><span style="--s:25;--w:37.5"></span></div>
+        </li>
+        <li>
+          <div class="yrs">2019 to 2021</div><div class="role">Designer, Kartverk Studio</div>
+          <div class="track" aria-hidden="true"><span style="--s:0;--w:25"></span></div>
+          <div class="track-scale" aria-hidden="true"><span>2019</span><span>2023</span><span>2027</span></div>
+        </li>
+      </ol>
+    </div>
+    <div>
+      <h3 data-reveal>Skills</h3>
+      <ul class="skills" data-reveal>
+        <li>Interaction design</li>
+        <li>Information design</li>
+        <li>Prototyping in code</li>
+        <li>Design systems</li>
+        <li>Workshop facilitation</li>
+      </ul>
+    </div>
+    <div>
+      <h3 data-reveal>Talks</h3>
+      <ul class="talks" data-reveal>
+        <li><div class="t">Empty states are content</div><div class="w">Nordic Design Days, 2026</div></li>
+        <li><div class="t">Forms that survive a migration</div><div class="w">Front-end Gothenburg, 2025</div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="news f-surface" id="newsletter" aria-labelledby="news-title">
+  <div class="news-copy" data-reveal>
+    <p>Once a month: one problem from a current project, one chart I would redraw, and what I’m reading.</p>
+    <p>The next issue goes out on 1 November. Every issue has a one-click unsubscribe link.</p>
+  </div>
+  <div class="card" data-reveal>
+    <h2 class="h2" id="news-title">Field Notes</h2>
+    <p class="desc">A monthly email about designing with data. 1,900 readers.</p>
+    <form id="news-form" novalidate>
+      <label for="news-email">Email address</label>
+      <input id="news-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required aria-describedby="news-note">
+      <button class="btn" type="submit">Subscribe</button>
+      <p class="form-note" id="news-note" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="contact f-inv" id="contact" aria-labelledby="contact-title">
+  <div class="contact-top">
+    <h2 class="h2" id="contact-title" data-reveal>Contact</h2>
+    <p data-reveal>Write about a tool, a dataset or a talk you would like me to give. I reply within two working days.</p>
+  </div>
+  <a class="email" id="email" href="mailto:maya@lindqvist.example" data-reveal><span class="fl">maya@</span><span class="fl">lindqvist.example</span></a>
+  <div class="contact-foot" data-reveal>
+    <p>Gothenburg, Sweden<span id="local-time"></span></p>
+    <ul aria-label="Elsewhere">
+      <li><a href="#">Mastodon</a></li>
+      <li><a href="#">GitHub</a></li>
+      <li><a href="#">Dribbble</a></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot f-bg">
+  <span class="foot-name" id="foot-name" aria-hidden="true"><span class="fl">Maya <span class="l2">Lindqvist</span></span></span>
+  <div class="foot-row grid">
+    <ul class="places">
+      <li><a href="mailto:maya@lindqvist.example">maya@lindqvist.example</a></li>
+      <li>Gothenburg, Sweden</li>
+    </ul>
+    <div class="foot-links">
+      <div>
+        <h3>On this page</h3>
+        <ul><li><a href="#work">Work</a></li><li><a href="#writing">Writing</a></li><li><a href="#about">About</a></li><li><a href="#contact">Contact</a></li></ul>
+      </div>
+      <div>
+        <h3>Elsewhere</h3>
+        <ul><li><a href="#">Mastodon</a></li><li><a href="#">GitHub</a></li><li><a href="#">Dribbble</a></li></ul>
+      </div>
+      <div>
+        <h3>Reading</h3>
+        <ul><li><a href="#featured">Latest post</a></li><li><a href="#newsletter">Field Notes</a></li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="legal">
+    <p>© 2026 Maya Lindqvist</p>
+    <p>Every illustration on this page is drawn in code.</p>
+    <a href="#top">Back to top</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Theme */
+  var themeBtn = document.getElementById('theme');
+  var metaTheme = document.querySelector('meta[name="theme-color"]');
+  function applyTheme(t, save) {
+    root.setAttribute('data-theme', t);
+    themeBtn.setAttribute('aria-pressed', String(t === 'dark'));
+    metaTheme.setAttribute('content', t === 'dark' ? '#3d0012' : '#fff0f6');
+    if (save) { try { localStorage.setItem('ml-theme', t); } catch (e) {} }
+  }
+  applyTheme(root.getAttribute('data-theme') || 'dark', false);
+  themeBtn.addEventListener('click', function () {
+    applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', true);
+  });
+
+  /* Phone menu */
+  var menuBtn = document.getElementById('menu-btn');
+  var nav = document.getElementById('nav');
+  function setMenu(open) {
+    menuBtn.setAttribute('aria-expanded', String(open));
+    nav.classList.toggle('open', open);
+  }
+  menuBtn.addEventListener('click', function () { setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'); });
+  nav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && nav.classList.contains('open')) { setMenu(false); menuBtn.focus(); }
+  });
+
+  /* Availability countdown and Gothenburg time */
+  var days = Math.ceil((Date.UTC(2027, 0, 1) - Date.now()) / 864e5);
+  var cd = document.getElementById('countdown');
+  if (days > 1) cd.textContent = 'That is ' + days + ' days from today.';
+  else if (days === 1) cd.textContent = 'That is tomorrow.';
+  var lt = document.getElementById('local-time');
+  function tick() {
+    try {
+      lt.textContent = ', ' + new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' }).format(new Date()) + ' local time';
+    } catch (e) {}
+  }
+  tick(); setInterval(tick, 30000);
+
+  /* Writing filters */
+  var filterBtns = document.querySelectorAll('[data-filter]');
+  var posts = document.querySelectorAll('#posts .post');
+  var count = document.getElementById('post-count');
+  filterBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var f = b.getAttribute('data-filter');
+      filterBtns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      var n = 0;
+      posts.forEach(function (p) {
+        var show = f === 'all' || p.getAttribute('data-tag') === f;
+        p.hidden = !show;
+        p.classList.remove('entering');
+        if (show) {
+          p.classList.add('in');
+          if (!reduce) { p.style.setProperty('--n', n); void p.offsetWidth; p.classList.add('entering'); }
+          n++;
+        }
+      });
+      count.textContent = f === 'all' ? 'Six posts from 2026.' : n + (n === 1 ? ' post' : ' posts') + ' tagged ' + f + '.';
+    });
+  });
+
+  /* Tide gauge: the post's empty state, before and after */
+  var tide = {
+    mon: [['High', '05:48', 16], ['Low', '11:55', -8], ['High', '18:10', 21]],
+    tue: [['High', '06:20', 12], ['Low', '12:31', -11], ['High', '18:44', 18]],
+    wed: null,
+    thu: [['High', '07:30', 15], ['Low', '13:42', -6], ['High', '19:55', 19]]
+  };
+  var day = 'wed', ver = 'before';
+  var tb = document.getElementById('tide-body');
+  function fmt(v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' cm'; }
+  function renderTide() {
+    var rows = tide[day], html;
+    if (rows) {
+      html = '<table><thead><tr><th scope="col">Tide</th><th scope="col">Time</th><th scope="col">Level</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td><span class="bar' + (r[2] < 0 ? ' neg' : '') + '" style="width:' + Math.abs(r[2]) * 2.4 + 'px"></span>' + fmt(r[2]) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    } else if (ver === 'before') {
+      html = '<div class="empty-blank">No data</div>';
+    } else {
+      html = '<div class="empty-written"><p><strong>The gauge was offline from 03:10 to 15:40</strong> while it was serviced. Last reading 02:50, +14 cm.</p>' +
+        '<p class="pred">Predicted: high 06:52, +18 cm. Low 13:05, −9 cm.</p>' +
+        '<p>Next reading due at 16:00.</p></div>';
+    }
+    tb.innerHTML = html;
+    if (!reduce) { tb.classList.remove('swap'); void tb.offsetWidth; tb.classList.add('swap'); }
+  }
+  function bindSeg(id, attr, set) {
+    var btns = document.querySelectorAll('#' + id + ' button');
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+        set(b.getAttribute(attr));
+        renderTide();
+      });
+    });
+  }
+  bindSeg('tide-days', 'data-day', function (v) { day = v; });
+  bindSeg('tide-ver', 'data-ver', function (v) { ver = v; });
+
+  /* Newsletter: no backend yet, so it hands the request to the visitor's email app */
+  var form = document.getElementById('news-form');
+  var note = document.getElementById('news-note');
+  var input = document.getElementById('news-email');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = input.value.trim();
+    note.classList.remove('ok');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+      note.textContent = 'That address looks incomplete. Try something like you@example.com.';
+      input.setAttribute('aria-invalid', 'true');
+      input.focus();
+      return;
+    }
+    input.removeAttribute('aria-invalid');
+    note.textContent = 'Thanks. Your email app will open with the request; send it and you are on the list.';
+    note.classList.add('ok');
+    location.href = 'mailto:maya@lindqvist.example?subject=' + encodeURIComponent('Subscribe to Field Notes') +
+      '&body=' + encodeURIComponent('Please add ' + v + ' to Field Notes.');
+  });
+
+  /* Fit the email and the footer name to the width */
+  function fit(el, maxLines) {
+    var lines = el.querySelectorAll('.fl');
+    var avail = el.parentElement.clientWidth - parseFloat(getComputedStyle(el.parentElement).paddingLeft) - parseFloat(getComputedStyle(el.parentElement).paddingRight);
+    el.style.fontSize = '100px';
+    var w = 0;
+    var stacked = getComputedStyle(lines[0]).display === 'block';
+    if (stacked) {
+      lines.forEach(function (l) { l.style.display = 'inline-block'; w = Math.max(w, l.getBoundingClientRect().width); l.style.display = ''; });
+    } else {
+      lines.forEach(function (l) { w += l.getBoundingClientRect().width; });
+    }
+    el.style.fontSize = Math.floor(100 * avail / w * 0.985) + 'px';
+  }
+  function fitAll() {
+    fit(document.getElementById('email'));
+    fit(document.getElementById('foot-name'));
+  }
+  fitAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+  var rt; addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(fitAll, 120); });
+
+  /* Section entrances */
+  var groups = new Map();
+  document.querySelectorAll('[data-reveal]').forEach(function (el) {
+    var sec = el.closest('article.case, section, footer') || document.body;
+    var i = groups.get(sec) || 0;
+    el.style.setProperty('--i', Math.min(i, 6));
+    groups.set(sec, i + 1);
+  });
+  if (reduce || !('IntersectionObserver' in window)) {
+    document.querySelectorAll('[data-reveal]').forEach(function (el) { el.classList.add('in'); });
+    document.querySelectorAll('svg').forEach(function (s) { if (reduce && s.pauseAnimations) s.pauseAnimations(); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { (proxy.get(en.target) || en.target).classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px 6% 0px', threshold: 0.04 });
+    /* a clipped element never intersects, so the drawings are watched through their article */
+    var proxy = new Map();
+    document.querySelectorAll('[data-reveal]').forEach(function (el) {
+      if (el.classList.contains('case-art')) { proxy.set(el.parentElement, el); io.observe(el.parentElement); }
+      else io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>

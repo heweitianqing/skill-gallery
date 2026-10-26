@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotaline — On-call scheduling and shift handoff for engineering teams</title>
+<meta name="description" content="Rotaline builds fair on-call rotations, routes alerts to the right person, and turns every shift change into a written handoff.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.replace('no-js', 'js');</script>
+<style>
+/* ------------------------------------------------------------------
+   Design tokens
+   ------------------------------------------------------------------ */
+:root {
+  --paper: #F6F4EF;
+  --paper-raised: #FAF9F5;
+  --surface: #FFFFFF;
+  --sunk: #EEEBE3;
+  --ink: #15201B;
+  --ink-hover: #27342E;
+  --ink-2: #47524C;
+  --ink-3: #5B655F;
+  --line: #DFDBD1;
+  --line-strong: #C7C1B4;
+  --signal: #E8590C;
+  --signal-text: #B4440B;
+  --signal-tint: #FCE6D8;
+  --ok: #22694B;
+  --ok-tint: #DCEDE3;
+  --danger: #B3261E;
+  --on-ink: #F6F4EF;
+  --on-ink-2: #B9C2BC;
+  --on-ink-line: rgba(246, 244, 239, 0.16);
+
+  /* Person colors used in the schedule illustration */
+  --p-ana: #FBDCC8;   --p-ana-edge: #E8590C;
+  --p-jonah: #D3E6DA; --p-jonah-edge: #2F7D5B;
+  --p-mei: #DAE2F0;   --p-mei-edge: #4A6FA5;
+  --p-tomas: #EEE3C4; --p-tomas-edge: #A88420;
+  --p-priya: #E8E4DA; --p-priya-edge: #6E6758;
+
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: "IBM Plex Serif", Georgia, serif;
+
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  --container: 1200px;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --header-h: 4rem;
+  --section-y: clamp(4rem, 8vw, 6rem);
+}
+
+/* ------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 1rem); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, p, ul, ol, figure, blockquote, dl, dd { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; text-wrap: balance; }
+a { color: inherit; }
+svg { display: block; flex-shrink: 0; }
+img, svg { max-width: 100%; }
+button, input { font: inherit; color: inherit; }
+
+:focus-visible { outline: 2px solid var(--signal-text); outline-offset: 2px; border-radius: var(--r-sm); }
+
+.sr-only {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: 1rem; top: -3rem; z-index: 100;
+  background: var(--ink); color: var(--on-ink); padding: 0.5rem 1rem; border-radius: var(--r-md);
+  text-decoration: none; font-weight: 600;
+}
+.skip-link:focus { top: 0.75rem; }
+
+.container { width: 100%; max-width: calc(var(--container) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter); }
+.section { padding-block: var(--section-y); }
+.section + .section { border-top: 1px solid var(--line); }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--signal-text);
+}
+.section-title { font-size: clamp(1.75rem, 3.2vw, 2.5rem); margin-top: 0.75rem; }
+.section-intro { margin-top: 1rem; color: var(--ink-2); font-size: 1.0625rem; max-width: 34rem; }
+
+/* ------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 2.5rem; padding: 0 1rem;
+  border: 1px solid transparent; border-radius: var(--r-md);
+  font-size: 0.9375rem; font-weight: 600; line-height: 1; text-decoration: none; white-space: nowrap;
+  cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.btn-lg { min-height: 3rem; padding: 0 1.25rem; font-size: 1rem; }
+.btn-sm { min-height: 2.25rem; padding: 0 0.875rem; font-size: 0.875rem; }
+.btn-block { width: 100%; }
+.btn-primary { background: var(--ink); color: var(--on-ink); }
+.btn-primary:hover { background: var(--ink-hover); }
+.btn-secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn-secondary:hover { background: var(--surface); border-color: var(--ink-3); }
+.btn[disabled] { opacity: 0.7; cursor: progress; }
+.btn .arrow { transition: transform 0.15s ease; }
+.btn:hover .arrow { transform: translateY(2px); }
+
+/* ------------------------------------------------------------------
+   Header
+   ------------------------------------------------------------------ */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(246, 244, 239, 0.92);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.header-inner { display: flex; align-items: center; gap: 2rem; height: var(--header-h); }
+.wordmark {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-weight: 700; font-size: 1.1875rem; letter-spacing: -0.02em; text-decoration: none;
+}
+.nav-desktop ul { display: flex; gap: 0.25rem; }
+.nav-desktop a, .link-signin {
+  display: inline-block; padding: 0.5rem 0.75rem; border-radius: var(--r-md);
+  font-size: 0.9375rem; font-weight: 500; color: var(--ink-2); text-decoration: none;
+}
+.nav-desktop a:hover, .link-signin:hover { color: var(--ink); background: var(--sunk); }
+.header-actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+.nav-toggle {
+  display: none; align-items: center; justify-content: center;
+  width: 2.5rem; height: 2.5rem; margin-right: -0.5rem;
+  background: transparent; border: 0; border-radius: var(--r-md); cursor: pointer;
+}
+.nav-toggle:hover { background: var(--sunk); }
+.nav-toggle .icon-close { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-open { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+.mobile-nav { display: none; border-top: 1px solid var(--line); background: var(--paper); }
+.mobile-nav ul { padding-block: 0.5rem; }
+.mobile-nav li + li { border-top: 1px solid var(--line); }
+.mobile-nav a.mobile-link {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.875rem 0; font-size: 1.0625rem; font-weight: 500; text-decoration: none;
+}
+.mobile-nav-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding-bottom: 1.25rem; }
+
+@media (max-width: 900px) {
+  .nav-desktop, .link-signin { display: none; }
+  .header-actions { gap: 0.25rem; }
+  .js .nav-toggle { display: inline-flex; }
+  /* Without JS the menu is always shown, so navigation stays reachable */
+  .no-js .mobile-nav { display: block; }
+  .js .mobile-nav.is-open { display: block; }
+}
+@media (max-width: 359px) {
+  .header-actions .btn { display: none; }
+  .js .nav-toggle { margin-left: auto; }
+}
+
+/* ------------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------------ */
+.hero { padding-top: clamp(3rem, 7vw, 5.5rem); padding-bottom: clamp(3rem, 6vw, 5rem); }
+.hero-top {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 2rem 4rem; align-items: end;
+}
+.hero h1 { font-size: clamp(2.375rem, 5.4vw, 4rem); line-height: 1.04; letter-spacing: -0.035em; margin-top: 1.25rem; }
+.hero h1 .h1-line { display: block; }
+.hero h1 .h1-muted { color: var(--ink-3); }
+.hero-lede { font-size: 1.125rem; color: var(--ink-2); line-height: 1.55; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin-top: 1.25rem;
+  font-size: 0.875rem; color: var(--ink-3);
+}
+.hero-meta li { display: inline-flex; align-items: center; gap: 0.375rem; }
+.hero-meta svg { color: var(--ok); }
+.pulse { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--signal); box-shadow: 0 0 0 3px var(--signal-tint); }
+
+@media (max-width: 960px) {
+  .hero-top { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Schedule illustration ---------- */
+.app {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(21, 32, 27, 0.04), 0 30px 60px -36px rgba(21, 32, 27, 0.35);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+.app-bar {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.625rem 1rem; border-bottom: 1px solid var(--line); background: var(--paper-raised);
+}
+.app-dots { display: flex; gap: 0.375rem; }
+.app-dots span { width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--line-strong); }
+.app-crumbs { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; min-width: 0; white-space: nowrap; }
+.app-crumbs .sep { color: var(--line-strong); font-weight: 400; }
+.app-crumbs .muted { color: var(--ink-3); font-weight: 500; }
+.app-bar-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+.app-seg { display: flex; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.app-seg span { padding: 0.25rem 0.625rem; color: var(--ink-3); }
+.app-seg span + span { border-left: 1px solid var(--line); }
+.app-seg .on { background: var(--ink); color: var(--on-ink); }
+.app-range { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-2); white-space: nowrap; }
+
+.app-now {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0.375rem 1rem;
+  padding: 0.625rem 1rem; border-bottom: 1px solid var(--line);
+}
+.app-now .label { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+.live-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-tint); }
+.app-now .who { color: var(--ink-2); }
+.app-now .who b { color: var(--ink); font-weight: 600; }
+.app-now .tz { margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-3); }
+
+.app-body { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; }
+.app-side { border-left: 1px solid var(--line); background: var(--paper-raised); padding: 1rem; display: grid; gap: 0.75rem; align-content: start; }
+
+.sched {
+  --label-w: 7.5rem;
+  display: grid;
+  grid-template-columns: var(--label-w) repeat(7, minmax(0, 1fr));
+  grid-template-rows: auto repeat(3, minmax(3.75rem, 1fr)) auto;
+  position: relative;
+}
+.sched-cols { grid-row: 1 / 5; grid-column: 2 / -1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.sched-cols span { border-left: 1px solid var(--line); }
+.sched-cols span.weekend { background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(21,32,27,0.025) 6px 7px); }
+.sched-today { grid-row: 1 / 5; grid-column: 5; background: rgba(252, 230, 216, 0.45); }
+.sched-now { grid-row: 1 / 5; grid-column: 5; position: relative; z-index: 1; pointer-events: none; }
+.sched-now::before { content: ""; position: absolute; top: 2.25rem; bottom: 0; left: 42%; width: 2px; background: var(--signal); }
+.sched-now::after { content: ""; position: absolute; top: calc(2.25rem - 4px); left: calc(42% - 3px); width: 8px; height: 8px; border-radius: 50%; background: var(--signal); }
+
+.sched-day {
+  grid-row: 1; padding: 0.625rem 0.5rem; border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-3); position: relative; z-index: 1;
+  display: flex; gap: 0.25rem; white-space: nowrap;
+}
+.sched-day.today { color: var(--signal-text); font-weight: 500; }
+.d2 { grid-column: 2; } .d3 { grid-column: 3; } .d4 { grid-column: 4; } .d5 { grid-column: 5; }
+.d6 { grid-column: 6; } .d7 { grid-column: 7; } .d8 { grid-column: 8; }
+.sched-corner { grid-row: 1; grid-column: 1; border-bottom: 1px solid var(--line); }
+
+.lane {
+  grid-column: 1; padding: 0 1rem; display: flex; flex-direction: column; justify-content: center;
+  border-top: 1px solid var(--line); position: relative; z-index: 1; background: var(--surface);
+}
+.lane b { font-weight: 600; }
+.lane small { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-3); }
+.lane-line { grid-column: 2 / -1; border-top: 1px solid var(--line); }
+.sched-foot {
+  grid-row: 5; grid-column: 1 / -1; border-top: 1px solid var(--line); background: var(--surface);
+  padding: 1rem; display: grid; grid-template-columns: var(--label-w) minmax(0, 1fr); align-items: center; gap: 0.75rem 0;
+}
+.sched-foot .lane-title { padding-left: 0; }
+.sched-foot .lane-title b { display: block; font-weight: 600; }
+.sched-foot .lane-title small { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-3); }
+.fair { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.fair li { display: grid; gap: 0.375rem; }
+.fair-top { display: flex; justify-content: space-between; gap: 0.5rem; white-space: nowrap; }
+.fair-top span:last-child { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-2); }
+.fair-meta { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fair-bar { height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden; }
+.fair-bar i { display: block; height: 100%; border-radius: 3px; }
+.fair-bar .b-ana { width: 92%; background: var(--p-ana-edge); }
+.fair-bar .b-jonah { width: 96%; background: var(--p-jonah-edge); }
+.fair-bar .b-mei { width: 90%; background: var(--p-mei-edge); }
+.fair-bar .b-tomas { width: 94%; background: var(--p-tomas-edge); }
+.r2 { grid-row: 2; } .r3 { grid-row: 3; } .r4 { grid-row: 4; }
+
+.shift {
+  position: relative; z-index: 2;
+  margin: 0.5rem 0.25rem; padding: 0 0.625rem;
+  display: flex; flex-direction: column; justify-content: center; min-width: 0;
+  border-radius: var(--r-sm); border-left: 3px solid;
+  white-space: nowrap; overflow: hidden;
+  align-self: center; height: 2.75rem;
+}
+.shift b, .shift small { overflow: hidden; text-overflow: ellipsis; }
+.shift b { font-weight: 600; }
+.shift small { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-2); }
+.shift .short { display: none; }
+.shift.thin { height: 1.75rem; }
+.s-ana   { background: var(--p-ana);   border-color: var(--p-ana-edge); }
+.s-jonah { background: var(--p-jonah); border-color: var(--p-jonah-edge); }
+.s-mei   { background: var(--p-mei);   border-color: var(--p-mei-edge); }
+.s-tomas { background: var(--p-tomas); border-color: var(--p-tomas-edge); }
+.s-priya { background: var(--p-priya); border-color: var(--p-priya-edge); }
+.s-swap  { background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba(74,111,165,0.18) 5px 6px); border-left-style: dashed; }
+.c2-5 { grid-column: 2 / 5; } .c5-7 { grid-column: 5 / 7; } .c7-8 { grid-column: 7 / 8; }
+.c8-9 { grid-column: 8 / 9; } .c2-6 { grid-column: 2 / 6; } .c6-9 { grid-column: 6 / 9; } .c2-9 { grid-column: 2 / 9; }
+
+.mini-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 0.875rem; }
+.mini-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.mini-kicker { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.mini-title { font-weight: 600; font-size: 0.875rem; margin-top: 0.375rem; display: flex; align-items: center; gap: 0.375rem; }
+.mini-title .to { color: var(--ink-3); font-weight: 400; }
+.tag {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.125rem 0.375rem; border-radius: var(--r-sm);
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 500; white-space: nowrap;
+}
+.tag-ok { background: var(--ok-tint); color: var(--ok); }
+.tag-warn { background: var(--signal-tint); color: var(--signal-text); }
+.tag-muted { background: var(--sunk); color: var(--ink-2); }
+.inc-list { margin-top: 0.625rem; border-top: 1px solid var(--line); }
+.inc-list li { display: grid; grid-template-columns: auto 1fr auto; gap: 0.5rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
+.inc-id { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-3); }
+.inc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini-note { margin-top: 0.625rem; padding-left: 0.625rem; border-left: 2px solid var(--line-strong); color: var(--ink-2); }
+.esc-list { margin-top: 0.625rem; display: grid; gap: 0.375rem; }
+.esc-list li { display: grid; grid-template-columns: 1.25rem 1fr auto; gap: 0.5rem; align-items: center; }
+.esc-step { width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 1px solid var(--line-strong); display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.625rem; color: var(--ink-2); }
+.esc-list li.done .esc-step { background: var(--ok); border-color: var(--ok); color: #fff; }
+.esc-list li.skip { color: var(--ink-3); }
+
+@media (max-width: 1080px) {
+  .app-body { grid-template-columns: minmax(0, 1fr); }
+  .app-side { border-left: 0; border-top: 1px solid var(--line); grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .app-seg, .app-dots, .app-now .tz, .app-crumbs .muted, .app-crumbs .sep { display: none; }
+  .app-side { grid-template-columns: minmax(0, 1fr); }
+  .sched { --label-w: 4.75rem; grid-template-rows: auto repeat(3, 3.25rem); }
+  .lane { padding: 0 0.625rem; }
+  .lane small { display: none; }
+  .sched-day { flex-direction: column; gap: 0; align-items: center; padding: 0.5rem 0.125rem; font-size: 0.6875rem; }
+  .sched-now::before { top: 2.75rem; }
+  .sched-now::after { top: calc(2.75rem - 4px); }
+  .shift { margin: 0.5rem 0.125rem; padding: 0 0.375rem; }
+  .shift small { display: none; }
+  .shift .full { display: none; }
+  .shift .short { display: block; }
+  .shift { height: 2.25rem; }
+  .shift.thin { height: 1.5rem; }
+  .sched-foot { grid-template-columns: minmax(0, 1fr); padding: 0.875rem 0.625rem; }
+  .fair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1rem; }
+}
+
+/* ------------------------------------------------------------------
+   Customer strip
+   ------------------------------------------------------------------ */
+.customers { padding-block: 2.5rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.customers-inner { display: flex; align-items: center; gap: 1.5rem 3rem; }
+.customers-label { font-weight: 400; letter-spacing: 0; font-size: 0.875rem; color: var(--ink-3); max-width: 13rem; line-height: 1.4; flex-shrink: 0; }
+.logo-list { flex: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 2rem; color: var(--ink-2); }
+.logo { display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; font-size: 1.125rem; }
+.logo-northgate { font-weight: 600; letter-spacing: -0.01em; }
+.logo-plinth { font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; font-size: 0.9375rem; }
+.logo-corvid { font-family: var(--font-mono); font-weight: 500; font-size: 1rem; letter-spacing: -0.02em; }
+.logo-halden { font-family: var(--font-serif); font-weight: 500; font-size: 1.1875rem; }
+.logo-murmur { font-family: var(--font-serif); font-style: italic; font-weight: 500; font-size: 1.25rem; }
+@media (max-width: 900px) {
+  .customers-inner { flex-direction: column; align-items: flex-start; }
+  .customers-label { max-width: none; }
+  .logo-list { justify-content: flex-start; gap: 1rem 1.75rem; }
+}
+
+/* ------------------------------------------------------------------
+   Features
+   ------------------------------------------------------------------ */
+.split { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 2.5rem 4rem; }
+.split-head { align-self: start; position: sticky; top: calc(var(--header-h) + 2rem); }
+.feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3rem; }
+.feature { padding-block: 1.75rem; border-top: 1px solid var(--line); }
+.feature:nth-child(-n+2) { border-top-color: var(--ink); }
+.feature-icon {
+  width: 2.5rem; height: 2.5rem; border-radius: var(--r-md);
+  display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line);
+  color: var(--ink);
+}
+.feature h3 { font-size: 1.125rem; margin-top: 1rem; }
+.feature p { margin-top: 0.5rem; color: var(--ink-2); }
+@media (max-width: 960px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .split-head { position: static; }
+}
+@media (max-width: 640px) {
+  .feature-grid { grid-template-columns: minmax(0, 1fr); }
+  .feature:nth-child(2) { border-top-color: var(--line); }
+}
+
+/* ------------------------------------------------------------------
+   How it works
+   ------------------------------------------------------------------ */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem 2rem; margin-top: 3rem; counter-reset: step; }
+.step { position: relative; padding-top: 1.75rem; display: flex; flex-direction: column; }
+.step::before { content: ""; position: absolute; top: 0; left: 0; right: -2rem; height: 2px; background: var(--line-strong); }
+.step:last-child::before { right: 0; }
+.step::after { content: ""; position: absolute; top: -5px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--paper); border: 2px solid var(--ink); }
+.step-num { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--signal-text); font-weight: 500; }
+.step h3 { font-size: 1.25rem; margin-top: 0.5rem; }
+.step p { margin-top: 0.5rem; color: var(--ink-2); }
+.step-art { margin-top: 1.5rem; flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 1rem; font-size: 0.8125rem; line-height: 1.45; }
+.code { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-2); white-space: pre; overflow-x: auto; margin: 0; }
+.code .k { color: var(--signal-text); }
+.code .m { color: var(--ink); font-weight: 500; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.875rem; padding-top: 0.875rem; border-top: 1px solid var(--line); }
+.policy li { display: grid; grid-template-columns: 1.5rem 1fr auto; gap: 0.5rem; align-items: center; padding: 0.5rem 0; }
+.policy li + li { border-top: 1px dashed var(--line); }
+.policy .when { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-3); }
+.timeline li { display: grid; grid-template-columns: 3rem 1fr; gap: 0.5rem; padding: 0.375rem 0; }
+.timeline time { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-3); }
+.timeline .hl { font-weight: 600; }
+@media (max-width: 900px) {
+  .steps { grid-template-columns: minmax(0, 1fr); }
+  .step::before { right: 0; }
+}
+
+/* ------------------------------------------------------------------
+   Results
+   ------------------------------------------------------------------ */
+.results { background: var(--ink); color: var(--on-ink); }
+.results .eyebrow { color: #F4A375; }
+.results .section-intro { color: var(--on-ink-2); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; }
+.stat { border-top: 1px solid var(--on-ink-line); padding-top: 1.5rem; position: relative; }
+.stat::before { content: ""; position: absolute; top: -1px; left: 0; width: 2.5rem; height: 2px; background: var(--signal); }
+.stat-figure { font-size: clamp(2.75rem, 5.5vw, 4.25rem); font-weight: 600; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat-figure .unit { font-size: 0.5em; letter-spacing: -0.01em; margin-left: 0.125rem; }
+.stat-label { margin-top: 0.75rem; color: var(--on-ink-2); font-size: 1rem; }
+.results-foot { margin-top: 2.5rem; font-size: 0.8125rem; color: var(--on-ink-2); }
+@media (max-width: 640px) {
+  .stats { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+}
+
+/* ------------------------------------------------------------------
+   Testimonials
+   ------------------------------------------------------------------ */
+.quotes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem; margin-top: 3rem; }
+.quote { display: flex; flex-direction: column; border-top: 1px solid var(--ink); padding-top: 1.5rem; }
+.quote-mark { color: var(--signal); }
+.quote blockquote { margin-top: 1rem; font-size: 1.125rem; line-height: 1.55; flex: 1; }
+.quote figcaption { margin-top: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; line-height: 1.4; }
+.av-ana { background: var(--p-ana); } .av-jonah { background: var(--p-jonah); } .av-mei { background: var(--p-mei); }
+.avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 0.875rem; flex-shrink: 0; }
+.quote-name { font-weight: 600; display: block; }
+.quote-role { color: var(--ink-3); }
+@media (max-width: 900px) {
+  .quotes { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+}
+
+/* ------------------------------------------------------------------
+   Pricing
+   ------------------------------------------------------------------ */
+.pricing-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem 2rem; flex-wrap: wrap; }
+.billing-toggle { border: 0; padding: 0; margin: 0; display: inline-flex; background: var(--sunk); border-radius: var(--r-md); padding: 0.25rem; position: relative; }
+.billing-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.billing-toggle label {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; border-radius: var(--r-sm); cursor: pointer;
+  font-size: 0.9375rem; font-weight: 500; color: var(--ink-2); white-space: nowrap;
+}
+.billing-toggle label:hover { color: var(--ink); }
+.billing-toggle input:checked + label { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(21, 32, 27, 0.12); }
+.billing-toggle input:focus-visible + label { outline: 2px solid var(--signal-text); outline-offset: 2px; }
+.save { font-family: var(--font-mono); font-size: 0.6875rem; padding: 0.125rem 0.375rem; border-radius: var(--r-sm); background: var(--ok-tint); color: var(--ok); }
+
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; margin-top: 3rem; align-items: stretch; }
+.plan { position: relative; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 2rem; }
+.plan-featured { border: 2px solid var(--ink); padding: calc(2rem - 1px); }
+.plan-badge {
+  position: absolute; top: -0.8125rem; left: calc(2rem - 1px);
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  padding: 0.25rem 0.625rem; border-radius: var(--r-sm);
+  background: var(--signal); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.plan h3 { font-size: 1.25rem; }
+.plan-desc { margin-top: 0.375rem; color: var(--ink-2); font-size: 0.9375rem; min-height: 3em; }
+.price { margin-top: 1.5rem; display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.price-amount { font-size: 3rem; font-weight: 600; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.price-unit { color: var(--ink-2); font-size: 0.9375rem; }
+.price-note { margin-top: 0.5rem; font-size: 0.8125rem; color: var(--ink-3); min-height: 1.3em; }
+.plan .btn { margin-top: 1.5rem; }
+.plan-list { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); display: grid; gap: 0.75rem; font-size: 0.9375rem; }
+.plan-list li { display: grid; grid-template-columns: 1.25rem 1fr; gap: 0.625rem; align-items: start; }
+.plan-list svg { margin-top: 0.1875rem; color: var(--ok); }
+.plan-list .lead { display: block; font-weight: 600; grid-template-columns: none; }
+.pricing-foot { margin-top: 2rem; font-size: 0.875rem; color: var(--ink-3); }
+@media (max-width: 960px) {
+  .plans { grid-template-columns: minmax(0, 1fr); max-width: 32rem; gap: 2rem; }
+  .plan-desc { min-height: 0; }
+}
+
+/* ------------------------------------------------------------------
+   FAQ
+   ------------------------------------------------------------------ */
+.faq-list { border-top: 1px solid var(--ink); }
+.faq-item { border-bottom: 1px solid var(--line); }
+.faq-item summary {
+  display: flex; justify-content: space-between; align-items: center; gap: 1.5rem;
+  padding: 1.25rem 0; cursor: pointer; list-style: none;
+  font-size: 1.0625rem; font-weight: 600; line-height: 1.4;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:hover { color: var(--signal-text); }
+.faq-icon { width: 1.75rem; height: 1.75rem; border-radius: 50%; border: 1px solid var(--line-strong); display: grid; place-items: center; flex-shrink: 0; color: var(--ink); }
+.faq-icon .v { transition: transform 0.2s ease, opacity 0.2s ease; transform-box: fill-box; transform-origin: center; }
+.faq-item[open] .faq-icon .v { transform: scaleY(0); opacity: 0; }
+.faq-item[open] .faq-icon { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.faq-answer { padding: 0 3.25rem 1.5rem 0; color: var(--ink-2); max-width: 44rem; }
+.faq-contact { margin-top: 1.5rem; color: var(--ink-2); font-size: 0.9375rem; }
+.faq-contact a { color: var(--ink); font-weight: 600; text-underline-offset: 3px; }
+@media (max-width: 640px) { .faq-answer { padding-right: 0; } }
+
+/* ------------------------------------------------------------------
+   Final CTA
+   ------------------------------------------------------------------ */
+.final-cta {
+  background-color: var(--sunk);
+  background-image:
+    linear-gradient(to right, rgba(21, 32, 27, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(21, 32, 27, 0.05) 1px, transparent 1px);
+  background-size: 4rem 3rem;
+  border-top: 1px solid var(--line);
+}
+.final-inner { max-width: 44rem; }
+.final-cta h2 { font-size: clamp(2rem, 4.2vw, 3.25rem); line-height: 1.08; letter-spacing: -0.03em; }
+.final-cta h2 .soft { display: block; color: var(--ink-3); }
+.final-cta p.sub { margin-top: 1rem; color: var(--ink-2); font-size: 1.0625rem; }
+.signup { margin-top: 2rem; }
+.signup label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; }
+.signup-row { display: flex; gap: 0.75rem; }
+.signup input {
+  flex: 1; min-width: 0; min-height: 3rem; padding: 0 1rem;
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md);
+  font-size: 1rem;
+}
+.signup input::placeholder { color: var(--ink-3); }
+.signup input:hover { border-color: var(--ink-3); }
+.signup input:focus-visible { outline: 2px solid var(--signal-text); outline-offset: 1px; border-color: var(--ink); }
+.signup input[aria-invalid="true"] { border-color: var(--danger); }
+.signup-hint { margin-top: 0.625rem; font-size: 0.8125rem; color: var(--ink-3); }
+.signup-error { margin-top: 0.625rem; font-size: 0.875rem; color: var(--danger); font-weight: 500; display: flex; gap: 0.375rem; align-items: center; }
+.signup-error[hidden] { display: none; }
+.signup-success {
+  margin-top: 2rem; display: flex; gap: 0.75rem; align-items: flex-start;
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--ok);
+  border-radius: var(--r-md); padding: 1rem 1.25rem;
+}
+.signup-success svg { color: var(--ok); margin-top: 0.1875rem; }
+.signup-success b { display: block; }
+.signup-success span { color: var(--ink-2); font-size: 0.9375rem; }
+@media (max-width: 520px) {
+  .signup-row { flex-direction: column; }
+  .signup .btn { width: 100%; }
+}
+
+/* ------------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------------ */
+.site-footer { border-top: 1px solid var(--line); padding-top: 4rem; padding-bottom: 2rem; }
+.footer-grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr)); gap: 2.5rem 2rem; }
+.footer-brand p { margin-top: 0.75rem; color: var(--ink-2); font-size: 0.9375rem; max-width: 18rem; }
+.footer-title { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0; color: var(--ink); }
+.footer-col ul { margin-top: 1rem; display: grid; gap: 0.625rem; }
+.footer-col a { color: var(--ink-2); text-decoration: none; font-size: 0.9375rem; }
+.footer-col a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.footer-bottom {
+  margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+  font-size: 0.875rem; color: var(--ink-3);
+}
+.status-line { display: inline-flex; align-items: center; gap: 0.5rem; }
+@media (max-width: 900px) {
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footer-brand { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body id="top">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="#top" class="wordmark" aria-label="Rotaline, back to top">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <rect width="26" height="26" rx="6" fill="#15201B"/>
+        <path d="M7 13a6 6 0 0 1 10.2-4.3" fill="none" stroke="#E8590C" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M19 13a6 6 0 0 1-10.2 4.3" fill="none" stroke="#F6F4EF" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="17.6" cy="8.4" r="1.7" fill="#E8590C"/>
+        <circle cx="8.4" cy="17.6" r="1.7" fill="#F6F4EF"/>
+      </svg>
+      <span>Rotaline</span>
+    </a>
+
+    <nav class="nav-desktop" aria-label="Primary">
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a href="#" class="link-signin">Sign in</a>
+      <a href="#start" class="btn btn-primary btn-sm">Start free trial</a>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="mobile-nav">
+        <span class="sr-only">Menu</span>
+        <svg class="icon-open" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-nav" class="mobile-nav">
+    <nav class="container" aria-label="Mobile">
+      <ul>
+        <li><a class="mobile-link" href="#features">Features</a></li>
+        <li><a class="mobile-link" href="#how-it-works">How it works</a></li>
+        <li><a class="mobile-link" href="#pricing">Pricing</a></li>
+        <li><a class="mobile-link" href="#faq">FAQ</a></li>
+      </ul>
+      <div class="mobile-nav-actions">
+        <a href="#" class="btn btn-secondary">Sign in</a>
+        <a href="#start" class="btn btn-primary">Start free trial</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero-top">
+        <div>
+          <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>On-call scheduling and shift handoff</p>
+          <h1 id="hero-title"><span class="h1-line">Know who's on call.</span> <span class="h1-line h1-muted">Hand off without losing the thread.</span></h1>
+        </div>
+        <div>
+          <p class="hero-lede">Rotaline builds fair on-call rotations, routes alerts to the right person, and turns every shift change into a written handoff.</p>
+          <div class="cta-row">
+            <a href="#start" class="btn btn-primary btn-lg">Start free trial</a>
+            <a href="#how-it-works" class="btn btn-secondary btn-lg">See how it works
+              <svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>
+            </a>
+          </div>
+          <ul class="hero-meta">
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>14-day trial</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>No credit card</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Free for up to 5 users</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Product illustration: schedule view (HTML/CSS) -->
+      <div class="app" role="img" aria-label="Rotaline schedule view for the payments-api service, week of October 26. On call now: Jonah Park as primary and Mei Chen as secondary. Ana Ruiz covered primary Monday to Wednesday, Mei Chen covers Saturday through an approved swap, and Tomás Leal takes secondary Friday to Sunday. A handoff note from Ana Ruiz to Jonah Park carries over two open incidents, and an alert was acknowledged by Jonah Park in 3 minutes.">
+        <div class="app-bar">
+          <div class="app-dots"><span></span><span></span><span></span></div>
+          <div class="app-crumbs"><span>payments-api</span><span class="sep">/</span><span class="muted">On-call schedule</span></div>
+          <div class="app-bar-right">
+            <div class="app-seg"><span>Day</span><span class="on">Week</span><span>Month</span></div>
+            <span class="app-range">Oct 26 – Nov 1</span>
+          </div>
+        </div>
+
+        <div class="app-now">
+          <span class="label"><span class="live-dot"></span>On call now</span>
+          <span class="who"><b>Jonah Park</b> primary · <b>Mei Chen</b> secondary</span>
+          <span class="tz">Thu 29 · 10:41 UTC</span>
+        </div>
+
+        <div class="app-body">
+          <div class="sched">
+            <div class="sched-cols"><span></span><span></span><span></span><span></span><span></span><span class="weekend"></span><span class="weekend"></span></div>
+            <div class="sched-today"></div>
+            <div class="sched-corner"></div>
+            <div class="sched-day d2"><span>Mon</span><span>26</span></div>
+            <div class="sched-day d3"><span>Tue</span><span>27</span></div>
+            <div class="sched-day d4"><span>Wed</span><span>28</span></div>
+            <div class="sched-day today d5"><span>Thu</span><span>29</span></div>
+            <div class="sched-day d6"><span>Fri</span><span>30</span></div>
+            <div class="sched-day d7"><span>Sat</span><span>31</span></div>
+            <div class="sched-day d8"><span>Sun</span><span>1</span></div>
+
+            <div class="lane r2"><b>Primary</b><small>Step 1 · push</small></div>
+            <div class="lane r3"><b>Secondary</b><small>Step 2 · SMS</small></div>
+            <div class="lane r4"><b>Lead</b><small>Step 3 · call</small></div>
+            <div class="lane-line r3"></div>
+            <div class="lane-line r4"></div>
+
+            <div class="shift s-ana r2 c2-5"><b><span class="full">Ana Ruiz</span><span class="short">AR</span></b><small>Mon 09:00 – Thu 09:00</small></div>
+            <div class="shift s-jonah r2 c5-7"><b><span class="full">Jonah Park</span><span class="short">JP</span></b><small>Thu 09:00 – Sat 09:00</small></div>
+            <div class="shift s-mei s-swap r2 c7-8"><b><span class="full">Mei Chen</span><span class="short">MC</span></b><small>Swap</small></div>
+            <div class="shift s-jonah r2 c8-9"><b><span class="full">Jonah Park</span><span class="short">JP</span></b><small>Sun</small></div>
+
+            <div class="shift s-mei r3 c2-6"><b><span class="full">Mei Chen</span><span class="short">MC</span></b><small>Mon 09:00 – Fri 09:00</small></div>
+            <div class="shift s-tomas r3 c6-9"><b><span class="full">Tomás Leal</span><span class="short">TL</span></b><small>Fri 09:00 – Mon 09:00</small></div>
+
+            <div class="shift s-priya thin r4 c2-9"><b><span class="full">Priya Shah · Team lead</span><span class="short">Priya Shah</span></b></div>
+
+            <div class="sched-now"></div>
+
+            <div class="sched-foot">
+              <div class="lane-title"><b>Fairness</b><small>Hours in October</small></div>
+              <ul class="fair">
+                <li><div class="fair-top"><span>Ana Ruiz</span><span>166h</span></div><div class="fair-bar"><i class="b-ana"></i></div><span class="fair-meta">4 nights · 1 weekend</span></li>
+                <li><div class="fair-top"><span>Jonah Park</span><span>172h</span></div><div class="fair-bar"><i class="b-jonah"></i></div><span class="fair-meta">5 nights · 1 weekend</span></li>
+                <li><div class="fair-top"><span>Mei Chen</span><span>162h</span></div><div class="fair-bar"><i class="b-mei"></i></div><span class="fair-meta">4 nights · 1 weekend</span></li>
+                <li><div class="fair-top"><span>Tomás Leal</span><span>169h</span></div><div class="fair-bar"><i class="b-tomas"></i></div><span class="fair-meta">4 nights · 1 weekend</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="app-side">
+            <div class="mini-card">
+              <div class="mini-head"><span class="mini-kicker">Handoff · Thu 09:00</span><span class="tag tag-ok">Read</span></div>
+              <p class="mini-title">Ana Ruiz <span class="to">→</span> Jonah Park</p>
+              <ul class="inc-list">
+                <li><span class="inc-id">INC-482</span><span class="inc-name">Elevated 5xx on /charge</span><span class="tag tag-warn">Open</span></li>
+                <li><span class="inc-id">INC-479</span><span class="inc-name">Webhook retries delayed</span><span class="tag tag-muted">Fixing</span></li>
+              </ul>
+              <p class="mini-note">Rolled back 4.12.1 at 02:10. Watch error rate after the EU morning peak.</p>
+            </div>
+            <div class="mini-card">
+              <div class="mini-head"><span class="mini-kicker">Alert · 10:14</span><span class="tag tag-ok">Acked in 3m</span></div>
+              <p class="mini-title">p99 latency above 800 ms</p>
+              <ul class="esc-list">
+                <li class="done"><span class="esc-step">1</span><span>Push → Jonah Park</span><span class="inc-id">10:14</span></li>
+                <li class="skip"><span class="esc-step">2</span><span>SMS → Mei Chen</span><span class="inc-id">not needed</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Customer strip -->
+  <section class="customers" aria-labelledby="customers-label">
+    <div class="container customers-inner">
+      <h2 id="customers-label" class="customers-label">On-call teams at these companies use Rotaline</h2>
+      <ul class="logo-list">
+        <li class="logo logo-northgate">
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2l8 15H2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 9v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Northgate Labs
+        </li>
+        <li class="logo logo-plinth">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="11" width="14" height="5" fill="currentColor"/><rect x="5" y="3" width="8" height="7" fill="currentColor" opacity=".55"/></svg>
+          Plinth
+        </li>
+        <li class="logo logo-corvid">
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 14c3-1 5-4 6-8 2 2 5 3 8 3-2 3-5 5-9 5z" fill="currentColor"/></svg>
+          Corvid Systems
+        </li>
+        <li class="logo logo-halden">
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8l7-5 7 5M4 8v8M8 8v8M12 8v8M16 8v8M2.5 17h15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Halden Bank
+        </li>
+        <li class="logo logo-murmur">
+          <svg width="22" height="16" viewBox="0 0 22 16" aria-hidden="true"><path d="M1 8c2-4 4-4 6 0s4 4 6 0 4-4 6 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Murmur
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="section" aria-labelledby="features-title">
+    <div class="container split">
+      <div class="split-head">
+        <p class="eyebrow">Features</p>
+        <h2 id="features-title" class="section-title">Everything a rotation needs. Nothing it doesn't.</h2>
+        <p class="section-intro">Built for teams of 5 to 50 who have outgrown the shared spreadsheet and the "who's got tonight?" thread, but don't need a full incident-management suite.</p>
+      </div>
+      <ul class="feature-grid">
+        <li class="feature">
+          <span class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.7-5.6M20 12a8 8 0 0 1-13.7 5.6"/><path d="M18 3v4h-4M6 21v-4h4"/></svg></span>
+          <h3>Rotation builder</h3>
+          <p>Set up daily, weekly or follow-the-sun rotations across time zones. Rotaline handles daylight saving changes so nobody inherits a surprise 3 a.m. shift.</p>
+        </li>
+        <li class="feature">
+          <span class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"/></svg></span>
+          <h3>Swaps and overrides</h3>
+          <p>Request a swap in two clicks. The team lead approves it straight from email or chat, and the schedule updates for everyone.</p>
+        </li>
+        <li class="feature">
+          <span class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h5v-5h5v-5h5V4"/><path d="M15 4h3v3"/></svg></span>
+          <h3>Escalation policies</h3>
+          <p>Multi-step escalation by push notification, SMS and phone call. If the first responder doesn't acknowledge, the next step fires on your timer.</p>
+        </li>
+        <li class="feature">
+          <span class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h4"/></svg></span>
+          <h3>Handoff notes</h3>
+          <p>A structured note at every shift change, with open incidents carried over automatically. The next person starts with context instead of a scroll through chat.</p>
+        </li>
+        <li class="feature">
+          <span class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M9 15h2"/></svg></span>
+          <h3>Calendar sync</h3>
+          <p>Shifts appear in Google Calendar, Outlook or any iCal client, and update the moment a swap is approved.</p>
+        </li>
+        <li class="feature">
+          <span class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16M7 17V10M12 17V9M17 17V10"/><path d="M4 6h16" stroke-dasharray="2 2.5"/></svg></span>
+          <h3>Fairness report</h3>
+          <p>On-call hours per person, including nights and weekends, so load stays even and nobody quietly carries the team.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how-it-works" class="section" aria-labelledby="how-title">
+    <div class="container">
+      <p class="eyebrow">How it works</p>
+      <h2 id="how-title" class="section-title">From first alert to first handoff in an afternoon.</h2>
+      <ol class="steps">
+        <li class="step">
+          <span class="step-num">Step 01</span>
+          <h3>Connect your alerts</h3>
+          <p>Connect your alerting tools with a webhook or one of 40 built-in integrations.</p>
+          <div class="step-art" aria-hidden="true">
+<pre class="code"><span class="k">POST</span> /v1/alerts/<span class="m">payments-api</span>
+{
+  "severity": "critical",
+  "summary": "5xx rate above 2%"
+}</pre>
+            <div class="chips"><span class="tag tag-muted">Webhook</span><span class="tag tag-muted">Email</span><span class="tag tag-muted">+ 40 integrations</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num">Step 02</span>
+          <h3>Build rotations and policies</h3>
+          <p>Build a rotation and an escalation policy for each service.</p>
+          <div class="step-art" aria-hidden="true">
+            <ul class="policy">
+              <li><span class="esc-step">1</span><span>Push to primary</span><span class="when">0 min</span></li>
+              <li><span class="esc-step">2</span><span>SMS to secondary</span><span class="when">+5 min</span></li>
+              <li><span class="esc-step">3</span><span>Phone call to lead</span><span class="when">+15 min</span></li>
+            </ul>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num">Step 03</span>
+          <h3>Hand off every shift</h3>
+          <p>Hand off at the end of each shift; Rotaline reminds the outgoing person and notifies the incoming one.</p>
+          <div class="step-art" aria-hidden="true">
+            <ul class="timeline">
+              <li><time>08:45</time><span>Reminder sent to Ana Ruiz</span></li>
+              <li><time>08:58</time><span>Handoff note published, 2 incidents carried over</span></li>
+              <li><time>09:00</time><span>Jonah Park notified</span></li>
+              <li><time>09:02</time><span class="hl">Jonah Park is on call</span></li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="section results" aria-labelledby="results-title">
+    <div class="container split">
+      <div>
+        <p class="eyebrow">Results</p>
+        <h2 id="results-title" class="section-title">Fewer dropped pages. Calmer shift changes.</h2>
+      </div>
+      <div>
+        <ul class="stats">
+          <li class="stat"><p class="stat-figure">38<span class="unit">%</span></p><p class="stat-label">fewer missed pages</p></li>
+          <li class="stat"><p class="stat-figure">4<span class="unit"> min</span></p><p class="stat-label">median time to acknowledge</p></li>
+          <li class="stat"><p class="stat-figure">2,100</p><p class="stat-label">teams on Rotaline</p></li>
+        </ul>
+        <p class="results-foot">Missed pages and acknowledgement times compare each team's first 90 days on Rotaline with the 90 days before they switched.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" aria-labelledby="quotes-title">
+    <div class="container">
+      <p class="eyebrow">Customers</p>
+      <h2 id="quotes-title" class="section-title">From the people holding the pager.</h2>
+      <div class="quotes">
+        <figure class="quote">
+          <svg class="quote-mark" width="28" height="22" viewBox="0 0 28 22" aria-hidden="true"><path d="M0 22V12C0 5 4 1 11 0l1 4c-4 1-6 3-6 7h5v11zm16 0V12c0-7 4-11 11-12l1 4c-4 1-6 3-6 7h5v11z" fill="currentColor"/></svg>
+          <blockquote><p>We used to argue about who covered the holidays. Now the fairness report settles it before anyone asks.</p></blockquote>
+          <figcaption>
+            <span class="avatar av-ana" aria-hidden="true">DW</span>
+            <span><span class="quote-name">Dana Whitfield</span><span class="quote-role">Engineering Manager, Plinth</span></span>
+          </figcaption>
+        </figure>
+        <figure class="quote">
+          <svg class="quote-mark" width="28" height="22" viewBox="0 0 28 22" aria-hidden="true"><path d="M0 22V12C0 5 4 1 11 0l1 4c-4 1-6 3-6 7h5v11zm16 0V12c0-7 4-11 11-12l1 4c-4 1-6 3-6 7h5v11z" fill="currentColor"/></svg>
+          <blockquote><p>The handoff note is the feature I didn't know I needed. I start every shift knowing what's still burning.</p></blockquote>
+          <figcaption>
+            <span class="avatar av-jonah" aria-hidden="true">RM</span>
+            <span><span class="quote-name">Ravi Menon</span><span class="quote-role">Site Reliability Engineer, Halden Bank</span></span>
+          </figcaption>
+        </figure>
+        <figure class="quote">
+          <svg class="quote-mark" width="28" height="22" viewBox="0 0 28 22" aria-hidden="true"><path d="M0 22V12C0 5 4 1 11 0l1 4c-4 1-6 3-6 7h5v11zm16 0V12c0-7 4-11 11-12l1 4c-4 1-6 3-6 7h5v11z" fill="currentColor"/></svg>
+          <blockquote><p>Setting up follow-the-sun across three offices took one afternoon.</p></blockquote>
+          <figcaption>
+            <span class="avatar av-mei" aria-hidden="true">SB</span>
+            <span><span class="quote-name">Sofia Brandt</span><span class="quote-role">Head of Infrastructure, Corvid Systems</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="section" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="pricing-head">
+        <div>
+          <p class="eyebrow">Pricing</p>
+          <h2 id="pricing-title" class="section-title">Priced per responder. Alerts included.</h2>
+          <p class="section-intro">Start free with a small team. Upgrade when you need SMS, phone calls and handoff notes.</p>
+        </div>
+        <fieldset class="billing-toggle">
+          <legend class="sr-only">Billing period</legend>
+          <input type="radio" name="billing" id="billing-monthly" value="monthly" checked>
+          <label for="billing-monthly">Monthly</label>
+          <input type="radio" name="billing" id="billing-annual" value="annual">
+          <label for="billing-annual">Annual <span class="save">Save up to 22%</span></label>
+        </fieldset>
+      </div>
+      <p class="sr-only" id="billing-status" aria-live="polite"></p>
+
+      <div class="plans">
+        <article class="plan" aria-labelledby="plan-free">
+          <h3 id="plan-free">Free</h3>
+          <p class="plan-desc">For small teams getting off the spreadsheet.</p>
+          <p class="price"><span class="price-amount">$0</span><span class="price-unit">forever</span></p>
+          <p class="price-note">No card needed</p>
+          <a href="#start" class="btn btn-secondary btn-lg btn-block">Get started free</a>
+          <ul class="plan-list">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Up to 5 users</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>1 rotation</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Push and email alerts</li>
+          </ul>
+        </article>
+
+        <article class="plan plan-featured" aria-labelledby="plan-team">
+          <span class="plan-badge">Most popular</span>
+          <h3 id="plan-team">Team <span class="sr-only">(most popular)</span></h3>
+          <p class="plan-desc">For teams that need every alert to reach a person.</p>
+          <p class="price">
+            <span class="price-amount" data-monthly="$9" data-annual="$7">$9</span>
+            <span class="price-unit">per user / month</span>
+          </p>
+          <p class="price-note" data-monthly="Billed monthly" data-annual="Billed annually, $84 per user per year">Billed monthly</p>
+          <a href="#start" class="btn btn-primary btn-lg btn-block">Start free trial</a>
+          <ul class="plan-list">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Unlimited rotations</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>SMS and phone alerts</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Handoff notes</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Calendar sync</li>
+          </ul>
+        </article>
+
+        <article class="plan" aria-labelledby="plan-business">
+          <h3 id="plan-business">Business</h3>
+          <p class="plan-desc">For larger orgs with security, compliance and reporting needs.</p>
+          <p class="price">
+            <span class="price-amount" data-monthly="$16" data-annual="$13">$16</span>
+            <span class="price-unit">per user / month</span>
+          </p>
+          <p class="price-note" data-monthly="Billed monthly" data-annual="Billed annually, $156 per user per year">Billed monthly</p>
+          <a href="#start" class="btn btn-secondary btn-lg btn-block">Start free trial</a>
+          <ul class="plan-list">
+            <li class="lead">Everything in Team, plus:</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>SSO/SAML</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Audit log</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>Fairness report</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>99.95% uptime SLA</li>
+          </ul>
+        </article>
+      </div>
+      <p class="pricing-foot">Prices in USD. SMS and phone alerts are included in paid plans with no per-message fees.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="section" aria-labelledby="faq-title">
+    <div class="container split">
+      <div class="split-head">
+        <p class="eyebrow">FAQ</p>
+        <h2 id="faq-title" class="section-title">Questions teams ask before switching.</h2>
+        <p class="faq-contact">Something else? <a href="#">Talk to the team</a></p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>Can I import my existing schedule from a spreadsheet?<span class="faq-icon" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 6h9"/><path class="v" d="M6 1.5v9"/></svg></span></summary>
+          <p class="faq-answer">Yes. Upload a CSV or paste straight from Google Sheets or Excel, and Rotaline maps names, dates and time zones into a rotation you can review before publishing.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What happens if nobody acknowledges an alert?<span class="faq-icon" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 6h9"/><path class="v" d="M6 1.5v9"/></svg></span></summary>
+          <p class="faq-answer">The escalation policy moves to its next step, for example an SMS to the secondary and then a phone call to the team lead. You set the delay between steps, and every escalation is recorded in the next handoff note.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Do you charge for SMS and phone calls?<span class="faq-icon" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 6h9"/><path class="v" d="M6 1.5v9"/></svg></span></summary>
+          <p class="faq-answer">No. SMS and phone alerts are included in the Team and Business per-user price, with no per-message or per-minute fees.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can contractors or people outside my company be on a rotation?<span class="faq-icon" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 6h9"/><path class="v" d="M6 1.5v9"/></svg></span></summary>
+          <p class="faq-answer">Yes. Invite anyone by email as a responder and limit them to the rotations they belong to. On paid plans they count as a regular user.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How does the free trial work?<span class="faq-icon" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 6h9"/><path class="v" d="M6 1.5v9"/></svg></span></summary>
+          <p class="faq-answer">You get every Business feature for 14 days with no credit card. When the trial ends, choose a plan or drop to Free automatically; your schedules and handoff history stay intact.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="start" class="section final-cta" aria-labelledby="start-title">
+    <div class="container">
+      <div class="final-inner">
+        <h2 id="start-title">Start a 14-day free trial. <span class="soft">No credit card required.</span></h2>
+        <p class="sub">Build your first rotation in minutes, then invite the team when it looks right.</p>
+
+        <form class="signup" id="signup-form" action="#" method="post" novalidate>
+          <label for="signup-email">Work email</label>
+          <div class="signup-row">
+            <input id="signup-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@company.com" required aria-describedby="signup-hint signup-error">
+            <button type="submit" class="btn btn-primary btn-lg">Start free trial</button>
+          </div>
+          <p id="signup-error" class="signup-error" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>
+            <span id="signup-error-text"></span>
+          </p>
+          <p id="signup-hint" class="signup-hint">We'll email you a setup link. No spam, and you can cancel any time.</p>
+        </form>
+        <div id="signup-success" class="signup-success" role="status" hidden tabindex="-1">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>
+          <div><b>Check your inbox.</b><span id="signup-success-text"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#top" class="wordmark" aria-label="Rotaline, back to top">
+          <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+            <rect width="26" height="26" rx="6" fill="#15201B"/>
+            <path d="M7 13a6 6 0 0 1 10.2-4.3" fill="none" stroke="#E8590C" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M19 13a6 6 0 0 1-10.2 4.3" fill="none" stroke="#F6F4EF" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="17.6" cy="8.4" r="1.7" fill="#E8590C"/>
+            <circle cx="8.4" cy="17.6" r="1.7" fill="#F6F4EF"/>
+          </svg>
+          <span>Rotaline</span>
+        </a>
+        <p>On-call scheduling and shift handoff for engineering teams of 5 to 50.</p>
+      </div>
+      <nav class="footer-col" aria-labelledby="f-product">
+        <h2 id="f-product" class="footer-title">Product</h2>
+        <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#">Integrations</a></li><li><a href="#">Changelog</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-company">
+        <h2 id="f-company" class="footer-title">Company</h2>
+        <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-resources">
+        <h2 id="f-resources" class="footer-title">Resources</h2>
+        <ul><li><a href="#">Docs</a></li><li><a href="#">Status</a></li><li><a href="#">Blog</a></li></ul>
+      </nav>
+      <nav class="footer-col" aria-labelledby="f-legal">
+        <h2 id="f-legal" class="footer-title">Legal</h2>
+        <ul><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Rotaline, Inc.</p>
+      <p class="status-line"><span class="live-dot" aria-hidden="true"></span>All systems operational</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Mobile navigation ---------- */
+  var toggle = document.querySelector('.nav-toggle');
+  var menu = document.getElementById('mobile-nav');
+  var desktopQuery = window.matchMedia('(min-width: 901px)');
+
+  function setMenu(open, returnFocus) {
+    toggle.setAttribute('aria-expanded', String(open));
+    menu.classList.toggle('is-open', open);
+    if (!open && returnFocus) toggle.focus();
+  }
+
+  toggle.addEventListener('click', function () {
+    var open = toggle.getAttribute('aria-expanded') !== 'true';
+    setMenu(open, false);
+    if (open) {
+      var first = menu.querySelector('a');
+      if (first) first.focus();
+    }
+  });
+  menu.addEventListener('click', function (e) {
+    if (e.target.closest('a')) setMenu(false, false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setMenu(false, true);
+  });
+  desktopQuery.addEventListener('change', function (e) {
+    if (e.matches) setMenu(false, false);
+  });
+
+  /* ---------- Billing toggle ---------- */
+  var status = document.getElementById('billing-status');
+  var priced = document.querySelectorAll('[data-monthly][data-annual]');
+
+  function applyBilling(period) {
+    priced.forEach(function (el) { el.textContent = el.getAttribute('data-' + period); });
+    status.textContent = period === 'annual'
+      ? 'Showing annual prices: Team $7 and Business $13 per user per month, billed annually.'
+      : 'Showing monthly prices: Team $9 and Business $16 per user per month, billed monthly.';
+  }
+  document.querySelectorAll('input[name="billing"]').forEach(function (input) {
+    input.addEventListener('change', function () { if (input.checked) applyBilling(input.value); });
+  });
+  // Respect a pre-checked state (e.g. restored by the browser on back navigation)
+  var checked = document.querySelector('input[name="billing"]:checked');
+  if (checked && checked.value === 'annual') applyBilling('annual');
+  status.textContent = '';
+
+  /* ---------- Trial signup ---------- */
+  var form = document.getElementById('signup-form');
+  var email = document.getElementById('signup-email');
+  var error = document.getElementById('signup-error');
+  var errorText = document.getElementById('signup-error-text');
+  var success = document.getElementById('signup-success');
+  var successText = document.getElementById('signup-success-text');
+  var submit = form.querySelector('button[type="submit"]');
+  var pattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function showError(message) {
+    errorText.textContent = message;
+    error.hidden = false;
+    email.setAttribute('aria-invalid', 'true');
+    email.focus();
+  }
+  function clearError() {
+    error.hidden = true;
+    errorText.textContent = '';
+    email.removeAttribute('aria-invalid');
+  }
+
+  email.addEventListener('input', function () {
+    if (email.getAttribute('aria-invalid') === 'true' && pattern.test(email.value.trim())) clearError();
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var value = email.value.trim();
+    if (!value) return showError('Enter your work email to start the trial.');
+    if (!pattern.test(value)) return showError('That email doesn’t look right. Try something like name@company.com.');
+    clearError();
+    submit.disabled = true;
+    submit.textContent = 'Starting trial…';
+    // No backend on this page: simulate the request, then confirm.
+    window.setTimeout(function () {
+      successText.textContent = ' We sent a setup link to ' + value + '. It expires in 24 hours.';
+      form.hidden = true;
+      success.hidden = false;
+      success.focus();
+    }, 700);
+  });
+})();
+</script>
+</body>
+</html>

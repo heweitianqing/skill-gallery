@@ -299,7 +299,7 @@ export function runProcess({ cmd, args, env, cwd, stdoutFile, stderrFile, timeou
       process.off('SIGINT', onSigint);
       fs.closeSync(out);
       fs.closeSync(err);
-      resolve({ exitCode: code, signal, timedOut, durationMs: Date.now() - started });
+      resolve({ exitCode: code, signal, timedOut, durationMs: Date.now() - started, timeoutMin: timeoutMs / 60_000 });
     });
   });
 }
@@ -382,25 +382,169 @@ export function writeTranscript(events, outFile, sanitizer, maxLen = 4000) {
   fs.writeFileSync(outFile, lines.join('\n') + '\n');
 }
 
-// Copy index.html (and note any other files the agent left in the work dir).
-export function collectOutput(work, out, ignoreTop = []) {
+// Scratch folders that agents or skills use while working; never kept.
+const SCRATCH_DIRS = ['.taste-skill', 'node_modules', '.git'];
+// Names in a cell directory that belong to the runner and post-processing.
+const RESERVED = new Set(['index.html', 'run.json', 'transcript.jsonl', 'desktop.png', 'mobile.png', 'scroll.webm', 'evidence']);
+// Small files that show a skill's own tools ran (taste-skill's direction and
+// inspector report). Copied to evidence/ (sanitized); its screenshots are not.
+const EVIDENCE_FILES = ['.taste-skill/direction.json', '.taste-skill/inspect/report.json'];
+const MAX_ASSETS_BYTES = (Number(process.env.SG_MAX_ASSETS_MB) || 25) * 1024 * 1024;
+
+// Agents sometimes delete .taste-skill/ before finishing (to leave a single
+// file), so the evidence files are snapshotted every few seconds while the CLI
+// runs. Returns a function that takes a last snapshot and stops.
+export function startEvidenceWatch(work, snapDir) {
+  const seen = new Map();
+  const snap = () => {
+    for (const rel of EVIDENCE_FILES) {
+      const f = path.join(work, rel);
+      try {
+        const m = fs.statSync(f).mtimeMs;
+        if (seen.get(rel) === m) continue;
+        fs.mkdirSync(snapDir, { recursive: true });
+        fs.copyFileSync(f, path.join(snapDir, path.basename(rel)));
+        seen.set(rel, m);
+      } catch {}
+    }
+  };
+  const timer = setInterval(snap, 5000);
+  return () => { clearInterval(timer); snap(); };
+}
+
+// Relative references to local files (not http(s), data:, #, mailto: …) in
+// HTML, CSS or JS text. Query strings and fragments are dropped.
+export function scanLocalRefs(text, kind = 'html') {
+  const found = new Set();
+  const add = (raw) => {
+    if (!raw) return;
+    let v = raw.trim().replace(/&amp;/g, '&');
+    if (!v || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|\$\{|\{\{)/i.test(v)) return;
+    v = v.split('#')[0].split('?')[0];
+    if (!v) return;
+    try { v = decodeURI(v); } catch {}
+    found.add(v);
+  };
+  const css = (t) => {
+    for (const m of t.matchAll(/(?<![\w$.])url\(\s*(['"]?)([^'")]+)\1\s*\)/gi)) add(m[2]);
+    for (const m of t.matchAll(/@import\s+(?:url\()?\s*['"]([^'"]+)['"]/gi)) add(m[1]);
+  };
+  const js = (t) => {
+    for (const m of t.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) add(m[1]);
+  };
+  if (kind === 'css') { css(text); return [...found]; }
+  if (kind === 'js') { js(text); return [...found]; }
+  const attr = (tag, name) => tag.match(new RegExp(`\\s${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'));
+  const val = (m) => (m ? m[2] ?? m[3] ?? m[4] : null);
+  for (const m of text.matchAll(/<(link|script|img|source|video|audio|track|iframe|embed|object|image|use|input)\b[^>]*>/gi)) {
+    const tag = m[0];
+    const name = m[1].toLowerCase();
+    if (name === 'link' && /\brel\s*=\s*["']?(canonical|alternate|next|prev)\b/i.test(tag)) continue;
+    for (const a of ['src', 'href', 'xlink:href', 'poster', 'data']) add(val(attr(tag, a)));
+    const srcset = val(attr(tag, 'srcset'));
+    if (srcset) for (const part of srcset.split(',')) add(part.trim().split(/\s+/)[0]);
+  }
+  css(text);
+  for (const m of text.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) js(m[1]);
+  return [...found];
+}
+
+// Copy index.html into the cell directory, plus the local files it references
+// (and, recursively, files those CSS/JS files reference) at the same relative
+// paths, so the page still renders from the gallery. Scratch folders are only
+// summarized. Everything that is not the page itself is listed in the result.
+export function collectOutput(work, out, { ignoreTop = [], sanitize = (t) => t, snapshotDir = null } = {}) {
   const src = path.join(work, 'index.html');
+  const skip = new Set([...ignoreTop, ...SCRATCH_DIRS]);
   const others = [];
+  const scratch = {};
   const walk = (d) => {
     for (const name of fs.readdirSync(d)) {
       const p = path.join(d, name);
       const rel = path.relative(work, p);
-      if (ignoreTop.includes(rel.split(path.sep)[0])) continue;
+      const top = rel.split(path.sep)[0];
       const st = fs.lstatSync(p);
+      if (skip.has(top)) {
+        if (SCRATCH_DIRS.includes(top) && st.isFile()) {
+          scratch[top] ??= { files: 0, bytes: 0 };
+          scratch[top].files += 1;
+          scratch[top].bytes += st.size;
+        }
+        if (st.isDirectory() && SCRATCH_DIRS.includes(top)) walk(p);
+        continue;
+      }
       if (st.isDirectory()) walk(p);
       else if (rel !== 'index.html') others.push({ path: rel, bytes: st.size });
     }
   };
   walk(work);
-  if (!fs.existsSync(src)) return { index_html: false, other_files: others };
+  if (!fs.existsSync(src)) return { index_html: false, other_files: others, scratch_dirs: scratch };
   fs.copyFileSync(src, path.join(out, 'index.html'));
   const buf = fs.readFileSync(src);
-  return { index_html: true, index_html_bytes: buf.length, index_html_sha256: sha256(buf), other_files: others, external_refs: scanExternalRefs(buf.toString('utf8')) };
+
+  const kept = [];
+  const missing = [];
+  const conflicts = [];
+  const overCap = [];
+  let total = 0;
+  const seen = new Set();
+  const queue = scanLocalRefs(buf.toString('utf8')).map((ref) => ({ ref, from: work }));
+  const workReal = fs.realpathSync(work);
+  while (queue.length) {
+    const { ref, from } = queue.shift();
+    const abs = path.resolve(ref.startsWith('/') ? work : from, ref.replace(/^\/+/, ''));
+    const rel = path.relative(work, abs);
+    if (seen.has(rel)) continue;
+    seen.add(rel);
+    if (rel.startsWith('..') || path.isAbsolute(rel) || !fs.existsSync(abs) || !fs.statSync(abs).isFile()
+        || !fs.realpathSync(abs).startsWith(workReal + path.sep)) {
+      missing.push(ref);
+      continue;
+    }
+    if (RESERVED.has(rel.split(path.sep)[0])) { conflicts.push(rel); continue; }
+    const size = fs.statSync(abs).size;
+    if (total + size > MAX_ASSETS_BYTES) { overCap.push({ path: rel, bytes: size }); continue; }
+    total += size;
+    fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true });
+    fs.copyFileSync(abs, path.join(out, rel));
+    kept.push({ path: rel, bytes: size, sha256: sha256File(abs) });
+    const ext = path.extname(rel).toLowerCase();
+    if (ext === '.css' || ext === '.js' || ext === '.mjs') {
+      for (const r of scanLocalRefs(fs.readFileSync(abs, 'utf8'), ext === '.css' ? 'css' : 'js')) queue.push({ ref: r, from: path.dirname(abs) });
+    }
+  }
+
+  const evidence = [];
+  for (const rel of EVIDENCE_FILES) {
+    let f = path.join(work, rel);
+    let source = rel;
+    if (!fs.existsSync(f) && snapshotDir && fs.existsSync(path.join(snapshotDir, path.basename(rel)))) {
+      f = path.join(snapshotDir, path.basename(rel));
+      source = `${rel} (snapshot taken during the run; the agent removed the original)`;
+    }
+    if (!fs.existsSync(f)) continue;
+    const dest = path.join(out, 'evidence', path.basename(rel));
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    const text = sanitize(fs.readFileSync(f, 'utf8'));
+    fs.writeFileSync(dest, text);
+    evidence.push({ path: path.relative(out, dest), source, bytes: Buffer.byteLength(text) });
+  }
+
+  const keptSet = new Set(kept.map((k) => k.path));
+  return {
+    index_html: true,
+    index_html_bytes: buf.length,
+    index_html_sha256: sha256(buf),
+    other_files: others.map((o) => ({ ...o, kept: keptSet.has(o.path) })),
+    scratch_dirs: scratch,
+    kept_assets: kept,
+    kept_assets_bytes: total,
+    missing_local_refs: missing,
+    asset_conflicts: conflicts,
+    assets_over_cap: overCap,
+    evidence,
+    external_refs: scanExternalRefs(buf.toString('utf8')),
+  };
 }
 
 // Static scan of index.html for references to other origins. Remote images

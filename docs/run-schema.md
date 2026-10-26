@@ -38,6 +38,7 @@ Paths are sanitized before they are written: the throwaway run directory becomes
 | `duration_ms` | int | Wall-clock duration of the CLI process |
 | `exit_code` | int \| null | CLI exit code |
 | `timed_out` | bool | Killed by the runner's timeout (`SG_TIMEOUT_MIN`, default 60) |
+| `timeout_min` | number \| absent | The timeout that applied to this run, in minutes (taste-skill cells use 120) |
 | `usage` | object \| null | Token usage as reported by the CLI. Claude: `input_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`, `output_tokens`, `total_cost_usd`, `num_turns`, `model_usage`. Codex: `input_tokens`, `cached_input_tokens`, `output_tokens`, `reasoning_output_tokens` (summed over turns), `total_cost_usd` is always `null` |
 | `activity` | object | Counts of tool calls (Claude, by tool name) or completed items (Codex, by item type) |
 | `rate_limits` | object \| absent | Claude only: `events` (number of `rate_limit_event`s in the stream), `not_allowed` (any with a status other than `allowed`), `last` (`status`, `rateLimitType`, `unifiedWindows` utilization of the last event) |
@@ -49,21 +50,30 @@ Paths are sanitized before they are written: the throwaway run directory becomes
 | `isolation` | object | Isolation method and evidence (see below) |
 | `output.index_html` | bool | Whether `index.html` was produced |
 | `output.index_html_bytes`, `output.index_html_sha256` | int, string | Size and hash of `index.html` |
-| `output.other_files` | array | Any other files the agent left in the work dir (not copied) |
+| `output.other_files` | array | Every other file the agent left in the work dir outside the skill and scratch folders, with `kept` (whether it was copied as a referenced asset) |
+| `output.scratch_dirs` | object | Scratch folders the agent or skill used, summarized and not kept: `{".taste-skill": {files, bytes}, "node_modules": …}` (`.git` too) |
+| `output.kept_assets` | array | Local files that `index.html` references by relative path (`src`, `href`, `srcset`, `poster`, `data`, CSS `url()`/`@import`, JS module imports, followed recursively through kept CSS/JS), copied next to `index.html` at the same relative path: `{path, bytes, sha256}`. Empty for single-file pages |
+| `output.kept_assets_bytes` | int | Total size of `kept_assets` (capped at `SG_MAX_ASSETS_MB`, default 25 MB per cell) |
+| `output.missing_local_refs` | string[] | Relative references that point to no file in the work dir (or outside it). Non-empty makes the run fail with `broken_local_ref` |
+| `output.asset_conflicts` | string[] | Referenced files whose path collides with a runner file (`run.json`, `desktop.png`, `evidence/` …); not copied |
+| `output.assets_over_cap` | array | Referenced files skipped because the cell's asset total would exceed the cap: `{path, bytes}` |
+| `output.evidence` | array | Small files copied (sanitized) to `evidence/` to show a skill's own tools ran: taste-skill's `.taste-skill/direction.json` and `.taste-skill/inspect/report.json`. Its screenshots are never kept. The runner snapshots these files every 5 s while the CLI runs, because agents sometimes delete `.taste-skill/` before finishing; a snapshot is marked in `source`. `{path, source, bytes}` |
 | `external_refs` | object \| null | Static scan of `index.html` for references to other origins (see below). `null` if there is no `index.html` |
-| `rule_violations` | string[] | Prompt rules the page breaks. Currently only `remote_image` (from the static scan, or from images requested at runtime during screenshots). A violation does not make the run fail; the result is kept and flagged |
+| `rule_violations` | string[] | Prompt rules the page breaks, flagged but not failed: `remote_image` (static scan, or images requested at runtime during screenshots), `extra_files` (`output.kept_assets` is non-empty: the page is more than one file), `assets_over_cap` |
 | `runtime_remote_images` | string[] \| absent | Added by `scripts/screenshot.mjs`: image URLs the page requested over http(s) while being captured |
 | `host` | object | `os`, `arch`, `node` of the machine that ran the cell |
 | `stderr_tail` | string | Last lines of the CLI's stderr |
 | `notes` | string[] \| absent | Free-text remarks added after the run (for example, that it ran before a runner fix). Never used to change `success` |
 | `screenshots` | object \| null | Filled by `scripts/screenshot.mjs` (see below) |
+| `a11y` | object \| absent | Filled by `scripts/a11y-scan.mjs` (see below). Recording only |
+| `video` | object \| absent | Filled by `scripts/scroll-video.mjs` (see below). Recording only |
 
 ### `success`
 
 A run succeeds only if all of these hold:
 
 - the CLI exited 0 without timing out, and its final result/turn event is not an error;
-- `index.html` exists in the work dir;
+- `index.html` exists in the work dir, and every local file it references exists (no `broken_local_ref`);
 - every `isolation.checks` entry is `true`;
 - for skill cells, `skill_triggered` is `true` (and for Codex the skill also appears in the skills list the agent was given).
 
@@ -108,6 +118,34 @@ Codex `checks` (from the session rollout Codex writes into the throwaway `CODEX_
 - `kind` is one of `font` (Google Fonts and other font hosts, font files), `stylesheet`, `script`, `image`, `preconnect`, `other`.
 - `<a href>` links and XML namespace URIs (`www.w3.org`) are not counted.
 
+### `a11y`
+
+axe-core run at the desktop viewport (1440×900) after the page has settled the same way as for screenshots, plus 1.5 s for entrance transitions.
+
+| Field | Meaning |
+| --- | --- |
+| `tool`, `version` | `axe-core`, pinned in `package.json` (4.14.0) |
+| `rule_set` | axe-core's default set: WCAG 2.0–2.2 A/AA and best practices, experimental rules off |
+| `runner`, `browser`, `viewport` | Playwright version, browser and viewport used |
+| `violations` | Number of violated **rules** per impact: `{critical, serious, moderate, minor}` |
+| `violation_nodes` | Number of failing **elements** per impact (one rule such as `color-contrast` can fail on many elements) |
+| `rule_ids` | Sorted ids of the violated rules |
+| `rules` | `{id, impact, nodes}` per violated rule |
+| `scanned_at` | ISO time |
+
+### `video`
+
+`scroll.webm`, recorded by `scripts/scroll-video.mjs` with the same parameters for every cell: page rendered at 1440×900, recorded at 720×450, 0.5 s still at the top, 7 s of mouse-wheel scrolling at constant speed to the bottom, 0.5 s still. The page is not scrolled beforehand, so scroll-triggered effects play in the recording. Trimmed to start after load and re-encoded as VP9, at most 1 MB.
+
+| Field | Meaning |
+| --- | --- |
+| `file`, `width`, `height`, `seconds`, `bytes`, `codec`, `bitrate` | The video file (`scroll.webm`, 720, 450, 8, …, `vp9`, target bitrate) |
+| `viewport`, `script` | Render size and the scroll script |
+| `scroll_target` | `document`, or `element` when the page scrolls an inner panel (the wheel scrolls whatever is under the viewport centre) |
+| `scroll_distance` | Pixels to scroll from top to bottom |
+| `reached_bottom` | Whether the document was at the bottom at the end (`null` for inner panels) |
+| `tool`, `browser`, `recorded_at` | Playwright version, browser, ISO time |
+
 ### `screenshots`
 
 `tool`, `browser` (name and version, e.g. `playwright-chromium 156.0.8078.4`), `browser_channel`, `taken_at`, and one object per viewport (`desktop`, `mobile`) with: `file`, `viewport`, `device_scale_factor`, `is_mobile`, `page_height`, `horizontal_overflow`, `scroll_width`, `network_idle`, `fonts_loaded`, `fonts_failed`, `console_errors`, `page_errors`, `failed_requests`, `remote_requests` (every http(s) request the page made, with Playwright's resource type).
@@ -119,4 +157,7 @@ Codex `checks` (from the session rollout Codex writes into the throwaway `CODEX_
 | `index.html` | The page the agent wrote, unmodified |
 | `transcript.jsonl` | The CLI's JSON event stream (Claude `stream-json`, Codex `exec --json`), sanitized: command and tool output is replaced by `[output omitted: N chars]`, the SKILL.md text Claude injects after a `Skill` call is replaced by `[skill content omitted: N chars]` (its `Base directory for this skill` line is kept), and other strings longer than 4,000 characters are cut |
 | `desktop.png`, `mobile.png` | Full-page screenshots at 1440 and 390 CSS px wide |
+| `scroll.webm` | 8-second scroll recording (see `video`) |
+| kept assets | Files listed in `output.kept_assets`, at their relative paths (only for pages that reference local files) |
+| `evidence/` | Files listed in `output.evidence` (taste-skill cells) |
 | `run.json` | This record |

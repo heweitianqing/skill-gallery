@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales &amp; Operations · Kestrel Coffee Roasters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Surfaces & text */
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface-sunk: #f9f7f4;
+    --border: #e5e0d8;
+    --border-strong: #d3ccc1;
+    --text: #1e1b18;
+    --text-2: #574f46;
+    --text-3: #6a6258;
+
+    /* Sidebar */
+    --side-bg: #1f1b18;
+    --side-hover: #2c2723;
+    --side-active: #352f2a;
+    --side-text: #ddd6cc;
+    --side-muted: #a39a8f;
+    --side-focus: #e8a560;
+
+    /* Data colours */
+    --c-online: #2f6b5e;
+    --c-cafes: #c0772f;
+    --c-cat: #6b4f3a;
+    --track: #efebe5;
+
+    /* Semantic status */
+    --pos: #1d6b40;   --pos-bg: #e6f2ea;
+    --neg: #b3261e;   --neg-bg: #fbe9e7;
+    --warn: #8a5300;  --warn-bg: #fcefd6;  --warn-line: #e3b25c;
+    --info: #1f5a8a;  --info-bg: #e5eef7;
+    --focus: #2f6b5e;
+
+    /* Scale */
+    --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px;
+    --r-sm: 4px; --r-md: 6px; --r-lg: 8px;
+
+    --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-brand: "Fraunces", Georgia, "Times New Roman", serif;
+    --sidebar-w: 232px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  body.nav-open { overflow: hidden; }
+  h1, h2, h3, p { margin: 0; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  button, input { font: inherit; color: inherit; }
+  a { color: inherit; }
+  svg { flex-shrink: 0; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .sr-only {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-sm); }
+
+  .skip-link {
+    position: absolute; left: var(--s-4); top: -48px; z-index: 100;
+    background: var(--text); color: #fff; padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
+    text-decoration: none; font-weight: 500;
+  }
+  .skip-link:focus { top: var(--s-3); }
+
+  /* ---------- App shell ---------- */
+  .app { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); min-height: 100vh; }
+
+  .sidebar {
+    position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column;
+    background: var(--side-bg); color: var(--side-text);
+    padding: var(--s-5) var(--s-3);
+    overflow-y: auto;
+  }
+  .sidebar :focus-visible { outline-color: var(--side-focus); }
+  .sidebar__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); padding: 0 var(--s-2) var(--s-6); }
+
+  .brand { display: flex; align-items: center; gap: var(--s-3); text-decoration: none; }
+  .brand__name { font-family: var(--font-brand); font-weight: 600; font-size: 18px; line-height: 1.1; color: #fff; letter-spacing: -0.01em; }
+  .brand__name small { display: block; font-family: var(--font); font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--side-muted); margin-top: 3px; }
+
+  .nav__label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-muted); padding: 0 var(--s-3) var(--s-2); }
+  .nav { display: grid; gap: 2px; }
+  .nav a {
+    position: relative; display: flex; align-items: center; gap: var(--s-3);
+    padding: var(--s-2) var(--s-3); min-height: 40px; border-radius: var(--r-md);
+    text-decoration: none; color: var(--side-text); font-weight: 500;
+  }
+  .nav a svg { width: 18px; height: 18px; color: var(--side-muted); }
+  .nav a:hover { background: var(--side-hover); color: #fff; }
+  .nav a[aria-current="page"] { background: var(--side-active); color: #fff; }
+  .nav a[aria-current="page"] svg { color: var(--side-focus); }
+  .nav a[aria-current="page"]::before {
+    content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px;
+    border-radius: 0 2px 2px 0; background: var(--side-focus);
+  }
+  .sidebar__foot { margin-top: auto; padding: var(--s-4) var(--s-3) 0; border-top: 1px solid #36302b; font-size: 12px; color: var(--side-muted); }
+  .sidebar__foot strong { display: block; color: var(--side-text); font-weight: 500; font-size: 13px; }
+
+  .icon-btn {
+    display: inline-grid; place-items: center; width: 40px; height: 40px;
+    border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); cursor: pointer;
+  }
+  .icon-btn svg { width: 20px; height: 20px; }
+  .icon-btn:hover { background: var(--surface-sunk); }
+  .sidebar__close { display: none; background: transparent; border-color: #3d3631; color: var(--side-text); }
+  .sidebar__close:hover { background: var(--side-hover); }
+
+  .scrim { position: fixed; inset: 0; background: rgba(20, 17, 14, 0.5); z-index: 40; }
+
+  /* ---------- Top bar ---------- */
+  .main-col { min-width: 0; }
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: "title search user";
+    align-items: center; gap: var(--s-4) var(--s-6);
+    padding: var(--s-6) var(--s-8) var(--s-5);
+  }
+  .topbar__menu, .topbar__brand { display: none; }
+  .topbar__title { grid-area: title; min-width: 0; }
+  .topbar h1 { font-size: 22px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
+  .period { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); margin-top: var(--s-1); color: var(--text-2); }
+  .period svg { width: 16px; height: 16px; color: var(--text-3); }
+  .period strong { font-weight: 600; color: var(--text); }
+  .period__vs { color: var(--text-3); }
+
+  .search { grid-area: search; position: relative; width: 340px; }
+  .search svg { position: absolute; left: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+  .search input {
+    width: 100%; height: 40px; padding: 0 40px 0 36px;
+    border: 1px solid var(--border-strong); border-radius: var(--r-md); background: var(--surface);
+  }
+  .search input::placeholder { color: var(--text-3); opacity: 1; }
+  .search input:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; border-color: var(--focus); border-radius: var(--r-md); }
+  .search kbd {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font: 500 11px/1 var(--font); color: var(--text-3);
+    border: 1px solid var(--border-strong); border-radius: var(--r-sm); padding: 3px 6px; background: var(--surface-sunk);
+  }
+  .search input:focus ~ kbd, .search input:not(:placeholder-shown) ~ kbd { display: none; }
+
+  .user { grid-area: user; display: flex; align-items: center; gap: var(--s-3); }
+  .avatar {
+    display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+    background: #3a5a4f; color: #fff; font-weight: 600; font-size: 13px; letter-spacing: 0.02em;
+  }
+  .user__name { display: block; font-weight: 600; line-height: 1.2; }
+  .user__role { display: block; font-size: 12px; color: var(--text-3); }
+
+  .filter-note {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
+    margin: 0 var(--s-8) var(--s-4); padding: var(--s-2) var(--s-3);
+    background: var(--info-bg); color: var(--info); border-radius: var(--r-md); font-size: 13px;
+  }
+  .link-btn { border: 0; background: none; padding: 0; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+  /* ---------- Dashboard grid ---------- */
+  .dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--s-4); padding: 0 var(--s-8) var(--s-8); }
+  .dash > * { grid-column: 1 / -1; min-width: 0; }
+  @media (min-width: 1280px) {
+    .span-8 { grid-column: span 8; }
+    .span-7 { grid-column: span 7; }
+    .span-5 { grid-column: span 5; }
+    .span-4 { grid-column: span 4; }
+  }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--s-5); }
+  .card__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-4); }
+  .card__title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .card__sub { margin-top: 2px; font-size: 13px; color: var(--text-3); }
+  .insight { font-size: 13px; color: var(--text-2); }
+  .insight strong { color: var(--text); font-weight: 600; }
+
+  /* ---------- KPIs ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--s-4); }
+  .kpi { display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-4) var(--s-5); }
+  .kpi__label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+  .kpi__value { font-size: 28px; line-height: 1.15; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .kpi__delta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); font-size: 13px; color: var(--text-3); }
+  .kpi__meta span { white-space: nowrap; }
+  .kpi__meta { margin-top: auto; padding-top: var(--s-2); border-top: 1px solid var(--border); font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+  .delta { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px 1px 4px; border-radius: var(--r-sm); font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .delta svg { width: 14px; height: 14px; }
+  .delta--good { color: var(--pos); background: var(--pos-bg); }
+  .delta--bad { color: var(--neg); background: var(--neg-bg); }
+  .delta--plain { padding: 0; background: none; }
+  abbr[title] { text-decoration: none; }
+
+  /* ---------- Revenue chart ---------- */
+  .segmented { display: inline-flex; padding: 3px; border: 0; margin: 0; background: var(--surface-sunk); border: 1px solid var(--border); border-radius: var(--r-md); }
+  .segmented label { position: relative; }
+  .segmented input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .segmented span {
+    display: block; padding: 6px 12px; border-radius: var(--r-sm);
+    font-size: 13px; font-weight: 500; color: var(--text-2); white-space: nowrap; cursor: pointer;
+  }
+  .segmented label:hover span { color: var(--text); }
+  .segmented input:checked + span { background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--border-strong); }
+  .segmented input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  .chart-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2) var(--s-4); margin-bottom: var(--s-2); }
+  .legend { display: flex; gap: var(--s-4); font-size: 13px; color: var(--text-2); }
+  .legend li { display: flex; align-items: center; gap: 6px; transition: opacity .15s; }
+  .legend li.is-off { opacity: .4; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .swatch--online { background: var(--c-online); }
+  .swatch--cafes { background: var(--c-cafes); }
+
+  .chart { position: relative; min-height: 240px; touch-action: pan-y; }
+  .chart svg { display: block; overflow: visible; }
+  .chart .grid { stroke: var(--border); }
+  .chart .grid--zero { stroke: var(--border-strong); }
+  .chart .axis { font-size: 11px; fill: var(--text-3); font-family: var(--font); font-variant-numeric: tabular-nums; }
+  .chart .axis--current { fill: var(--text); font-weight: 600; }
+  .chart .axis--year { font-size: 10px; letter-spacing: 0.04em; }
+  .chart .col { outline: none; }
+  .chart .col .band { fill: transparent; }
+  .chart .col.is-active .band { fill: rgba(30, 27, 24, 0.05); }
+  .chart .col:focus-visible .band { fill: rgba(30, 27, 24, 0.05); stroke: var(--focus); stroke-width: 2; }
+  .chart .bar { transition: opacity .15s; }
+  .chart.has-active .col:not(.is-active) .bar { opacity: .45; }
+  .chart.animate .bar { animation: grow .45s cubic-bezier(.2, .7, .3, 1) both; transform-box: fill-box; transform-origin: 50% 100%; }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  .tooltip {
+    position: absolute; left: 0; top: 0; z-index: 5; min-width: 156px;
+    padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
+    background: var(--text); color: #fff; font-size: 12px; pointer-events: none;
+  }
+  .tooltip__title { font-weight: 600; margin-bottom: var(--s-1); }
+  .tooltip__row { display: flex; align-items: center; gap: var(--s-2); }
+  .tooltip__row span:nth-child(2) { flex: 1; color: #d6cfc6; }
+  .tooltip__row strong { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tooltip__row--total { margin-top: var(--s-1); padding-top: var(--s-1); border-top: 1px solid #4a433d; }
+
+  .data-toggle { margin-top: var(--s-3); font-size: 13px; }
+  .data-toggle summary { cursor: pointer; color: var(--text-2); font-weight: 500; width: max-content; border-radius: var(--r-sm); }
+  .data-toggle summary:hover { color: var(--text); }
+  .data-toggle .table-wrap { margin-top: var(--s-2); }
+
+  /* ---------- Category bars ---------- */
+  .cat-list { display: grid; gap: var(--s-3); }
+  .cat-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--s-3); align-items: baseline; }
+  .cat-list__value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .cat-list__track { grid-column: 1 / -1; height: 8px; border-radius: 2px; background: var(--track); overflow: hidden; }
+  .cat-list__track span { display: block; height: 100%; width: var(--w); background: var(--c-cat); border-radius: 2px; }
+  .cat-list li:first-child .cat-list__track span { background: var(--c-cat); }
+  .cat-foot { margin-top: var(--s-4); padding-top: var(--s-3); border-top: 1px solid var(--border); }
+
+  /* ---------- Tables ---------- */
+  .table-wrap { margin: 0 calc(var(--s-5) * -1); overflow-x: auto; }
+  .table-wrap:focus-visible { outline-offset: -2px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  caption { text-align: left; }
+  th, td { padding: 10px var(--s-3); text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border); }
+  th:first-child, td:first-child { padding-left: var(--s-5); }
+  th:last-child, td:last-child { padding-right: var(--s-5); }
+  thead th { font-size: 12px; font-weight: 500; color: var(--text-3); background: var(--surface-sunk); border-top: 1px solid var(--border); white-space: nowrap; }
+  tbody tr:last-child > * { border-bottom: 0; }
+  tbody th { font-weight: 500; }
+  tbody tr:hover > * { background: var(--surface-sunk); }
+  .t-num { text-align: right; }
+  .t-muted { display: block; font-size: 12px; font-weight: 400; color: var(--text-3); }
+  .empty-row td { text-align: center; color: var(--text-3); padding: var(--s-6) var(--s-5); }
+  .empty-row:hover td { background: none; }
+
+  .sort-btn {
+    display: inline-flex; align-items: center; gap: var(--s-1);
+    padding: 2px 4px; margin: -2px -4px; border: 0; background: none;
+    font: inherit; color: inherit; cursor: pointer; border-radius: var(--r-sm); white-space: nowrap;
+  }
+  .t-num .sort-btn { flex-direction: row-reverse; }
+  .sort-btn:hover { color: var(--text); }
+  .sort-btn svg { width: 14px; height: 14px; }
+  .sort-btn .up, .sort-btn .down { opacity: .35; }
+  th[aria-sort] { color: var(--text); }
+  th[aria-sort="ascending"] .up, th[aria-sort="descending"] .down { opacity: 1; }
+  th[aria-sort="ascending"] .down, th[aria-sort="descending"] .up { opacity: 0; }
+
+  .cafe-table { min-width: 560px; }
+  .cafe-table tbody th { white-space: nowrap; }
+  .tag-new {
+    display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: var(--r-sm);
+    font-size: 11px; font-weight: 600; line-height: 18px; color: var(--info); background: var(--info-bg); vertical-align: 1px;
+  }
+  .change { display: inline-flex; align-items: center; gap: 2px; font-weight: 600; }
+  .change svg { width: 14px; height: 14px; }
+  .change--up { color: var(--pos); }
+  .change--down { color: var(--neg); }
+
+  .rank { width: 1%; color: var(--text-3); font-weight: 500; padding-right: 0; }
+  .prod-bar { display: block; height: 4px; margin-top: 6px; max-width: 180px; border-radius: 2px; background: var(--track); overflow: hidden; }
+  .prod-bar span { display: block; height: 100%; width: var(--w); background: var(--c-online); }
+
+  .status {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px 2px 6px; border-radius: var(--r-sm);
+    font-size: 12px; font-weight: 600; white-space: nowrap; border: 1px solid transparent;
+  }
+  .status svg { width: 13px; height: 13px; }
+  .status--shipped { color: var(--info); background: var(--info-bg); }
+  .status--paid { color: var(--pos); background: var(--pos-bg); }
+  .status--pending { color: var(--warn); background: var(--warn-bg); border-style: dashed; border-color: var(--warn-line); }
+  .status--refunded { color: var(--neg); background: var(--neg-bg); }
+  .order-id { font-weight: 500; white-space: nowrap; }
+  .m-only { display: none; }
+
+  /* ---------- Inventory ---------- */
+  .badge-warn {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 6px; border-radius: var(--r-sm);
+    font-size: 12px; font-weight: 600; color: var(--warn); background: var(--warn-bg); white-space: nowrap;
+  }
+  .badge-warn svg { width: 14px; height: 14px; }
+  .stock { display: grid; gap: var(--s-4); }
+  .stock__top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-3); }
+  .stock__name { font-weight: 500; }
+  .stock__days { font-variant-numeric: tabular-nums; color: var(--text-2); white-space: nowrap; }
+  .stock__days strong { font-size: 15px; color: var(--text); }
+  .stock__track { position: relative; height: 8px; margin: 6px 0; border-radius: 2px; background: var(--track); }
+  .stock__fill { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w); border-radius: 2px; background: var(--c-online); }
+  .is-low .stock__fill { background: var(--c-cafes); }
+  .stock__threshold { position: absolute; left: 25%; top: -3px; bottom: -3px; width: 2px; background: var(--text); border-radius: 1px; }
+  .stock__status { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-3); }
+  .stock__status svg { width: 14px; height: 14px; }
+  .is-low .stock__status { color: var(--warn); font-weight: 600; }
+  .stock-key { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-4); padding-top: var(--s-3); border-top: 1px solid var(--border); font-size: 12px; color: var(--text-3); }
+  .stock-key i { display: inline-block; width: 2px; height: 14px; background: var(--text); border-radius: 1px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1023px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 50; width: min(288px, 86vw); height: 100%;
+      transform: translateX(-100%); visibility: hidden;
+      transition: transform .22s ease, visibility 0s linear .22s;
+    }
+    .sidebar.is-open { transform: none; visibility: visible; transition: transform .22s ease; }
+    .sidebar__close { display: inline-grid; }
+
+    .topbar {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: "menu brand user" "title title title" "search search search";
+      gap: var(--s-4) var(--s-3);
+      padding: var(--s-3) var(--s-5) var(--s-4);
+    }
+    .topbar__menu { grid-area: menu; display: inline-grid; }
+    .topbar__brand { grid-area: brand; display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+    .topbar__brand span { font-family: var(--font-brand); font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .topbar__title { padding-top: var(--s-2); border-top: 1px solid var(--border); }
+    .search { width: 100%; }
+    .search kbd { display: none; }
+    .filter-note { margin: 0 var(--s-5) var(--s-4); }
+    .dash { padding: 0 var(--s-5) var(--s-6); }
+  }
+  @media (max-width: 640px) {
+    .topbar { padding: var(--s-3) var(--s-4) var(--s-4); }
+    .user__text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .filter-note { margin: 0 var(--s-4) var(--s-3); }
+    .dash { gap: var(--s-3); padding: 0 var(--s-4) var(--s-6); }
+    .card { padding: var(--s-4); }
+    .table-wrap { margin: 0 calc(var(--s-4) * -1); }
+    th:first-child, td:first-child { padding-left: var(--s-4); }
+    th:last-child, td:last-child { padding-right: var(--s-4); }
+
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+    .kpi:first-child { grid-column: 1 / -1; }
+    .kpi { padding: var(--s-3) var(--s-4); }
+    .kpi__value { font-size: 24px; }
+
+    .segmented { width: 100%; }
+    .segmented label { flex: 1; }
+    .segmented span { text-align: center; padding: 6px 4px; }
+
+    .cafe-table tbody th { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+    .cafe-table thead th:first-child { position: sticky; left: 0; z-index: 2; }
+
+    /* Recent orders: stacked rows */
+    .orders-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .orders-table tbody tr[data-row] {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      grid-template-areas: "cust cust cust total" "order chan items status";
+      gap: 4px var(--s-2); align-items: center;
+      padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--border);
+    }
+    .orders-table tbody tr[data-row]:last-of-type { border-bottom: 0; }
+    .orders-table tbody tr[data-row] > * { display: block; padding: 0; border: 0; background: none !important; }
+    .orders-table .c-order { grid-area: order; color: var(--text-3); font-size: 12px; }
+    .orders-table .c-cust { grid-area: cust; font-weight: 600; }
+    .orders-table .c-chan { grid-area: chan; color: var(--text-3); font-size: 12px; }
+    .orders-table .c-chan::before, .orders-table .c-items::before { content: "· "; }
+    .orders-table .c-items { grid-area: items; color: var(--text-3); font-size: 12px; text-align: left; }
+    .orders-table .c-total { grid-area: total; font-weight: 600; }
+    .orders-table .c-status { grid-area: status; justify-self: end; }
+    .m-only { display: inline; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to dashboard</a>
+
+<div class="app">
+  <!-- Navigation: sidebar on desktop, off-canvas drawer below 1024px -->
+  <nav id="sidebar" class="sidebar" aria-label="Main">
+    <div class="sidebar__head">
+      <a class="brand" href="#main">
+        <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="#c0772f"/>
+          <g transform="rotate(32 16 16)">
+            <ellipse cx="16" cy="16" rx="7" ry="10.5" fill="#1f1b18"/>
+            <path d="M16 5.8c-3 3.6 3 6.8 0 10.2s3 6.6 0 10.2" fill="none" stroke="#c0772f" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <span class="brand__name">Kestrel <small>Coffee Roasters</small></span>
+      </a>
+      <button type="button" class="icon-btn sidebar__close" id="navClose" aria-label="Close navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <p class="nav__label" id="nav-label">Workspace</p>
+    <ul class="nav" aria-labelledby="nav-label">
+      <li><a href="#main" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
+        Overview</a></li>
+      <li><a href="#orders">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+        Orders</a></li>
+      <li><a href="#products">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7.5L12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5L12 11.5l8.5-4M12 11.5v9"/></svg>
+        Products</a></li>
+      <li><a href="#customers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M15.5 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg>
+        Customers</a></li>
+      <li><a href="#inventory-page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9L12 3.5 20.5 9v11.5h-17z"/><path d="M8 20.5v-7h8v7M8 17h8"/></svg>
+        Inventory</a></li>
+      <li><a href="#reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4v16h16"/><path d="M8.5 16v-4M12.5 16V8M16.5 16v-6"/></svg>
+        Reports</a></li>
+      <li><a href="#settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+        Settings</a></li>
+    </ul>
+
+    <div class="sidebar__foot">
+      <strong>Kestrel Coffee Roasters</strong>
+      Online store · 4 cafés
+    </div>
+  </nav>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="main-col" id="mainCol">
+    <header class="topbar">
+      <button type="button" class="icon-btn topbar__menu" id="navOpen" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__brand" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 32 32">
+          <rect width="32" height="32" rx="7" fill="#c0772f"/>
+          <g transform="rotate(32 16 16)">
+            <ellipse cx="16" cy="16" rx="7" ry="10.5" fill="#1f1b18"/>
+            <path d="M16 5.8c-3 3.6 3 6.8 0 10.2s3 6.6 0 10.2" fill="none" stroke="#c0772f" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <span>Kestrel Coffee Roasters</span>
+      </div>
+
+      <div class="topbar__title">
+        <h1>Sales &amp; Operations</h1>
+        <p class="period">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/></svg>
+          <strong>October 2026</strong>
+          <span class="period__vs">compared with September 2026</span>
+        </p>
+      </div>
+
+      <div class="search" role="search">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+        <label class="sr-only" for="search">Search orders, products, customers</label>
+        <input id="search" type="search" placeholder="Search orders, products, customers" autocomplete="off" spellcheck="false" aria-describedby="search-hint">
+        <kbd aria-hidden="true">/</kbd>
+        <span id="search-hint" class="sr-only">Filters the café, product and recent order tables on this page.</span>
+      </div>
+
+      <div class="user">
+        <span class="avatar" aria-hidden="true">MK</span>
+        <span class="user__text">
+          <span class="user__name">Mara Kim</span>
+          <span class="user__role">Operations lead</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="filter-note" id="filterNote" hidden>
+      <span id="filterText"></span>
+      <button type="button" class="link-btn" id="clearSearch">Clear search</button>
+    </div>
+    <div class="sr-only" role="status" aria-live="polite" id="announcer"></div>
+
+    <main id="main" class="dash" tabindex="-1">
+      <!-- KPIs -->
+      <section aria-labelledby="kpi-heading">
+        <h2 id="kpi-heading" class="sr-only">October 2026 at a glance, compared with September 2026</h2>
+        <ul class="kpis">
+          <li class="card kpi">
+            <p class="kpi__label">Revenue</p>
+            <p class="kpi__value">$184,320</p>
+            <p class="kpi__delta">
+              <span class="delta delta--good"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3.5M4 7l4-4 4 4"/></svg>+6.4%</span>
+              <span>vs Sep</span>
+            </p>
+            <p class="kpi__meta"><span>Cafés $101,320</span> · <span>Online $83,000</span></p>
+          </li>
+          <li class="card kpi">
+            <p class="kpi__label">Orders</p>
+            <p class="kpi__value">9,412</p>
+            <p class="kpi__delta">
+              <span class="delta delta--good"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3.5M4 7l4-4 4 4"/></svg>+3.1%</span>
+              <span>vs Sep</span>
+            </p>
+            <p class="kpi__meta"><span>Cafés 6,092</span> · <span>Online 3,320</span></p>
+          </li>
+          <li class="card kpi">
+            <p class="kpi__label">Average order value</p>
+            <p class="kpi__value">$19.58</p>
+            <p class="kpi__delta">
+              <span class="delta delta--good"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3.5M4 7l4-4 4 4"/></svg>+3.2%</span>
+              <span>vs Sep</span>
+            </p>
+            <p class="kpi__meta"><span>Cafés $16.63</span> · <span>Online $25.00</span></p>
+          </li>
+          <li class="card kpi">
+            <p class="kpi__label">Subscription customers</p>
+            <p class="kpi__value">1,286</p>
+            <p class="kpi__delta">
+              <span class="delta delta--good"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3.5M4 7l4-4 4 4"/></svg>+48 net</span>
+              <span>vs Sep</span>
+            </p>
+            <p class="kpi__meta">Active bean subscriptions</p>
+          </li>
+          <li class="card kpi">
+            <p class="kpi__label">Refund rate</p>
+            <p class="kpi__value">1.9%</p>
+            <p class="kpi__delta">
+              <span class="delta delta--good"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v9.5M4 9l4 4 4-4"/></svg>−0.3&nbsp;<abbr title="percentage points">pp</abbr></span>
+              <span>vs Sep<span class="sr-only">, an improvement</span></span>
+            </p>
+            <p class="kpi__meta">Lower is better</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Monthly revenue -->
+      <section class="card span-8" aria-labelledby="rev-heading">
+        <div class="card__head">
+          <div>
+            <h2 class="card__title" id="rev-heading">Monthly revenue by channel</h2>
+            <p class="card__sub">November 2025 – October 2026 · thousands of US dollars</p>
+          </div>
+          <fieldset class="segmented">
+            <legend class="sr-only">Show channel</legend>
+            <label><input type="radio" name="channel" value="all" checked><span>All channels</span></label>
+            <label><input type="radio" name="channel" value="online"><span>Online only</span></label>
+            <label><input type="radio" name="channel" value="cafes"><span>Cafés only</span></label>
+          </fieldset>
+        </div>
+
+        <div class="chart-meta">
+          <ul class="legend" id="legend" aria-label="Legend">
+            <li data-series="online"><span class="swatch swatch--online" aria-hidden="true"></span>Online</li>
+            <li data-series="cafes"><span class="swatch swatch--cafes" aria-hidden="true"></span>Cafés</li>
+          </ul>
+          <p class="insight" id="chartInsight" aria-live="polite"><strong>October was the strongest month of the year</strong> at $184k, ahead of December’s $176k holiday peak.</p>
+        </div>
+
+        <div class="chart" id="chart">
+          <noscript><p class="insight">The interactive chart needs JavaScript. Open “View data table” below for the same figures.</p></noscript>
+        </div>
+
+        <details class="data-toggle">
+          <summary>View data table</summary>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Monthly revenue by channel, thousands of US dollars</caption>
+              <thead><tr><th scope="col">Month</th><th scope="col" class="t-num">Online</th><th scope="col" class="t-num">Cafés</th><th scope="col" class="t-num">Total</th></tr></thead>
+              <tbody id="chartTable"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+
+      <!-- Revenue by category -->
+      <section class="card span-4" aria-labelledby="cat-heading">
+        <div class="card__head">
+          <div>
+            <h2 class="card__title" id="cat-heading">Revenue by category</h2>
+            <p class="card__sub">Share of October 2026 revenue</p>
+          </div>
+        </div>
+        <ol class="cat-list">
+          <li><span>Whole bean</span><span class="cat-list__value">38%</span><span class="cat-list__track" aria-hidden="true"><span style="--w:38%"></span></span></li>
+          <li><span>Espresso drinks</span><span class="cat-list__value">27%</span><span class="cat-list__track" aria-hidden="true"><span style="--w:27%"></span></span></li>
+          <li><span>Filter &amp; cold brew</span><span class="cat-list__value">14%</span><span class="cat-list__track" aria-hidden="true"><span style="--w:14%"></span></span></li>
+          <li><span>Pastries</span><span class="cat-list__value">12%</span><span class="cat-list__track" aria-hidden="true"><span style="--w:12%"></span></span></li>
+          <li><span>Equipment</span><span class="cat-list__value">6%</span><span class="cat-list__track" aria-hidden="true"><span style="--w:6%"></span></span></li>
+          <li><span>Gift cards</span><span class="cat-list__value">3%</span><span class="cat-list__track" aria-hidden="true"><span style="--w:3%"></span></span></li>
+        </ol>
+        <p class="insight cat-foot"><strong>Whole bean and espresso drinks</strong> bring in 65% of revenue between them.</p>
+      </section>
+
+      <!-- Café performance -->
+      <section class="card span-7" aria-labelledby="cafe-heading">
+        <div class="card__head">
+          <div>
+            <h2 class="card__title" id="cafe-heading">Café performance</h2>
+            <p class="card__sub">October 2026 · 4 cafés · $101,320 revenue · 6,092 orders</p>
+          </div>
+        </div>
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="cafe-heading">
+          <table class="cafe-table" id="cafeTable">
+            <caption class="sr-only">Café performance, October 2026. Select a column header to sort.</caption>
+            <thead>
+              <tr>
+                <th scope="col" data-type="text"><button type="button" class="sort-btn">Café<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="up" d="M5 6.5l3-3 3 3"/><path class="down" d="M5 9.5l3 3 3-3"/></svg></button></th>
+                <th scope="col" class="t-num" data-type="num" aria-sort="descending"><button type="button" class="sort-btn">Revenue<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="up" d="M5 6.5l3-3 3 3"/><path class="down" d="M5 9.5l3 3 3-3"/></svg></button></th>
+                <th scope="col" class="t-num" data-type="num"><button type="button" class="sort-btn">Orders<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="up" d="M5 6.5l3-3 3 3"/><path class="down" d="M5 9.5l3 3 3-3"/></svg></button></th>
+                <th scope="col" class="t-num" data-type="num"><button type="button" class="sort-btn">Average ticket<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="up" d="M5 6.5l3-3 3 3"/><path class="down" d="M5 9.5l3 3 3-3"/></svg></button></th>
+                <th scope="col" class="t-num" data-type="num"><button type="button" class="sort-btn">Change vs Sep<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="up" d="M5 6.5l3-3 3 3"/><path class="down" d="M5 9.5l3 3 3-3"/></svg></button></th>
+              </tr>
+            </thead>
+            <tbody id="cafeBody">
+              <tr data-row>
+                <th scope="row" data-value="Harbor Street">Harbor Street</th>
+                <td class="t-num" data-value="31420">$31,420</td>
+                <td class="t-num" data-value="1812">1,812</td>
+                <td class="t-num" data-value="17.34">$17.34</td>
+                <td class="t-num" data-value="4.8"><span class="change change--up"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3.5M4 7l4-4 4 4"/></svg>+4.8%</span></td>
+              </tr>
+              <tr data-row>
+                <th scope="row" data-value="Mill Lane">Mill Lane</th>
+                <td class="t-num" data-value="27960">$27,960</td>
+                <td class="t-num" data-value="1655">1,655</td>
+                <td class="t-num" data-value="16.89">$16.89</td>
+                <td class="t-num" data-value="2.1"><span class="change change--up"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3.5M4 7l4-4 4 4"/></svg>+2.1%</span></td>
+              </tr>
+              <tr data-row>
+                <th scope="row" data-value="Station Square">Station Square</th>
+                <td class="t-num" data-value="24310">$24,310</td>
+                <td class="t-num" data-value="1498">1,498</td>
+                <td class="t-num" data-value="16.23">$16.23</td>
+                <td class="t-num" data-value="-1.7"><span class="change change--down"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v9.5M4 9l4 4 4-4"/></svg>−1.7%</span></td>
+              </tr>
+              <tr data-row>
+                <th scope="row" data-value="Riverside">Riverside<span class="tag-new">New</span><span class="t-muted">Opened June 2026</span></th>
+                <td class="t-num" data-value="17630">$17,630</td>
+                <td class="t-num" data-value="1127">1,127</td>
+                <td class="t-num" data-value="15.64">$15.64</td>
+                <td class="t-num" data-value="9.6"><span class="change change--up"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3.5M4 7l4-4 4 4"/></svg>+9.6%</span></td>
+              </tr>
+              <tr class="empty-row" hidden><td colspan="5">No cafés match “<span class="q"></span>”.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Top online products -->
+      <section class="card span-5" id="products" aria-labelledby="prod-heading">
+        <div class="card__head">
+          <div>
+            <h2 class="card__title" id="prod-heading">Top online products</h2>
+            <p class="card__sub">October 2026 · ranked by revenue</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Top online products, October 2026</caption>
+            <thead><tr><th scope="col" class="rank"><span class="sr-only">Rank</span>#</th><th scope="col">Product</th><th scope="col" class="t-num">Units</th><th scope="col" class="t-num">Revenue</th></tr></thead>
+            <tbody id="productsBody">
+              <tr data-row><td class="rank">1</td><th scope="row">Morning Tide blend, 340&nbsp;g<span class="prod-bar" aria-hidden="true"><span style="--w:100%"></span></span></th><td class="t-num">1,104</td><td class="t-num">$16,008</td></tr>
+              <tr data-row><td class="rank">2</td><th scope="row">Ridgeback espresso, 1&nbsp;kg<span class="prod-bar" aria-hidden="true"><span style="--w:90.1%"></span></span></th><td class="t-num">412</td><td class="t-num">$14,420</td></tr>
+              <tr data-row><td class="rank">3</td><th scope="row">Cold brew concentrate, 1&nbsp;L<span class="prod-bar" aria-hidden="true"><span style="--w:57.3%"></span></span></th><td class="t-num">655</td><td class="t-num">$9,170</td></tr>
+              <tr data-row><td class="rank">4</td><th scope="row">Ceramic pour-over set<span class="prod-bar" aria-hidden="true"><span style="--w:38.8%"></span></span></th><td class="t-num">138</td><td class="t-num">$6,210</td></tr>
+              <tr data-row><td class="rank">5</td><th scope="row">Single-origin sampler<span class="prod-bar" aria-hidden="true"><span style="--w:34.5%"></span></span></th><td class="t-num">291</td><td class="t-num">$5,529</td></tr>
+              <tr class="empty-row" hidden><td colspan="4">No products match “<span class="q"></span>”.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Recent orders -->
+      <section class="card span-8" id="orders" aria-labelledby="orders-heading">
+        <div class="card__head">
+          <div>
+            <h2 class="card__title" id="orders-heading">Recent orders</h2>
+            <p class="card__sub">Latest 6 orders across the online store and cafés</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="orders-table">
+            <caption class="sr-only">Recent orders</caption>
+            <thead>
+              <tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Channel</th><th scope="col" class="t-num">Items</th><th scope="col" class="t-num">Total</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody id="ordersBody">
+              <tr data-row>
+                <td class="c-order order-id">#48213</td><td class="c-cust">Ana Ruiz</td><td class="c-chan">Online</td><td class="c-items t-num">2<span class="m-only"> items</span></td><td class="c-total t-num">$41.00</td>
+                <td class="c-status"><span class="status status--shipped"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 4h8v7h-8zM9.5 6.5h2.8l2.2 2.3V11h-5"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="11.5" cy="12" r="1.3"/></svg>Shipped</span></td>
+              </tr>
+              <tr data-row>
+                <td class="c-order order-id">#48212</td><td class="c-cust">Tomás Berg</td><td class="c-chan">Harbor Street</td><td class="c-items t-num">3<span class="m-only"> items</span></td><td class="c-total t-num">$14.75</td>
+                <td class="c-status"><span class="status status--paid"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Paid</span></td>
+              </tr>
+              <tr data-row>
+                <td class="c-order order-id">#48211</td><td class="c-cust">Priya Nair</td><td class="c-chan">Online</td><td class="c-items t-num">1<span class="m-only"> item</span></td><td class="c-total t-num">$35.00</td>
+                <td class="c-status"><span class="status status--pending"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>Pending</span></td>
+              </tr>
+              <tr data-row>
+                <td class="c-order order-id">#48210</td><td class="c-cust">Jonah Weiss</td><td class="c-chan">Mill Lane</td><td class="c-items t-num">2<span class="m-only"> items</span></td><td class="c-total t-num">$9.40</td>
+                <td class="c-status"><span class="status status--paid"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Paid</span></td>
+              </tr>
+              <tr data-row>
+                <td class="c-order order-id">#48209</td><td class="c-cust">Lena Okafor</td><td class="c-chan">Online</td><td class="c-items t-num">4<span class="m-only"> items</span></td><td class="c-total t-num">$63.50</td>
+                <td class="c-status"><span class="status status--refunded"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3L2.5 6l3 3"/><path d="M2.5 6h7a3.5 3.5 0 0 1 0 7H7"/></svg>Refunded</span></td>
+              </tr>
+              <tr data-row>
+                <td class="c-order order-id">#48208</td><td class="c-cust">Sam Choi</td><td class="c-chan">Riverside</td><td class="c-items t-num">1<span class="m-only"> item</span></td><td class="c-total t-num">$5.25</td>
+                <td class="c-status"><span class="status status--paid"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Paid</span></td>
+              </tr>
+              <tr class="empty-row" hidden><td colspan="6">No recent orders match “<span class="q"></span>”.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Green coffee inventory -->
+      <section class="card span-4" id="inventory" aria-labelledby="inv-heading">
+        <div class="card__head">
+          <div>
+            <h2 class="card__title" id="inv-heading">Green coffee inventory</h2>
+            <p class="card__sub">Days of stock left at the current roasting rate</p>
+          </div>
+          <span class="badge-warn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13z"/><path d="M8 6.5v3M8 11.6v.1"/></svg>2 need reorder</span>
+        </div>
+        <ul class="stock">
+          <li class="is-low">
+            <div class="stock__top"><span class="stock__name">Brazil Cerrado</span><span class="stock__days"><strong>3</strong> days</span></div>
+            <div class="stock__track" aria-hidden="true"><span class="stock__fill" style="--w:10.7%"></span><span class="stock__threshold"></span></div>
+            <p class="stock__status"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13z"/><path d="M8 6.5v3M8 11.6v.1"/></svg>Reorder needed: under 7 days</p>
+          </li>
+          <li class="is-low">
+            <div class="stock__top"><span class="stock__name">Ethiopia Guji</span><span class="stock__days"><strong>6</strong> days</span></div>
+            <div class="stock__track" aria-hidden="true"><span class="stock__fill" style="--w:21.4%"></span><span class="stock__threshold"></span></div>
+            <p class="stock__status"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13z"/><path d="M8 6.5v3M8 11.6v.1"/></svg>Reorder needed: under 7 days</p>
+          </li>
+          <li>
+            <div class="stock__top"><span class="stock__name">Colombia Huila</span><span class="stock__days"><strong>14</strong> days</span></div>
+            <div class="stock__track" aria-hidden="true"><span class="stock__fill" style="--w:50%"></span><span class="stock__threshold"></span></div>
+            <p class="stock__status"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Sufficient stock</p>
+          </li>
+          <li>
+            <div class="stock__top"><span class="stock__name">Kenya Nyeri</span><span class="stock__days"><strong>21</strong> days</span></div>
+            <div class="stock__track" aria-hidden="true"><span class="stock__fill" style="--w:75%"></span><span class="stock__threshold"></span></div>
+            <p class="stock__status"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Sufficient stock</p>
+          </li>
+        </ul>
+        <p class="stock-key"><i aria-hidden="true"></i>Marker shows the 7-day reorder point. Bars run to 28 days.</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+  const announcer = $('#announcer');
+  function announce(msg) { announcer.textContent = ''; requestAnimationFrame(() => { announcer.textContent = msg; }); }
+
+  /* ---------------- Navigation drawer (below 1024px) ---------------- */
+  const sidebar = $('#sidebar'), scrim = $('#scrim'), openBtn = $('#navOpen'), closeBtn = $('#navClose'), mainCol = $('#mainCol');
+  const drawerMQ = window.matchMedia('(max-width: 1023px)');
+
+  function openNav() {
+    sidebar.classList.add('is-open');
+    scrim.hidden = false;
+    openBtn.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('nav-open');
+    mainCol.inert = true;
+    $('a[aria-current="page"]', sidebar).focus();
+  }
+  function closeNav(restoreFocus = true) {
+    if (!sidebar.classList.contains('is-open')) return;
+    sidebar.classList.remove('is-open');
+    scrim.hidden = true;
+    openBtn.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('nav-open');
+    mainCol.inert = false;
+    if (restoreFocus) openBtn.focus();
+  }
+  openBtn.addEventListener('click', openNav);
+  closeBtn.addEventListener('click', () => closeNav());
+  scrim.addEventListener('click', () => closeNav());
+  sidebar.addEventListener('keydown', (e) => {
+    if (!sidebar.classList.contains('is-open')) return;
+    if (e.key === 'Escape') { closeNav(); return; }
+    if (e.key !== 'Tab') return;
+    const items = $$('a, button', sidebar).filter((el) => el.offsetParent !== null);
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  $$('.nav a', sidebar).forEach((a) => a.addEventListener('click', () => { if (drawerMQ.matches) closeNav(false); }));
+  drawerMQ.addEventListener('change', (e) => { if (!e.matches) closeNav(false); });
+
+  /* ---------------- Monthly revenue chart ---------------- */
+  const FULL = { Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April', May: 'May', Jun: 'June', Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December' };
+  const DATA = [
+    ['Nov', 2025, 61, 88], ['Dec', 2025, 74, 102], ['Jan', 2026, 58, 81], ['Feb', 2026, 60, 84],
+    ['Mar', 2026, 63, 89], ['Apr', 2026, 66, 93], ['May', 2026, 68, 97], ['Jun', 2026, 70, 99],
+    ['Jul', 2026, 72, 96], ['Aug', 2026, 75, 95], ['Sep', 2026, 79, 94], ['Oct', 2026, 83, 101]
+  ].map(([m, y, online, cafes]) => ({ m, y, online, cafes, total: online + cafes, label: FULL[m] + ' ' + y }));
+
+  const SERIES = {
+    online: { label: 'Online', color: 'var(--c-online)' },
+    cafes: { label: 'Cafés', color: 'var(--c-cafes)' }
+  };
+  const VIEWS = {
+    all: { keys: ['online', 'cafes'], insight: '<strong>October was the strongest month of the year</strong> at $184k, ahead of December’s $176k holiday peak.' },
+    online: { keys: ['online'], insight: '<strong>Online revenue has grown every month since January</strong>, from $58k to $83k.' },
+    cafes: { keys: ['cafes'], insight: '<strong>Café revenue rebounded to $101k</strong> from $94k in September, the highest since December.' }
+  };
+
+  const chartEl = $('#chart');
+  const tooltip = document.createElement('div');
+  tooltip.className = 'tooltip';
+  tooltip.setAttribute('aria-hidden', 'true');
+  tooltip.hidden = true;
+
+  let view = 'all';
+  let activeIdx = null;
+  let focusIdx = DATA.length - 1;
+  let geom = null;
+  const k = (v) => '$' + v + 'k';
+
+  function niceStep(max) {
+    const rough = max / 5;
+    return [5, 10, 20, 25, 50, 100].find((s) => s >= rough) || 100;
+  }
+  function topRoundedBar(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h);
+    return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  }
+  function ariaFor(d) {
+    const parts = VIEWS[view].keys.map((key) => `${SERIES[key].label} ${k(d[key])}`);
+    if (view === 'all') parts.push(`total ${k(d.total)}`);
+    return `${d.label}: ${parts.join(', ')}`;
+  }
+
+  function renderChart(animate) {
+    const W = Math.max(280, Math.floor(chartEl.clientWidth));
+    const H = W < 560 ? 240 : 300;
+    const m = { t: 12, r: 4, b: 42, l: 42 };
+    const pw = W - m.l - m.r, ph = H - m.t - m.b;
+    const keys = VIEWS[view].keys;
+    const values = DATA.map((d) => keys.reduce((s, key) => s + d[key], 0));
+    const step = niceStep(Math.max(...values));
+    const top = Math.ceil(Math.max(...values) / step) * step;
+    const y = (v) => m.t + ph - (v / top) * ph;
+    const band = pw / DATA.length;
+    const bw = Math.min(40, band * 0.62);
+
+    let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="group" aria-label="Monthly revenue chart, ${view === 'all' ? 'all channels' : SERIES[view].label + ' only'}. Use left and right arrow keys to move between months.">`;
+    for (let v = 0; v <= top; v += step) {
+      s += `<line class="grid${v === 0 ? ' grid--zero' : ''}" x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" />`;
+      s += `<text class="axis" x="${m.l - 8}" y="${y(v)}" dy="0.32em" text-anchor="end" aria-hidden="true">${k(v)}</text>`;
+    }
+
+    const cols = [];
+    DATA.forEach((d, i) => {
+      const x0 = m.l + band * i;
+      const cx = x0 + band / 2;
+      let acc = 0, bars = '';
+      keys.forEach((key, j) => {
+        const yTop = y(acc + d[key]);
+        const yBot = y(acc);
+        const isTop = j === keys.length - 1;
+        const gap = j > 0 ? 2 : 0;
+        const h = Math.max(0, yBot - yTop - gap);
+        bars += isTop
+          ? `<path class="bar" d="${topRoundedBar(cx - bw / 2, yTop, bw, h, 3)}" fill="${SERIES[key].color}" />`
+          : `<rect class="bar" x="${cx - bw / 2}" y="${yTop}" width="${bw}" height="${h}" fill="${SERIES[key].color}" />`;
+        acc += d[key];
+      });
+      cols.push({ cx, top: y(acc) });
+      const isCurrent = i === DATA.length - 1;
+      s += `<g class="col" data-i="${i}" tabindex="${i === focusIdx ? 0 : -1}" role="img" aria-label="${ariaFor(d)}">`
+        + `<rect class="band" x="${x0 + 1}" y="${m.t}" width="${band - 2}" height="${ph}" rx="3" />`
+        + bars
+        + `<text class="axis${isCurrent ? ' axis--current' : ''}" x="${cx}" y="${H - m.b + 17}" text-anchor="middle" aria-hidden="true">${d.m}</text>`
+        + (i === 0 || d.m === 'Jan' ? `<text class="axis axis--year" x="${cx}" y="${H - m.b + 32}" text-anchor="middle" aria-hidden="true">${d.y}</text>` : '')
+        + `</g>`;
+    });
+    s += '</svg>';
+
+    chartEl.innerHTML = s;
+    chartEl.appendChild(tooltip);
+    geom = { W, cols };
+    chartEl.classList.toggle('animate', !!animate);
+    if (activeIdx !== null) setActive(activeIdx);
+  }
+
+  function setActive(i) {
+    activeIdx = i;
+    chartEl.classList.add('has-active');
+    $$('.col', chartEl).forEach((g) => g.classList.toggle('is-active', +g.dataset.i === i));
+    const d = DATA[i];
+    const rows = VIEWS[view].keys.map((key) =>
+      `<div class="tooltip__row"><span class="swatch swatch--${key}"></span><span>${SERIES[key].label}</span><strong>${k(d[key])}</strong></div>`).join('');
+    const total = view === 'all' ? `<div class="tooltip__row tooltip__row--total"><span></span><span>Total</span><strong>${k(d.total)}</strong></div>` : '';
+    tooltip.innerHTML = `<p class="tooltip__title">${d.label}</p>${rows}${total}`;
+    tooltip.hidden = false;
+    const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+    const c = geom.cols[i];
+    const left = Math.min(Math.max(0, c.cx - tw / 2), geom.W - tw);
+    const top = Math.max(0, c.top - th - 10);
+    tooltip.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+  }
+  function clearActive() {
+    activeIdx = null;
+    chartEl.classList.remove('has-active');
+    $$('.col.is-active', chartEl).forEach((g) => g.classList.remove('is-active'));
+    tooltip.hidden = true;
+  }
+  const colFrom = (target) => target.closest && target.closest('.col');
+
+  chartEl.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const g = colFrom(e.target);
+    if (g && +g.dataset.i !== activeIdx) setActive(+g.dataset.i);
+  });
+  chartEl.addEventListener('pointerleave', (e) => {
+    if (e.pointerType === 'mouse' && !chartEl.contains(document.activeElement)) clearActive();
+  });
+  chartEl.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    const g = colFrom(e.target);
+    if (g) setActive(+g.dataset.i);
+  });
+  document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse' && activeIdx !== null && !chartEl.contains(e.target)) clearActive();
+  });
+  chartEl.addEventListener('focusin', (e) => {
+    const g = colFrom(e.target);
+    if (!g) return;
+    focusIdx = +g.dataset.i;
+    $$('.col', chartEl).forEach((c) => c.setAttribute('tabindex', +c.dataset.i === focusIdx ? '0' : '-1'));
+    setActive(focusIdx);
+  });
+  chartEl.addEventListener('focusout', (e) => {
+    if (!chartEl.contains(e.relatedTarget)) clearActive();
+  });
+  chartEl.addEventListener('keydown', (e) => {
+    const g = colFrom(e.target);
+    if (!g) return;
+    let next = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = Math.min(DATA.length - 1, focusIdx + 1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = Math.max(0, focusIdx - 1);
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = DATA.length - 1;
+    else if (e.key === 'Escape') { clearActive(); return; }
+    if (next === null) return;
+    e.preventDefault();
+    $(`.col[data-i="${next}"]`, chartEl).focus();
+  });
+
+  $$('input[name="channel"]').forEach((input) => input.addEventListener('change', () => {
+    view = input.value;
+    $('#chartInsight').innerHTML = VIEWS[view].insight;
+    $$('#legend li').forEach((li) => li.classList.toggle('is-off', !VIEWS[view].keys.includes(li.dataset.series)));
+    clearActive();
+    renderChart(true);
+  }));
+
+  $('#chartTable').innerHTML = DATA.map((d) =>
+    `<tr><th scope="row">${d.label}</th><td class="t-num">${k(d.online)}</td><td class="t-num">${k(d.cafes)}</td><td class="t-num">${k(d.total)}</td></tr>`).join('');
+
+  let lastWidth = 0;
+  new ResizeObserver(() => {
+    const w = Math.floor(chartEl.clientWidth);
+    if (w !== lastWidth) { lastWidth = w; renderChart(false); }
+  }).observe(chartEl);
+  renderChart(false);
+
+  /* ---------------- Sortable café table ---------------- */
+  const cafeTable = $('#cafeTable');
+  const cafeBody = $('#cafeBody');
+  $$('thead th', cafeTable).forEach((th, idx) => {
+    $('button', th).addEventListener('click', () => {
+      const type = th.dataset.type;
+      const current = th.getAttribute('aria-sort');
+      const dir = current === 'descending' ? 'ascending'
+        : current === 'ascending' ? 'descending'
+        : (type === 'text' ? 'ascending' : 'descending');
+      $$('thead th', cafeTable).forEach((h) => h.removeAttribute('aria-sort'));
+      th.setAttribute('aria-sort', dir);
+      const empty = $('.empty-row', cafeBody);
+      $$('tr[data-row]', cafeBody)
+        .sort((a, b) => {
+          const va = a.cells[idx].dataset.value, vb = b.cells[idx].dataset.value;
+          const c = type === 'text' ? va.localeCompare(vb) : parseFloat(va) - parseFloat(vb);
+          return dir === 'ascending' ? c : -c;
+        })
+        .forEach((row) => cafeBody.insertBefore(row, empty));
+      announce(`Café table sorted by ${th.textContent.trim()}, ${dir}.`);
+    });
+  });
+
+  /* ---------------- Search: filters tables on this page ---------------- */
+  const search = $('#search');
+  const filterNote = $('#filterNote');
+  const groups = [
+    { body: $('#ordersBody'), one: 'recent order', many: 'recent orders' },
+    { body: $('#productsBody'), one: 'product', many: 'products' },
+    { body: cafeBody, one: 'café', many: 'cafés' }
+  ];
+  const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ');
+  let searchTimer;
+
+  function applySearch() {
+    const raw = search.value.trim();
+    const q = norm(raw);
+    const counts = groups.map((g) => {
+      let n = 0;
+      $$('tr[data-row]', g.body).forEach((row) => {
+        const match = !q || norm(row.textContent).includes(q);
+        row.hidden = !match;
+        if (match) n++;
+      });
+      const empty = $('.empty-row', g.body);
+      empty.hidden = n > 0;
+      $('.q', empty).textContent = raw;
+      return n;
+    });
+    if (!q) { filterNote.hidden = true; announce('Search cleared. Showing all rows.'); return; }
+    const summary = groups.map((g, i) => `${counts[i]} ${counts[i] === 1 ? g.one : g.many}`).join(', ');
+    $('#filterText').textContent = `Showing matches for “${raw}”: ${summary}.`;
+    filterNote.hidden = false;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => announce(`Matches for ${raw}: ${summary}.`), 400);
+  }
+  search.addEventListener('input', applySearch);
+  search.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && search.value) { e.preventDefault(); search.value = ''; applySearch(); }
+  });
+  $('#clearSearch').addEventListener('click', () => { search.value = ''; applySearch(); search.focus(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target;
+    if (t.closest('input, textarea, select, [contenteditable="true"]')) return;
+    e.preventDefault();
+    search.focus();
+  });
+})();
+</script>
+</body>
+</html>

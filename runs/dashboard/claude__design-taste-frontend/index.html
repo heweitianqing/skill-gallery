@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales &amp; Operations · Kestrel Coffee Roasters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Framed sheet, tinted for Kestrel: the chrome takes the green-grey of unroasted green coffee; the work sits on a
+   white sheet inset 8px from the window's right and bottom edges. Colour lives on data: teal is online revenue,
+   slate is the cafés, red only on green coffee below the reorder line and on a falling figure. */
+:root {
+  --ground: #f1f4ef;   /* green-coffee grey: the face of this product */
+  --surface: #ffffff;
+  --raised: #f4f6f4;
+  --active: #e3e8e1;
+  --border: #e6e9e6;
+  --rule: #eff1ef;
+  --control: #cdd1cc;
+  --text: #131416;
+  --muted: #5b5f5d;
+  --faint: #676b69;
+  --accent: #1b6c80;
+  --primary: #1d1f20;
+  --primary-ink: #ffffff;
+  --positive: #1e7b4f;
+  --negative: #c4242a;
+  --chart-online: #1b6c80;
+  --chart-cafes: #4c565a;
+  --chart-ok: #7d8a86;
+  --grid: #eceeec;
+  --baseline: #c9cec9;
+  --pill-positive-bg: #dcfae5; --pill-positive-ink: #04250e;
+  --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+  --pill-warning-bg: #fff4d6; --pill-warning-ink: #7a3a0c;
+  --pill-info-bg: #e4eefa;     --pill-info-ink: #173f6e;
+  --pill-neutral-bg: #ebedee;  --pill-neutral-ink: #353736;
+
+  --font: "IBM Plex Sans", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace; /* taste-skill-ignore: the sheet's second face, order IDs only */
+  --fs-title: 18px; --fs-section: 16px; --fs-lead: 32px; --fs-kpi: 24px; --fs-body: 14px; --fs-small: 12px;
+
+  --sidebar-width: 228px;
+  --sheet-inset: 8px;
+  --radius-sheet: 16px;
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --pad: 24px;
+  --gap: 24px;
+  --card-pad: 20px;
+  --control-height: 32px;
+  --row-height: 46px;
+  --nav-row: 32px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-press: 120ms; --t-hover: 150ms; --t-ui: 200ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; background: var(--ground); color: var(--text); font: var(--fs-body)/20px var(--font); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, figure, ul, ol, dl, dd { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+svg { display: block; }
+button, input { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.num, table, .kpi-value { font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.id { font-family: var(--mono); font-size: 13px; } /* taste-skill-ignore: order IDs */
+
+/* ---------- shell: one tinted L of sidebar and top bar, a white sheet inside it ----------
+   Grid at 1440: 1440 − 228 sidebar − 8 inset = 1204 sheet; − 2 edge − 2 × 24 padding = 1154 content.
+   12 columns with a 24px gutter: 12 × 74.17 + 11 × 24 = 1154, so 8 + 4 and 7 + 5 spans land on both edges. */
+.app { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); grid-template-rows: 56px 1fr; min-height: 100svh; }
+.sidebar { grid-row: 1 / span 2; position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; padding: 0 12px 16px; overflow: auto; }
+.brand { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 8px; flex: none; }
+.brand svg { width: 24px; height: 24px; flex: none; }
+.brand b { font-weight: 600; font-size: 14px; line-height: 18px; letter-spacing: -0.005em; }
+.scope { margin: 4px 8px 14px; color: var(--muted); font-size: var(--fs-small); line-height: 16px; }
+.nav { display: grid; gap: 2px; }
+.nav-item { display: flex; align-items: center; gap: 10px; height: var(--nav-row); padding: 0 8px; border-radius: 8px; color: var(--muted); transition: background-color var(--t-hover) ease, color var(--t-hover) ease; }
+.nav-item svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.nav-item:hover { background: var(--active); color: var(--text); }
+.nav-item[aria-current="page"] { background: var(--active); color: var(--text); font-weight: 500; }
+.nav-item .count { margin-left: auto; font-size: var(--fs-small); color: var(--negative); font-weight: 500; }
+.sidebar .bottom { margin-top: auto; padding-top: 16px; }
+.sidebar .close { display: none; }
+
+.topbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 460px) minmax(0, 1fr); align-items: center; gap: 16px; padding: 0 calc(var(--sheet-inset) + 16px) 0 var(--pad); }
+.title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.title h1 { font-size: var(--fs-title); line-height: 24px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; }
+.period { color: var(--muted); white-space: nowrap; }
+.search { position: relative; }
+.search svg { position: absolute; left: 11px; top: 50%; width: 15px; height: 15px; transform: translateY(-50%); fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linecap: round; pointer-events: none; }
+.search input { width: 100%; height: 34px; padding: 0 36px 0 34px; border: 1px solid var(--control); border-radius: var(--radius-control); background: var(--surface); transition: border-color var(--t-hover) ease; }
+.search input::placeholder { color: var(--faint); }
+.search input:hover { border-color: #b6bbb5; }
+.search input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.search kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); min-width: 20px; height: 20px; padding: 0 5px; border: 1px solid var(--border); border-radius: 4px; background: var(--raised); color: var(--muted); font: 12px/18px var(--font); text-align: center; }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
+.user { justify-self: end; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.user .who { text-align: right; line-height: 16px; }
+.user .who b { display: block; font-weight: 500; font-size: 13px; }
+.user .who span { color: var(--muted); font-size: var(--fs-small); }
+.avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%; background: #dbe9ec; color: #123d48; font-weight: 600; font-size: 12px; letter-spacing: 0.02em; }
+.icon-btn { display: none; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; transition: background-color var(--t-hover) ease; }
+.icon-btn:hover { background: var(--active); }
+.icon-btn:active { transform: scale(0.96); }
+.icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+
+.sheet { grid-column: 2; margin: 0 var(--sheet-inset) var(--sheet-inset) 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sheet); padding: var(--pad); min-width: 0; }
+
+/* ---------- summary line: the finding and the one job ---------- */
+.summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.summary p { font-size: 15px; line-height: 22px; max-width: 76ch; }
+.summary p b { font-weight: 600; }
+.summary .warn-text { color: var(--negative); font-weight: 500; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: var(--control-height); padding: 0 14px; border-radius: var(--radius-control); border: 1px solid var(--control); background: var(--surface); font-weight: 500; white-space: nowrap; cursor: pointer; transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+.btn:hover { background: var(--raised); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--primary); color: var(--primary-ink); border-color: transparent; }
+.btn.primary:hover { background: #3a3d3f; }
+
+/* ---------- KPI strip: one container split by dividers ---------- */
+.kpis { display: grid; grid-template-columns: 1.25fr repeat(4, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--radius-card); margin-bottom: var(--gap); }
+.kpi { padding: 16px var(--card-pad) 16px; min-width: 0; }
+.kpi + .kpi { border-left: 1px solid var(--border); }
+.kpi-label { color: var(--muted); font-weight: 500; }
+.kpi-value { margin-top: 6px; font-size: var(--fs-kpi); line-height: 32px; font-weight: 400; letter-spacing: -0.01em; white-space: nowrap; }
+.kpi.lead .kpi-value { font-size: var(--fs-lead); font-weight: 500; letter-spacing: -0.015em; }
+.kpi-value small { font-size: 15px; color: var(--muted); margin-left: 2px; letter-spacing: 0; }
+.delta { margin-top: 6px; font-size: var(--fs-small); line-height: 16px; color: var(--muted); }
+.delta b { font-weight: 500; }
+.delta .good { color: var(--positive); }
+.delta .bad { color: var(--negative); }
+
+/* ---------- panels ---------- */
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); }
+.grid + .grid { margin-top: var(--gap); }
+.grid.top { align-items: start; }
+.s8 { grid-column: span 8; } .s7 { grid-column: span 7; } .s5 { grid-column: span 5; } .s4 { grid-column: span 4; }
+.panel { border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--card-pad); min-width: 0; display: flex; flex-direction: column; }
+.panel:has(.chart) { overflow: hidden; }
+.panel > header { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.panel h2 { font-size: var(--fs-section); line-height: 22px; font-weight: 600; }
+.panel .meta { color: var(--muted); font-size: var(--fs-small); line-height: 16px; }
+.panel .note { color: var(--muted); font-size: 13px; line-height: 18px; }
+.card-link { display: inline-flex; align-items: center; gap: 2px; font-weight: 500; text-underline-offset: 3px; }
+.card-link svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--t-hover) var(--ease-out); }
+.card-link:hover { text-decoration: underline; }
+.card-link:hover svg { transform: translateX(2px); }
+
+/* ---------- revenue chart ---------- */
+.finding { margin: -6px 0 16px; line-height: 20px; }
+.chart-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.segmented { display: inline-flex; width: max-content; max-width: 100%; padding: 2px; border-radius: 8px; background: var(--raised); border: 1px solid var(--border); }
+.segmented button { height: 28px; padding: 0 12px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: background-color var(--t-hover) ease, color var(--t-hover) ease; }
+.segmented button:hover { color: var(--text); }
+.segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 500; border-color: var(--border); }
+.legend { display: flex; gap: 16px; color: var(--muted); font-size: var(--fs-small); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 8px; height: 8px; border-radius: 2px; }
+.legend [hidden] { display: none; }
+.chart { position: relative; min-width: 0; outline: none; border-radius: 4px; touch-action: manipulation; }
+.chart:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.chart svg text { font-family: var(--font); }
+.chart .hl { fill: var(--raised); opacity: 0; transition: opacity var(--t-hover) ease; }
+.chart .hl.on { opacity: 1; }
+.chart .hit { fill: transparent; cursor: pointer; }
+.tip { position: absolute; top: 0; left: 0; z-index: 3; min-width: 150px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 16px rgba(19, 20, 22, 0.08); /* taste-skill-ignore: the tooltip floats */ font-size: 13px; line-height: 18px; pointer-events: none; opacity: 0; transform: translate(-50%, -4px); transition: opacity var(--t-hover) ease; }
+.tip.on { opacity: 1; }
+.tip:not(.on) { left: 0 !important; top: 0 !important; visibility: hidden; }
+.tip b { display: block; font-weight: 600; margin-bottom: 4px; }
+.tip .r { display: flex; align-items: center; gap: 6px; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tip .r span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.tip .r i { width: 8px; height: 8px; border-radius: 2px; }
+.tip .r.total { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--rule); }
+
+/* ---------- green coffee runway: days of stock against the 7-day reorder line ---------- */
+.runway { display: grid; }
+.bean { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name days" "track track"; align-items: center; gap: 8px 12px; padding: 12px 0 14px; }
+.bean + .bean { border-top: 1px solid var(--rule); }
+.bean-name { grid-area: name; line-height: 20px; }
+.bean-days { grid-area: days; display: flex; align-items: center; gap: 8px; line-height: 20px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bean-days b { font-weight: 500; }
+.bean-days .ok { color: var(--muted); font-size: var(--fs-small); }
+.track { grid-area: track; position: relative; height: 8px; background: var(--raised); border-radius: 0 4px 4px 0; }
+.track .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; background: var(--chart-ok); }
+.bean.low .fill { background: var(--negative); }
+.track .line, .axis .line { position: absolute; top: -5px; bottom: -5px; left: calc(7 / 28 * 100%); border-left: 1px dashed var(--text); }
+.axis { position: relative; height: 16px; margin-top: 2px; color: var(--muted); font-size: var(--fs-small); line-height: 16px; font-variant-numeric: tabular-nums; }
+.axis span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.axis span:first-child { transform: none; }
+.axis span:last-child { transform: translateX(-100%); }
+.axis .reorder { color: var(--text); font-weight: 500; }
+.foot-note { margin-top: auto; padding-top: 14px; }
+.panel-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 16px; }
+
+/* ---------- tables ---------- */
+.table-wrap { overflow-x: auto; margin: 0 calc(var(--card-pad) * -1); padding: 0 var(--card-pad); }
+table { width: 100%; border-collapse: collapse; }
+th { height: 36px; padding: 0 10px; text-align: left; font-weight: 400; font-size: var(--fs-small); color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 10px; border-bottom: 1px solid var(--rule); vertical-align: baseline; white-space: nowrap; }
+th:first-child, td:first-child { padding-left: 0; }
+th:last-child, td:last-child { padding-right: 0; }
+tbody tr:last-child td { border-bottom: 0; }
+th.n, td.n { text-align: right; }
+td .sub { display: block; font-size: var(--fs-small); line-height: 16px; color: var(--muted); }
+td.name { font-weight: 500; }
+td.muted { color: var(--muted); }
+.orders-table td { padding-top: 15px; padding-bottom: 15px; }
+tfoot td { border-top: 1px solid var(--border); border-bottom: 0; color: var(--muted); }
+tfoot td.n b { color: var(--text); font-weight: 500; }
+.good { color: var(--positive); } .bad { color: var(--negative); }
+th .sort { display: inline-flex; align-items: center; gap: 4px; margin: 0 -4px; padding: 4px; border: 0; border-radius: 4px; background: none; color: inherit; font-size: inherit; cursor: pointer; transition: color var(--t-hover) ease, background-color var(--t-hover) ease; }
+th.n .sort { flex-direction: row-reverse; }
+th .sort:hover { color: var(--text); background: var(--raised); }
+th[aria-sort] .sort { color: var(--text); font-weight: 500; }
+th .sort svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; visibility: hidden; }
+th[aria-sort] .sort svg { visibility: visible; }
+th[aria-sort="ascending"] .sort svg { transform: rotate(180deg); }
+.empty-row td { padding: 16px 0; color: var(--muted); white-space: normal; }
+
+/* a thin proportional bar under a product's name: grey, the top seller in ink */
+.prod-bar { display: block; height: 2px; margin-top: 6px; background: var(--chart-ok); }
+tr:first-child .prod-bar { background: var(--text); }
+
+/* status pills: a pale tint with dark ink of the same hue and its own glyph, so four states read apart in colour, shape and word */
+.pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 7px; border-radius: 999px; font-size: var(--fs-small); font-weight: 500; line-height: 1; white-space: nowrap; flex: none; background: var(--pill-neutral-bg); color: var(--pill-neutral-ink); }
+.pill svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.pill.paid { background: var(--pill-positive-bg); color: var(--pill-positive-ink); }
+.pill.shipped { background: var(--pill-info-bg); color: var(--pill-info-ink); }
+.pill.pending { background: var(--pill-warning-bg); color: var(--pill-warning-ink); }
+.pill.refunded, .pill.neg { background: var(--pill-negative-bg); color: var(--pill-negative-ink); }
+
+/* category shares: a ranked list, one figure per row, the bar under the label */
+.shares { display: grid; }
+.share { padding: 9px 0 10px; }
+.share + .share { border-top: 1px solid var(--rule); }
+.share-line { display: flex; justify-content: space-between; gap: 12px; line-height: 20px; }
+.share-line b { font-weight: 500; font-variant-numeric: tabular-nums; }
+.share-bar { height: 6px; margin-top: 6px; border-radius: 0 3px 3px 0; background: var(--chart-ok); }
+.share:first-child .share-bar { background: var(--text); }
+
+/* ---------- tablet: the sidebar folds into a menu sheet ---------- */
+@media (max-width: 1100px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .sidebar { position: fixed; inset: 0; z-index: 30; width: 100%; height: 100%; padding: 0 16px 24px; background: var(--ground); transform: translateX(-100%); visibility: hidden; transition: transform var(--t-ui) var(--ease-out), visibility 0s linear var(--t-ui); }
+  .sidebar.open { transform: none; visibility: visible; transition: transform var(--t-ui) var(--ease-out); }
+  .sidebar .close { display: grid; margin-left: auto; }
+  .nav-item { height: 44px; font-size: 15px; }
+  .topbar { grid-template-columns: auto minmax(0, 1fr) minmax(200px, 320px) auto; min-height: 56px; padding: 0 16px 0 8px; gap: 8px; }
+  .icon-btn.menu { display: grid; }
+  .sheet { grid-column: 1; margin: 0 var(--sheet-inset) var(--sheet-inset); }
+  .grid > * { grid-column: 1 / -1; }
+  .user .who { display: none; }
+}
+@media (max-width: 860px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi + .kpi { border-left: 0; }
+  .kpi.lead { grid-column: 1 / -1; }
+  .kpi:nth-child(n + 2) { border-top: 1px solid var(--border); }
+  .kpi:nth-child(odd):not(.lead) { border-left: 1px solid var(--border); }
+  .summary { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- phone ---------- */
+@media (max-width: 640px) {
+  :root { --pad: 16px; --gap: 16px; --card-pad: 16px; --fs-lead: 28px; --fs-kpi: 22px; }
+  .topbar { grid-template-columns: auto minmax(0, 1fr) auto auto; padding: 0 12px 0 4px; gap: 4px; }
+  .title { flex-direction: column; gap: 0; }
+  .title h1 { font-size: 17px; line-height: 22px; }
+  .period { font-size: var(--fs-small); line-height: 16px; }
+  .icon-btn.find { display: grid; }
+  .search { display: none; grid-column: 1 / -1; padding: 0 4px 10px 12px; }
+  .search.open { display: block; grid-row: 2; }
+  .icon-btn.menu, .title, .icon-btn.find, .user { grid-row: 1; }
+  .search svg { left: 23px; top: calc(50% - 5px); }
+  .search input { height: 44px; font-size: 16px; }
+  .search kbd { display: none; }
+  .sheet { margin: 0; border-radius: 16px 16px 0 0; border-width: 1px 0 0; }
+  .summary p { font-size: 15px; }
+  .summary .btn { height: 44px; width: 100%; }
+  .kpi { padding: 14px 16px; }
+  .kpi-value small { font-size: 13px; }
+  .panel-foot { flex-direction: column; align-items: stretch; }
+  .panel-foot .btn { height: 44px; }
+  .segmented { display: flex; width: 100%; }
+  .segmented button { flex: 1; height: 36px; padding: 0 8px; }
+  .finding { margin-top: -4px; }
+
+  /* the café table stays a table so its headers still sort: it scrolls in its own frame with the name fixed */
+  .cafes-table td:first-child, .cafes-table th:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; padding-right: 14px; }
+
+  /* recent orders become two-line rows: order, customer and total, then channel and items, the status at the right */
+  .orders-table thead { display: none; }
+  .orders-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "who total" "meta status"; gap: 2px 12px; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+  .orders-table tbody tr:last-child { border-bottom: 0; }
+  .orders-table td { padding: 0; border: 0; }
+  .orders-table td.c-order { display: none; }
+  .orders-table td.c-cust { grid-area: who; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
+  .orders-table td.c-cust::before { content: attr(data-order) "  "; font-family: var(--mono); /* taste-skill-ignore: order IDs */ font-size: 13px; font-weight: 400; color: var(--muted); white-space: pre; }
+  .orders-table td.c-total { grid-area: total; }
+  .orders-table td.c-chan { grid-area: meta; color: var(--muted); font-size: 13px; }
+  .orders-table td.c-items { display: none; }
+  .orders-table td.c-chan::after { content: " · " attr(data-items); }
+  .orders-table td.c-status { grid-area: status; text-align: right; }
+  .orders-table .empty-row { display: block; }
+  .orders-table tr[hidden] { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.01ms !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== navigation ===== -->
+  <aside class="sidebar" id="sidebar" aria-label="Main">
+    <div class="brand">
+      <!-- the mark: a kestrel hovering, wings spread and tail fanned, in the data teal -->
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1b6c80" d="M12 4.2c.9 0 1.5.7 1.6 1.6l.2 1.6 8.2 1.4c.4.1.4.6 0 .7l-7.9 1.9-.6 4.5 2.4 3.8c.2.3-.1.7-.5.5L12 18.7l-3.4 1.5c-.4.2-.7-.2-.5-.5l2.4-3.8-.6-4.5-7.9-1.9c-.4-.1-.4-.6 0-.7l8.2-1.4.2-1.6c.1-.9.7-1.6 1.6-1.6z"/></svg>
+      <b>Kestrel Coffee Roasters</b>
+      <button class="icon-btn close" type="button" aria-label="Close menu" data-close-menu>
+        <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4 4 14"/></svg>
+      </button>
+    </div>
+    <p class="scope">Online store and 4 cafés</p>
+    <nav class="nav" aria-label="Sections">
+      <a class="nav-item" href="#overview" aria-current="page">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Overview</a>
+      <a class="nav-item" href="#orders">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.8h9v12.4l-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1-1.5 1z"/><path d="M6 5.5h4M6 8h4"/></svg>Orders</a>
+      <a class="nav-item" href="#products">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5h10l-.8 9H3.8z"/><path d="M5.8 5V4a2.2 2.2 0 0 1 4.4 0v1"/></svg>Products</a>
+      <a class="nav-item" href="#customers">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.8 13.5c.4-2.3 2.1-3.6 4.2-3.6s3.8 1.3 4.2 3.6"/><path d="M10.5 3.2a2.4 2.4 0 0 1 0 4.6M12 9.9c1.2.4 2 1.6 2.2 3.6"/></svg>Customers</a>
+      <a class="nav-item" href="#inventory">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h8l1 3v8H3v-8z"/><path d="M3 5.5h10M6.5 8.5h3"/></svg>Inventory<span class="count">2 low</span></a>
+      <a class="nav-item" href="#reports">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5h11"/><path d="M4.5 11V8M8 11V4.5M11.5 11V6.5"/></svg>Reports</a>
+    </nav>
+    <div class="bottom">
+      <a class="nav-item" href="#settings">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h6M11.5 4.5h2M2.5 11.5h2M7.5 11.5h6"/><circle cx="10" cy="4.5" r="1.5"/><circle cx="6" cy="11.5" r="1.5"/></svg>Settings</a>
+    </div>
+  </aside>
+
+  <!-- ===== top bar ===== -->
+  <header class="topbar">
+    <button class="icon-btn menu" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false" data-open-menu>
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 5h12M3 9h12M3 13h12"/></svg>
+    </button>
+    <div class="title">
+      <h1>Sales &amp; Operations</h1>
+      <span class="period">October 2026</span>
+    </div>
+    <div class="search" id="search-box" role="search">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.4 10.4 14 14"/></svg>
+      <input id="search" type="search" placeholder="Search orders, products, customers" aria-label="Search orders, products, customers" autocomplete="off">
+      <kbd aria-hidden="true">/</kbd>
+    </div>
+    <button class="icon-btn find" type="button" aria-label="Search" aria-controls="search-box" aria-expanded="false" data-toggle-search>
+      <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="M11.8 11.8 15.5 15.5"/></svg>
+    </button>
+    <div class="user">
+      <div class="who"><b>Mara Kim</b><span>Operations lead</span></div>
+      <span class="avatar" role="img" aria-label="Mara Kim, Operations lead">MK</span>
+    </div>
+  </header>
+
+  <!-- ===== the sheet ===== -->
+  <main class="sheet" id="overview">
+
+    <div class="summary">
+      <p>October closed at <b>$184,320</b>, up 6.4% on September. <span class="warn-text">Brazil Cerrado and Ethiopia Guji</span> have under a week of green coffee left.</p>
+      <a class="btn primary" href="#green-coffee">Review 2 reorders</a>
+    </div>
+
+    <section class="kpis" aria-label="October 2026 against September 2026">
+      <div class="kpi lead">
+        <div class="kpi-label">Revenue</div>
+        <div class="kpi-value">$184,320</div>
+        <div class="delta"><b class="good">+6.4%</b> vs September</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Orders</div>
+        <div class="kpi-value">9,412</div>
+        <div class="delta"><b class="good">+3.1%</b> vs September</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Average order value</div>
+        <div class="kpi-value">$19.58</div>
+        <div class="delta"><b class="good">+3.2%</b> vs September</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Subscription customers</div>
+        <div class="kpi-value">1,286</div>
+        <div class="delta"><b class="good">+48 net</b> vs September</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Refund rate <span class="sr-only">(lower is better)</span></div>
+        <div class="kpi-value">1.9<small>%</small></div>
+        <div class="delta"><b class="good">−0.3 pts</b> vs September</div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <!-- monthly revenue -->
+      <section class="panel s8" aria-labelledby="rev-h">
+        <header>
+          <h2 id="rev-h">Monthly revenue</h2>
+          <span class="meta">Nov 2025 to Oct 2026, thousands of US dollars</span>
+        </header>
+        <p class="finding" id="rev-finding">Online has grown every month since January, from $58k to $83k. Cafés passed $100k for the first time since December.</p>
+        <div class="chart-controls">
+          <div class="segmented" role="group" aria-label="Channel">
+            <button type="button" aria-pressed="true" data-channel="all">All channels</button>
+            <button type="button" aria-pressed="false" data-channel="online">Online only</button>
+            <button type="button" aria-pressed="false" data-channel="cafes">Cafés only</button>
+          </div>
+          <div class="legend" aria-hidden="true">
+            <span data-series="cafes"><i style="background:var(--chart-cafes)"></i>Cafés</span>
+            <span data-series="online"><i style="background:var(--chart-online)"></i>Online</span>
+          </div>
+        </div>
+        <div class="chart" id="rev-chart" tabindex="0" role="group" aria-roledescription="chart" aria-label="Monthly revenue by channel. Use the left and right arrow keys to read each month.">
+          <div class="tip" id="rev-tip" aria-hidden="true"></div>
+        </div>
+        <p class="sr-only" aria-live="polite" id="rev-live"></p>
+        <table class="sr-only" id="rev-table">
+          <caption>Monthly revenue by channel, thousands of US dollars</caption>
+          <thead><tr><th scope="col">Month</th><th scope="col">Online</th><th scope="col">Cafés</th><th scope="col">Total</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- green coffee -->
+      <section class="panel s4" id="green-coffee" aria-labelledby="gc-h">
+        <header>
+          <h2 id="gc-h">Green coffee</h2>
+          <span class="meta">Days of stock at the current roasting rate</span>
+        </header>
+        <div class="runway" role="list">
+          <div class="bean low" role="listitem">
+            <div class="bean-name">Brazil Cerrado</div>
+            <div class="bean-days"><b>3 days</b><span class="pill neg">Reorder</span></div>
+            <div class="track" aria-hidden="true"><div class="line"></div><div class="fill" style="width:calc(3 / 28 * 100%)"></div></div>
+          </div>
+          <div class="bean low" role="listitem">
+            <div class="bean-name">Ethiopia Guji</div>
+            <div class="bean-days"><b>6 days</b><span class="pill neg">Reorder</span></div>
+            <div class="track" aria-hidden="true"><div class="line"></div><div class="fill" style="width:calc(6 / 28 * 100%)"></div></div>
+          </div>
+          <div class="bean" role="listitem">
+            <div class="bean-name">Colombia Huila</div>
+            <div class="bean-days"><span class="ok">7 days over the line</span><b>14 days</b></div>
+            <div class="track" aria-hidden="true"><div class="line"></div><div class="fill" style="width:calc(14 / 28 * 100%)"></div></div>
+          </div>
+          <div class="bean" role="listitem">
+            <div class="bean-name">Kenya Nyeri</div>
+            <div class="bean-days"><span class="ok">14 days over the line</span><b>21 days</b></div>
+            <div class="track" aria-hidden="true"><div class="line"></div><div class="fill" style="width:calc(21 / 28 * 100%)"></div></div>
+          </div>
+        </div>
+        <div class="axis" aria-hidden="true"><span style="left:0">0</span><span class="reorder" style="left:25%">7, reorder</span><span style="left:50%">14</span><span style="left:75%">21</span><span style="left:100%">28 days</span></div>
+        <div class="panel-foot">
+          <p class="note">2 of 4 origins are below 7&nbsp;days.</p>
+          <a class="btn" href="#inventory">Open inventory</a>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid">
+      <!-- café performance -->
+      <section class="panel s7" aria-labelledby="cafe-h">
+        <header>
+          <h2 id="cafe-h">Café performance</h2>
+          <span class="meta">October 2026, change vs September</span>
+        </header>
+        <div class="table-wrap">
+          <table class="cafes-table" id="cafes">
+            <thead>
+              <tr>
+                <th scope="col" data-key="name" data-type="text"><button class="sort" type="button">Café<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5l3-3"/></svg></button></th>
+                <th scope="col" class="n" data-key="revenue" aria-sort="descending"><button class="sort" type="button">Revenue<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5l3-3"/></svg></button></th>
+                <th scope="col" class="n" data-key="orders"><button class="sort" type="button">Orders<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5l3-3"/></svg></button></th>
+                <th scope="col" class="n" data-key="ticket"><button class="sort" type="button">Average ticket<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5l3-3"/></svg></button></th>
+                <th scope="col" class="n" data-key="change"><button class="sort" type="button">Change vs Sep<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5l3-3"/></svg></button></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-name="Harbor Street" data-revenue="31420" data-orders="1812" data-ticket="17.34" data-change="4.8">
+                <td class="name">Harbor Street</td><td class="n">$31,420</td><td class="n">1,812</td><td class="n">$17.34</td><td class="n good">+4.8%</td></tr>
+              <tr data-name="Mill Lane" data-revenue="27960" data-orders="1655" data-ticket="16.89" data-change="2.1">
+                <td class="name">Mill Lane</td><td class="n">$27,960</td><td class="n">1,655</td><td class="n">$16.89</td><td class="n good">+2.1%</td></tr>
+              <tr data-name="Station Square" data-revenue="24310" data-orders="1498" data-ticket="16.23" data-change="-1.7">
+                <td class="name">Station Square</td><td class="n">$24,310</td><td class="n">1,498</td><td class="n">$16.23</td><td class="n bad">−1.7%</td></tr>
+              <tr data-name="Riverside" data-revenue="17630" data-orders="1127" data-ticket="15.64" data-change="9.6">
+                <td class="name">Riverside<span class="sub">Opened June 2026</span></td><td class="n">$17,630</td><td class="n">1,127</td><td class="n">$15.64</td><td class="n good">+9.6%</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>All cafés</td><td class="n"><b id="cafe-rev-total">$101,320</b></td><td class="n"><b id="cafe-ord-total">6,092</b></td><td class="n"><b id="cafe-ticket-total">$16.63</b></td><td class="n" aria-label="No combined change">—</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p class="note" style="margin-top:14px">Station Square is the only café down on September. Riverside, five months old, grew fastest.</p>
+      </section>
+
+      <!-- revenue by category -->
+      <section class="panel s5" aria-labelledby="cat-h">
+        <header>
+          <h2 id="cat-h">Revenue by category</h2>
+          <span class="meta">Share of October revenue</span>
+        </header>
+        <ul class="shares" id="shares"></ul>
+      </section>
+    </div>
+
+    <div class="grid">
+      <!-- recent orders -->
+      <section class="panel s7" aria-labelledby="ord-h">
+        <header>
+          <h2 id="ord-h">Recent orders</h2>
+          <a class="card-link" href="#orders">View all orders<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+        </header>
+        <div class="table-wrap">
+          <table class="orders-table" id="orders-table">
+            <thead>
+              <tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Channel</th><th scope="col" class="n">Items</th><th scope="col" class="n">Total</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note foot-note">The 6 latest of 9,412 orders in October. One is waiting on payment and one was refunded.</p>
+      </section>
+
+      <!-- top online products -->
+      <section class="panel s5" aria-labelledby="prod-h">
+        <header>
+          <h2 id="prod-h">Top online products</h2>
+          <span class="meta">October 2026</span>
+        </header>
+        <div class="table-wrap">
+          <table id="products-table">
+            <thead><tr><th scope="col">Product</th><th scope="col" class="n">Units</th><th scope="col" class="n">Revenue</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note" id="prod-note" style="margin-top:14px"></p>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  // ---------- the data, exactly as given; every total below is computed from it ----------
+  const MONTHS = [
+    ['Nov', 2025, 61, 88], ['Dec', 2025, 74, 102], ['Jan', 2026, 58, 81], ['Feb', 2026, 60, 84],
+    ['Mar', 2026, 63, 89], ['Apr', 2026, 66, 93], ['May', 2026, 68, 97], ['Jun', 2026, 70, 99],
+    ['Jul', 2026, 72, 96], ['Aug', 2026, 75, 95], ['Sep', 2026, 79, 94], ['Oct', 2026, 83, 101],
+  ].map(([m, y, online, cafes]) => ({ m, y, online, cafes }));
+  const LONG = { Nov: 'November', Dec: 'December', Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April', May: 'May', Jun: 'June', Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October' };
+  const CATEGORIES = [['Whole bean', 38], ['Espresso drinks', 27], ['Filter & cold brew', 14], ['Pastries', 12], ['Equipment', 6], ['Gift cards', 3]];
+  const PRODUCTS = [
+    ['Morning Tide blend, 340 g', 1104, 16008], ['Ridgeback espresso, 1 kg', 412, 14420], ['Cold brew concentrate, 1 L', 655, 9170],
+    ['Ceramic pour-over set', 138, 6210], ['Single-origin sampler', 291, 5529],
+  ];
+  const ORDERS = [
+    ['48213', 'Ana Ruiz', 'Online', 2, 41.00, 'Shipped'], ['48212', 'Tomás Berg', 'Harbor Street', 3, 14.75, 'Paid'],
+    ['48211', 'Priya Nair', 'Online', 1, 35.00, 'Pending'], ['48210', 'Jonah Weiss', 'Mill Lane', 2, 9.40, 'Paid'],
+    ['48209', 'Lena Okafor', 'Online', 4, 63.50, 'Refunded'], ['48208', 'Sam Choi', 'Riverside', 1, 5.25, 'Paid'],
+  ];
+  const REVENUE = 184320, ORDER_COUNT = 9412;
+
+  const MINUS = '−';
+  const usd0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const usd2 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+  const int = new Intl.NumberFormat('en-US');
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // ---------- the figures that must agree ----------
+  const cafeRows = $$('#cafes tbody tr').map((tr) => ({ revenue: +tr.dataset.revenue, orders: +tr.dataset.orders, ticket: +tr.dataset.ticket }));
+  const cafeRevenue = cafeRows.reduce((a, r) => a + r.revenue, 0);
+  const cafeOrders = cafeRows.reduce((a, r) => a + r.orders, 0);
+  const onlineRevenue = REVENUE - cafeRevenue;
+  const oct = MONTHS[MONTHS.length - 1];
+  console.assert(CATEGORIES.reduce((a, c) => a + c[1], 0) === 100, 'category shares sum to 100%');
+  console.assert(Math.round(cafeRevenue / 1000) === oct.cafes, 'café table matches October cafés bar');
+  console.assert(Math.round(onlineRevenue / 1000) === oct.online, 'online remainder matches October online bar');
+  console.assert(Math.round(oct.online + oct.cafes) === Math.round(REVENUE / 1000), 'October bar matches revenue KPI');
+  console.assert((REVENUE / ORDER_COUNT).toFixed(2) === '19.58', 'average order value = revenue / orders');
+  cafeRows.forEach((r) => console.assert((r.revenue / r.orders).toFixed(2) === r.ticket.toFixed(2), 'average ticket = revenue / orders'));
+  $('#cafe-rev-total').textContent = usd0.format(cafeRevenue);
+  $('#cafe-ord-total').textContent = int.format(cafeOrders);
+  $('#cafe-ticket-total').textContent = usd2.format(cafeRevenue / cafeOrders);
+
+  // ---------- category shares ----------
+  const maxShare = Math.max(...CATEGORIES.map((c) => c[1]));
+  $('#shares').innerHTML = CATEGORIES.map(([name, pct]) => `
+    <li class="share" data-search="${esc(name.toLowerCase())}">
+      <div class="share-line"><span>${esc(name)}</span><b>${pct}%</b></div>
+      <div class="share-bar" style="width:${(pct / maxShare * 100).toFixed(2)}%" aria-hidden="true"></div>
+    </li>`).join('');
+
+  // ---------- top online products ----------
+  const prodTotal = PRODUCTS.reduce((a, p) => a + p[2], 0);
+  const prodMax = Math.max(...PRODUCTS.map((p) => p[2]));
+  $('#products-table tbody').innerHTML = PRODUCTS.map(([name, units, rev]) => `
+    <tr data-search="${esc(name.toLowerCase())}">
+      <td style="white-space:normal;width:100%"><span class="name" style="font-weight:500">${esc(name)}</span>
+        <span class="sub">${usd2.format(rev / units)} each</span>
+        <span class="prod-bar" style="width:${(rev / prodMax * 100).toFixed(2)}%" aria-hidden="true"></span></td>
+      <td class="n">${int.format(units)}</td>
+      <td class="n">${usd0.format(rev)}</td>
+    </tr>`).join('') + `<tr class="empty-row" hidden><td colspan="3"></td></tr>`;
+  $('#prod-note').textContent = `These five took ${usd0.format(prodTotal)}, ${Math.round(prodTotal / onlineRevenue * 100)}% of October's ${usd0.format(onlineRevenue)} online revenue.`;
+
+  // ---------- recent orders ----------
+  const GLYPH = {
+    Paid: '<path d="M2.5 6.2 5 8.6l4.5-5"/>',
+    Shipped: '<path d="M1.5 3.5h6v5h-6zM7.5 5.5h2l1.2 1.5v1.5H7.5"/><circle cx="3.5" cy="9.3" r=".8"/><circle cx="9" cy="9.3" r=".8"/>',
+    Pending: '<circle cx="6" cy="6" r="4.3"/><path d="M6 3.8V6l1.5 1"/>',
+    Refunded: '<path d="M4.5 2.5 2 5l2.5 2.5"/><path d="M2.2 5H7a3 3 0 0 1 0 6H5"/>',
+  };
+  $('#orders-table tbody').innerHTML = ORDERS.map(([id, cust, chan, items, total, status]) => `
+    <tr data-search="${esc(`#${id} ${id} ${cust} ${chan} ${status}`.toLowerCase())}">
+      <td class="c-order"><span class="id">#${id}</span></td>
+      <td class="c-cust" data-order="#${id}">${esc(cust)}</td>
+      <td class="c-chan" data-items="${items} ${items === 1 ? 'item' : 'items'}">${esc(chan)}</td>
+      <td class="n c-items">${items}</td>
+      <td class="n c-total">${usd2.format(total)}</td>
+      <td class="c-status"><span class="pill ${status.toLowerCase()}"><svg viewBox="0 0 12 12" aria-hidden="true">${GLYPH[status]}</svg>${status}</span></td>
+    </tr>`).join('') + `<tr class="empty-row" hidden><td colspan="6"></td></tr>`;
+
+  // ---------- café table: sort by any column ----------
+  const cafeTable = $('#cafes');
+  $$('th', cafeTable.tHead).forEach((th) => {
+    th.querySelector('.sort').addEventListener('click', () => {
+      const key = th.dataset.key, text = th.dataset.type === 'text';
+      const cur = th.getAttribute('aria-sort');
+      const dir = cur ? (cur === 'ascending' ? 'descending' : 'ascending') : (text ? 'ascending' : 'descending');
+      $$('th', cafeTable.tHead).forEach((h) => h.removeAttribute('aria-sort'));
+      th.setAttribute('aria-sort', dir);
+      const body = cafeTable.tBodies[0];
+      const rows = $$('tr', body).sort((a, b) => {
+        const x = text ? a.dataset[key].localeCompare(b.dataset[key]) : +a.dataset[key] - +b.dataset[key];
+        return dir === 'ascending' ? x : -x;
+      });
+      rows.forEach((r) => body.appendChild(r));
+    });
+  });
+
+  // ---------- search: narrows the orders, products, cafés and categories on this screen ----------
+  const search = $('#search');
+  function filter() {
+    const q = search.value.trim().toLowerCase();
+    const scopes = [
+      { rows: $$('#orders-table tbody tr:not(.empty-row)'), empty: $('#orders-table .empty-row'), noun: 'recent orders' },
+      { rows: $$('#products-table tbody tr:not(.empty-row)'), empty: $('#products-table .empty-row'), noun: 'top products' },
+    ];
+    scopes.forEach(({ rows, empty, noun }) => {
+      let shown = 0;
+      rows.forEach((r) => { const hit = !q || r.dataset.search.includes(q); r.hidden = !hit; shown += hit; });
+      empty.hidden = shown > 0;
+      empty.firstElementChild.textContent = `No ${noun} match “${search.value.trim()}”.`;
+    });
+    $$('#cafes tbody tr').forEach((r) => { r.hidden = !!q && !r.dataset.name.toLowerCase().includes(q) && !'café cafes cafés'.includes(q); });
+  }
+  search.addEventListener('input', filter);
+  search.addEventListener('keydown', (e) => { if (e.key === 'Escape') { search.value = ''; filter(); search.blur(); } });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !/input|textarea/i.test(document.activeElement.tagName)) { e.preventDefault(); openSearch(); }
+  });
+  const searchBox = $('#search-box'), searchBtn = $('[data-toggle-search]');
+  function openSearch() { searchBox.classList.add('open'); searchBtn.setAttribute('aria-expanded', 'true'); search.focus(); }
+  searchBtn.addEventListener('click', () => {
+    const open = !searchBox.classList.contains('open');
+    searchBox.classList.toggle('open', open); searchBtn.setAttribute('aria-expanded', String(open));
+    if (open) search.focus();
+  });
+
+  // ---------- menu sheet on tablet and phone ----------
+  const sidebar = $('#sidebar'), openBtn = $('[data-open-menu]');
+  const setMenu = (open) => {
+    sidebar.classList.toggle('open', open); openBtn.setAttribute('aria-expanded', String(open));
+    if (open) $('.nav-item[aria-current]', sidebar).focus(); else openBtn.focus();
+  };
+  openBtn.addEventListener('click', () => setMenu(true));
+  $('[data-close-menu]').addEventListener('click', () => setMenu(false));
+  sidebar.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sidebar.classList.contains('open')) setMenu(false); });
+  $$('.nav-item', sidebar).forEach((a) => a.addEventListener('click', () => { if (sidebar.classList.contains('open')) setMenu(false); }));
+
+  // ---------- monthly revenue: stacked columns, cafés below online, one channel at a time on request ----------
+  const chartEl = $('#rev-chart'), tip = $('#rev-tip'), live = $('#rev-live');
+  const state = { channel: 'all', active: null };
+  const NS = 'http://www.w3.org/2000/svg';
+  $('#rev-table tbody').innerHTML = MONTHS.map((d) => `<tr><th scope="row">${LONG[d.m]} ${d.y}</th><td>$${d.online}k</td><td>$${d.cafes}k</td><td>$${d.online + d.cafes}k</td></tr>`).join('');
+
+  // round ticks (1, 2, 2.5, 5 × 10^n) whose top sits above the largest value
+  function ticks(max, count = 4) {
+    const raw = max / count, mag = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw);
+    let hi = Math.ceil(max / step) * step; if (hi <= max) hi += step;
+    const out = []; for (let v = 0; v <= hi + step / 2; v += step) out.push(+v.toFixed(6));
+    return out;
+  }
+  const valueOf = (d) => state.channel === 'online' ? d.online : state.channel === 'cafes' ? d.cafes : d.online + d.cafes;
+  let geom = null;
+
+  function draw() {
+    const W = Math.max(280, chartEl.clientWidth), phone = W < 560;
+    const H = phone ? 210 : 248;
+    const m = { l: 44, r: 2, t: 22, b: phone ? 40 : 42 };
+    const pw = W - m.l - m.r, ph = H - m.t - m.b;
+    const tk = ticks(Math.max(...MONTHS.map(valueOf)));
+    const top = tk[tk.length - 1];
+    const y = (v) => m.t + ph - (v / top) * ph;
+    const band = pw / MONTHS.length, bw = Math.min(44, band * (phone ? 0.62 : 0.56));
+    const showOnline = state.channel !== 'cafes', showCafes = state.channel !== 'online';
+    const labelIdx = phone ? [2, 5, 8, 11] : MONTHS.map((_, i) => i);
+    let s = `<svg xmlns="${NS}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">`;
+    MONTHS.forEach((d, i) => { s += `<rect class="hl" data-i="${i}" x="${m.l + band * i + 1}" y="${m.t - 6}" width="${band - 2}" height="${ph + 6}" rx="4"/>`; });
+    tk.forEach((t) => {
+      const yy = Math.round(y(t)) + 0.5;
+      s += `<line x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}" stroke="var(${t === 0 ? '--baseline' : '--grid'})" stroke-width="1"/>`;
+      s += `<text x="${m.l - 10}" y="${yy + 4}" text-anchor="end" font-size="12" fill="var(--muted)">${t === 0 ? '$0' : `$${t}k`}</text>`;
+    });
+    MONTHS.forEach((d, i) => {
+      const x = m.l + band * i + (band - bw) / 2, base = y(0);
+      if (showCafes) s += `<rect x="${x}" y="${y(d.cafes)}" width="${bw}" height="${base - y(d.cafes)}" fill="var(--chart-cafes)"/>`;
+      if (showOnline) {
+        const from = showCafes ? y(d.cafes) - 2 : base, to = showCafes ? y(d.cafes + d.online) : y(d.online);
+        s += `<rect x="${x}" y="${to}" width="${bw}" height="${from - to}" fill="var(--chart-online)"/>`;
+      }
+      const cx = m.l + band * i + band / 2;
+      if (labelIdx.includes(i)) {
+        s += `<text x="${cx}" y="${H - m.b + 18}" text-anchor="middle" font-size="12" fill="var(--muted)">${d.m}</text>`;
+        if (i === 0 || d.m === 'Jan') s += `<text x="${cx}" y="${H - m.b + 33}" text-anchor="middle" font-size="12" fill="var(--muted)">${d.y}</text>`;
+      }
+    });
+    // the current period carries its value at the top of its column
+    const last = MONTHS.length - 1, lv = valueOf(MONTHS[last]);
+    const lx = m.l + band * last + band / 2, room = W - m.r - lx;
+    s += `<text x="${room < 22 ? W - m.r : lx}" y="${y(lv) - 8}" text-anchor="${room < 22 ? 'end' : 'middle'}" font-size="12" font-weight="500" fill="var(--text)">$${lv}k</text>`;
+    MONTHS.forEach((d, i) => { s += `<rect class="hit" data-i="${i}" x="${m.l + band * i}" y="${m.t - 6}" width="${band}" height="${ph + 6 + m.b}"/>`; });
+    s += '</svg>';
+    $$('svg', chartEl).forEach((n) => n.remove());
+    chartEl.insertAdjacentHTML('afterbegin', s);
+    geom = { m, band, W, y };
+    $$('.legend [data-series]').forEach((el) => { el.hidden = (el.dataset.series === 'online' && !showOnline) || (el.dataset.series === 'cafes' && !showCafes); });
+    if (state.active != null) show(state.active, false);
+  }
+
+  function show(i, announce = true) {
+    state.active = i;
+    const d = MONTHS[i];
+    $$('.hl', chartEl).forEach((r) => r.classList.toggle('on', +r.dataset.i === i));
+    const row = (name, v, colour) => `<div class="r"><span><i style="background:var(${colour})"></i>${name}</span>$${v}k</div>`;
+    let html = `<b>${LONG[d.m]} ${d.y}</b>`;
+    if (state.channel !== 'cafes') html += row('Online', d.online, '--chart-online');
+    if (state.channel !== 'online') html += row('Cafés', d.cafes, '--chart-cafes');
+    if (state.channel === 'all') html += `<div class="r total"><span>Total</span><strong style="font-weight:600">$${d.online + d.cafes}k</strong></div>`;
+    tip.innerHTML = html;
+    tip.classList.add('on');
+    const tw = tip.offsetWidth, cx = geom.m.l + geom.band * i + geom.band / 2;
+    const left = Math.min(Math.max(cx, tw / 2), geom.W - tw / 2);
+    const topY = Math.max(0, geom.y(valueOf(d)) - tip.offsetHeight - 14);
+    tip.style.left = `${left}px`; tip.style.top = `${topY}px`;
+    if (announce) {
+      const parts = [`${LONG[d.m]} ${d.y}`];
+      if (state.channel !== 'cafes') parts.push(`online $${d.online} thousand`);
+      if (state.channel !== 'online') parts.push(`cafés $${d.cafes} thousand`);
+      if (state.channel === 'all') parts.push(`total $${d.online + d.cafes} thousand`);
+      live.textContent = parts.join(', ');
+    }
+  }
+  function hide() { state.active = null; tip.classList.remove('on'); $$('.hl', chartEl).forEach((r) => r.classList.remove('on')); }
+
+  chartEl.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && e.target.classList.contains('hit')) show(+e.target.dataset.i); });
+  chartEl.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && document.activeElement !== chartEl) hide(); });
+  chartEl.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('hit')) return;
+    const i = +e.target.dataset.i;
+    if (state.active === i && e.pointerType !== 'mouse') hide(); else show(i);
+  });
+  document.addEventListener('pointerdown', (e) => { if (!chartEl.contains(e.target) && state.active != null) hide(); });
+  chartEl.addEventListener('focus', () => { if (state.active == null) show(MONTHS.length - 1); });
+  chartEl.addEventListener('blur', hide);
+  chartEl.addEventListener('keydown', (e) => {
+    const n = MONTHS.length, i = state.active ?? n - 1;
+    const next = { ArrowLeft: Math.max(0, i - 1), ArrowRight: Math.min(n - 1, i + 1), Home: 0, End: n - 1 }[e.key];
+    if (next != null) { e.preventDefault(); show(next); }
+    if (e.key === 'Escape') hide();
+  });
+  $$('[data-channel]').forEach((b) => b.addEventListener('click', () => {
+    state.channel = b.dataset.channel;
+    $$('[data-channel]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    draw();
+  }));
+  let lastW = 0;
+  new ResizeObserver(() => { if (chartEl.clientWidth !== lastW) { lastW = chartEl.clientWidth; draw(); } }).observe(chartEl);
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(draw);
+  draw();
+})();
+</script>
+</body>
+</html>
