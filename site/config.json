@@ -2,6 +2,12 @@
   "site_title": "skill-gallery",
   "site_url": "https://heweitianqing.github.io/skill-gallery/",
   "repo_url": "https://github.com/heweitianqing/skill-gallery",
+  "votes": {
+    "repo": "heweitianqing/skill-gallery",
+    "repo_id": "R_kgDOVXc5mA",
+    "category": "Votes",
+    "category_id": "DIC_kwDOVXc5mM4DJocJ"
+  },
   "languages": ["en", "zh-CN", "zh-TW", "ja", "ko", "es"],
   "prompts": ["landing-saas", "dashboard", "blog-portfolio"],
   "skills": ["frontend-design", "ui-ux-pro-max", "web-design-engineer"],

@@ -28,7 +28,8 @@
     "failed": "Fallida",
     "no_run_json": "Sin run.json",
     "bad_run_json": "run.json no válido",
-    "unknown": "Desconocido"
+    "unknown": "Desconocido",
+    "out_of_scope": "Fuera de alcance"
   },
   "thumb": {
     "no_page": "Sin página",
@@ -72,7 +73,9 @@
     "details": "Detalles",
     "prompt_changed": "El archivo del prompt cambió después de esta ejecución.",
     "breaks_rule": "Incumple una regla del prompt: {rules}.",
-    "attempt": "Intento {n}; los intentos anteriores se conservan en {path}."
+    "attempt": "Intento {n}; los intentos anteriores se conservan en {path}.",
+    "oos_default": "{skill} no dice cubrir este tipo de página, así que no se ejecutó con este prompt.",
+    "oos_ran": "Este prompt queda fuera del alcance que declara el skill, pero la ejecución se muestra igualmente."
   },
   "home": {
     "title": "{site}: comparación de skills para agentes",
@@ -124,7 +127,9 @@
     "limit_native": "<strong>Nativo significa tal como viene, no sin ningún skill.</strong> Todas las celdas, también las nativas, pueden usar los skills que trae su agente: los 19 skills integrados en Claude Code y los skills de sistema de Codex (<code>imagegen</code>, <code>openai-docs</code>, <code>skill-creator</code>, <code>skill-installer</code>). En el prompt <code>dashboard</code>, el skill integrado <code>dataviz</code> de Claude Code se activó por sí solo dos veces, una en <code>claude__native</code> y otra en <code>claude__frontend-design</code>; <code>run.json</code> lo registra en <code>builtin_skills_used</code>. Es intencionado: se compara lo que obtiene en la práctica quien instala el agente.",
     "limit_disk": "<strong>Aislamiento significa “no se carga nada”, no “no se puede leer nada”.</strong> Los agentes todavía pueden leer el resto del disco: el sandbox <code>workspace-write</code> predeterminado de Codex puede leer <code>/</code>, y Claude Code con <code>bypassPermissions</code> no tiene sandbox. En las ejecuciones de v0, los agentes buscaron <code>AGENTS.md</code> en directorios superiores y uno usó Playwright desde la caché de npm del operador. Un aislamiento más fuerte (una cuenta de usuario aparte o un contenedor) queda como trabajo futuro.",
     "limit_fixed": "<strong>Barras laterales fijas en las capturas.</strong> Las capturas de página completa dibujan los elementos <code>position: fixed</code> o <code>sticky</code> con altura <code>100vh</code> solo a la altura de la primera pantalla, así que la barra lateral de un panel puede parecer que termina a los 900 px. Esto se debe a la captura, no a la página.",
-    "limit_once": "<strong>Una sola muestra no es un benchmark.</strong> Cada celda es una única generación. Toma la galería como ejemplos de lo que un skill tiende a hacer, no como una puntuación."
+    "limit_once": "<strong>Una sola muestra no es un benchmark.</strong> Cada celda es una única generación. Toma la galería como ejemplos de lo que un skill tiende a hacer, no como una puntuación.",
+    "votes_title": "Votos",
+    "votes_body": "Cada página de resultado tiene un voto 👍 mediante <a href=\"https://giscus.app\">giscus</a>, un widget de terceros que solo se carga en las páginas de resultado, no en el resto de la galería. Para votar hay que iniciar sesión en GitHub. Los votos se guardan como reacciones en las GitHub Discussions de este repositorio, con una discusión por celda que comparten todos los idiomas. Los recuentos de las páginas de comparación se actualizan cada pocas horas. Muestran lo que prefieren los visitantes, no una evaluación."
   },
   "skill": {
     "description": "Páginas creadas por Codex y Claude Code con y sin el skill {name}.",
@@ -139,7 +144,13 @@
     "commit_in_runs": "Commit usado en las ejecuciones",
     "layout_hint": "Cada prompt muestra una matriz 2×2 fija: Codex nativo, Codex + skill, Claude Code nativo, Claude Code + skill. Haz clic en una captura para ver la página completa.",
     "install_link": "Instalar y usar ↓",
-    "jump_aria": "Prompts de esta página"
+    "jump_aria": "Prompts de esta página",
+    "strengths_h": "Puntos fuertes",
+    "strengths_intro": "Lo que la propia documentación del skill dice que hace bien, con un enlace a donde lo dice. Son afirmaciones, no resultados: compáralas con las páginas de abajo.",
+    "source_link": "fuente",
+    "scope_label": "Alcance de la prueba:",
+    "scope_all": "todos los prompts",
+    "scope_note": "Los prompts que no están en esta lista aparecen como “Fuera de alcance”, no como pendientes."
   },
   "install": {
     "h2": "Instalar y usar",
@@ -166,7 +177,9 @@
     "text_h": "Texto del prompt",
     "text_note": "En inglés, tal como se envió a los agentes. No se traduce.",
     "skill_line_note": "Las celdas con skill añaden una frase al final: <code>Use the &lt;name&gt; skill.</code> (Claude Code) o <code>Use the $&lt;name&gt; skill.</code> (Codex).",
-    "grid_aria": "Cuadrícula comparativa, se desplaza en horizontal"
+    "grid_aria": "Cuadrícula comparativa, se desplaza en horizontal",
+    "showcase": "Demostración",
+    "showcase_hint": "Se añadió para mostrar un punto fuerte que declara un skill concreto. Solo se ejecutan los skills que dicen cubrirlo, junto a las referencias nativas."
   },
   "viewer": {
     "frame_title": "Página generada: {title}",
@@ -262,5 +275,13 @@
       "title": "Blog y portafolio personal",
       "summary": "Un sitio de una sola página para Maya Lindqvist, una diseñadora de producto ficticia: cuatro casos de estudio, una lista de artículos filtrable, un artículo completo, una sección “sobre mí” con cronología, un formulario de suscripción al boletín y un selector de tema claro/oscuro."
     }
+  },
+  "vote": {
+    "h2": "Votar",
+    "intro": "¿Te parece mejor este resultado? Dale 👍 abajo. Para votar necesitas una cuenta de GitHub. Los votos se guardan como reacciones en las GitHub Discussions de este repositorio, en un hilo por celda que comparten todos los idiomas.",
+    "link": "Votar",
+    "count_title": "👍 en la discusión de esta celda, según la última actualización del sitio",
+    "count_note": "según la última actualización del sitio; se actualiza cada pocas horas",
+    "noscript": "Para votar hace falta JavaScript (usa giscus)."
   }
 }

@@ -28,7 +28,8 @@
     "failed": "失败",
     "no_run_json": "缺少 run.json",
     "bad_run_json": "run.json 无效",
-    "unknown": "未知"
+    "unknown": "未知",
+    "out_of_scope": "不适用"
   },
   "thumb": {
     "no_page": "无页面",
@@ -72,7 +73,9 @@
     "details": "详情",
     "prompt_changed": "这次运行之后，题目文件有改动。",
     "breaks_rule": "违反题目规则：{rules}。",
-    "attempt": "第 {n} 次尝试；之前的尝试保存在 {path}。"
+    "attempt": "第 {n} 次尝试；之前的尝试保存在 {path}。",
+    "oos_default": "{skill} 没有声称适用于这类页面，所以这道题没有用它来跑。",
+    "oos_ran": "这道题不在该 skill 声称的适用范围内，但这次运行照样展示。"
   },
   "home": {
     "title": "{site}：agent skill 对比",
@@ -124,7 +127,9 @@
     "limit_native": "<strong>“原生”指开箱即用的状态，不是零 skill。</strong>每一格（包括原生格）都能用 agent 自带的 skill：Claude Code 内置的 19 个 skill，以及 Codex 的系统 skill（<code>imagegen</code>、<code>openai-docs</code>、<code>skill-creator</code>、<code>skill-installer</code>）。在 <code>dashboard</code> 这道题里，Claude Code 内置的 <code>dataviz</code> skill 自己触发了两次，<code>claude__native</code> 一次，<code>claude__frontend-design</code> 一次，记录在 <code>run.json</code> 的 <code>builtin_skills_used</code> 里。这是有意保留的：比较的是读者装好 agent 之后实际得到的效果。",
     "limit_disk": "<strong>隔离指的是“什么都不加载”，而不是“什么都读不到”。</strong>agent 仍然可以读取磁盘上的其他内容：Codex 默认的 <code>workspace-write</code> 沙箱可以读取 <code>/</code>，而使用 <code>bypassPermissions</code> 的 Claude Code 根本没有沙箱。在 v0 的运行中，agent 曾到上级目录查找 <code>AGENTS.md</code>，还有一个用了运行者 npm 缓存里的 Playwright。更强的隔离（单独的用户账号或容器）留待以后实现。",
     "limit_fixed": "<strong>截图中的固定侧边栏。</strong>整页截图对尺寸为 <code>100vh</code> 的 <code>position: fixed</code> 或 <code>sticky</code> 元素，只按首屏高度绘制，所以看板的侧边栏可能看起来在 900 px 处就断了。这是截图方式造成的，不是页面本身的问题。",
-    "limit_once": "<strong>一次采样不等于基准测试。</strong>每格只生成一次。请把画廊当作 skill 大致效果的示例，而不是评分。"
+    "limit_once": "<strong>一次采样不等于基准测试。</strong>每格只生成一次。请把画廊当作 skill 大致效果的示例，而不是评分。",
+    "votes_title": "投票",
+    "votes_body": "每个结果页都可以通过 <a href=\"https://giscus.app\">giscus</a> 点 👍 投票。giscus 是第三方组件，只在打开结果页后才会加载，画廊的其他页面不会加载它。投票需要登录 GitHub。票数以 reaction 的形式存在本仓库的 GitHub Discussions 里，每格一个讨论帖，所有语言共用。对比页上的票数每几个小时更新一次。票数只代表访客的偏好，不是评测结论。"
   },
   "skill": {
     "description": "Codex 和 Claude Code 在用与不用 {name} skill 时生成的页面。",
@@ -139,7 +144,13 @@
     "commit_in_runs": "运行时使用的 commit",
     "layout_hint": "每道题目固定按 2×2 展示：Codex 原生、Codex + skill、Claude Code 原生、Claude Code + skill。点击截图可查看整页。",
     "install_link": "安装与使用 ↓",
-    "jump_aria": "本页的题目"
+    "jump_aria": "本页的题目",
+    "strengths_h": "擅长什么",
+    "strengths_intro": "以下是 skill 自己的文档里声称的优势，附有出处。这些只是声称，不是结论，请和下面的实际结果对照着看。",
+    "source_link": "出处",
+    "scope_label": "测试范围：",
+    "scope_all": "所有题目",
+    "scope_note": "不在范围内的题目标为“不适用”，而不是待运行。"
   },
   "install": {
     "h2": "安装与使用",
@@ -166,7 +177,9 @@
     "text_h": "题目原文",
     "text_note": "英文原文，与发给 agent 的内容完全一致，不做翻译。",
     "skill_line_note": "skill 格子会在末尾加一句：<code>Use the &lt;name&gt; skill.</code>（Claude Code）或 <code>Use the $&lt;name&gt; skill.</code>（Codex）。",
-    "grid_aria": "对比表格，可横向滚动"
+    "grid_aria": "对比表格，可横向滚动",
+    "showcase": "展示题",
+    "showcase_hint": "专门用来体现某个 skill 所声称的优势。只有声称适用的 skill 会跑这道题，并和原生基线放在一起对比。"
   },
   "viewer": {
     "frame_title": "生成的页面：{title}",
@@ -262,5 +275,13 @@
       "title": "个人博客与作品集",
       "summary": "虚构产品设计师 Maya Lindqvist 的单页网站：四个案例研究、可筛选的文章列表、一篇完整文章、带时间线的个人简介、邮件订阅表单和浅色/深色切换。"
     }
+  },
+  "vote": {
+    "h2": "投票",
+    "intro": "觉得这个结果更好？在下面点 👍。投票需要登录 GitHub。票数以 reaction 的形式存在本仓库的 GitHub Discussions 里，每格一个讨论帖，所有语言共用。",
+    "link": "去投票",
+    "count_title": "截至上次构建，这一格讨论帖上的 👍 数",
+    "count_note": "截至上次构建，每几个小时更新一次",
+    "noscript": "投票需要启用 JavaScript（用的是 giscus）。"
   }
 }

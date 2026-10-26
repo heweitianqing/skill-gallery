@@ -28,7 +28,8 @@
     "failed": "실패",
     "no_run_json": "run.json 없음",
     "bad_run_json": "잘못된 run.json",
-    "unknown": "알 수 없음"
+    "unknown": "알 수 없음",
+    "out_of_scope": "범위 밖"
   },
   "thumb": {
     "no_page": "페이지 없음",
@@ -72,7 +73,9 @@
     "details": "세부 정보",
     "prompt_changed": "이 실행 이후 프롬프트 파일이 변경되었습니다.",
     "breaks_rule": "프롬프트 규칙을 위반했습니다: {rules}.",
-    "attempt": "{n}번째 시도입니다. 이전 시도는 {path}에 보관되어 있습니다."
+    "attempt": "{n}번째 시도입니다. 이전 시도는 {path}에 보관되어 있습니다.",
+    "oos_default": "{skill}은(는) 이런 종류의 페이지를 대상으로 한다고 밝히지 않아서 이 프롬프트에서는 실행하지 않았습니다.",
+    "oos_ran": "이 프롬프트는 이 skill이 밝힌 적용 범위 밖이지만, 실행 결과는 그대로 보여 줍니다."
   },
   "home": {
     "title": "{site}: 에이전트 skill 비교",
@@ -124,7 +127,9 @@
     "limit_native": "<strong>네이티브는 skill이 하나도 없는 상태가 아니라 기본 설치 상태를 뜻합니다.</strong> 네이티브 셀을 포함한 모든 셀에서 각 에이전트에 기본으로 들어 있는 skill을 사용할 수 있습니다. Claude Code에 내장된 skill 19개와 Codex의 시스템 skill(<code>imagegen</code>, <code>openai-docs</code>, <code>skill-creator</code>, <code>skill-installer</code>)입니다. <code>dashboard</code> 프롬프트에서는 Claude Code에 내장된 <code>dataviz</code> skill이 스스로 두 번 실행되었습니다. <code>claude__native</code>에서 한 번, <code>claude__frontend-design</code>에서 한 번이며, <code>run.json</code>의 <code>builtin_skills_used</code>에 기록되어 있습니다. 이는 의도한 것입니다. 독자가 에이전트를 설치했을 때 실제로 얻는 결과를 비교하기 때문입니다.",
     "limit_disk": "<strong>격리는 “아무것도 로드하지 않음”을 뜻할 뿐, “아무것도 읽을 수 없음”을 뜻하지는 않습니다.</strong> 에이전트는 여전히 디스크의 나머지 부분을 읽을 수 있습니다. Codex의 기본 <code>workspace-write</code> 샌드박스는 <code>/</code>를 읽을 수 있고, <code>bypassPermissions</code>로 실행한 Claude Code에는 샌드박스가 없습니다. v0 실행에서는 에이전트가 상위 디렉터리에서 <code>AGENTS.md</code>를 찾았고, 한 에이전트는 운영자의 npm 캐시에 있던 Playwright를 사용했습니다. 더 강한 격리(별도 사용자 계정이나 컨테이너)는 향후 과제입니다.",
     "limit_fixed": "<strong>스크린샷 속 고정 사이드바.</strong> 전체 페이지 캡처는 높이가 <code>100vh</code>인 <code>position: fixed</code> 또는 <code>sticky</code> 요소를 첫 화면 높이로만 그리기 때문에, 대시보드 사이드바가 900 px에서 끊긴 것처럼 보일 수 있습니다. 이는 페이지가 아니라 캡처 방식 때문입니다.",
-    "limit_once": "<strong>샘플 하나로는 벤치마크가 되지 않습니다.</strong> 각 셀은 한 번 생성한 결과입니다. 갤러리는 점수가 아니라 skill이 보이는 경향을 보여 주는 예시로 보아야 합니다."
+    "limit_once": "<strong>샘플 하나로는 벤치마크가 되지 않습니다.</strong> 각 셀은 한 번 생성한 결과입니다. 갤러리는 점수가 아니라 skill이 보이는 경향을 보여 주는 예시로 보아야 합니다.",
+    "votes_title": "투표",
+    "votes_body": "각 결과 페이지에서 <a href=\"https://giscus.app\">giscus</a>로 👍 투표를 할 수 있습니다. giscus는 서드파티 위젯으로, 결과 페이지를 열었을 때만 로드되며, 갤러리의 다른 페이지에서는 로드되지 않습니다. 투표하려면 GitHub 로그인이 필요합니다. 투표는 이 저장소의 GitHub Discussions에 반응으로 저장되며, 셀마다 토론 하나를 모든 언어가 함께 사용합니다. 비교 페이지의 득표수는 몇 시간마다 갱신됩니다. 득표수는 방문자의 선호를 보여 줄 뿐 평가 결론이 아닙니다."
   },
   "skill": {
     "description": "Codex와 Claude Code가 {name} skill을 쓸 때와 쓰지 않을 때 만든 페이지입니다.",
@@ -139,7 +144,13 @@
     "commit_in_runs": "실행에 사용한 커밋",
     "layout_hint": "각 프롬프트는 Codex 네이티브, Codex + skill, Claude Code 네이티브, Claude Code + skill의 고정 2×2로 표시됩니다. 스크린샷을 클릭하면 전체 페이지를 볼 수 있습니다.",
     "install_link": "설치 및 사용 ↓",
-    "jump_aria": "이 페이지의 프롬프트"
+    "jump_aria": "이 페이지의 프롬프트",
+    "strengths_h": "강점",
+    "strengths_intro": "skill의 자체 문서가 내세우는 강점을 출처와 함께 정리했습니다. 이는 주장일 뿐 결과가 아니므로, 아래의 실제 페이지와 비교해 보시기 바랍니다.",
+    "source_link": "출처",
+    "scope_label": "테스트 범위:",
+    "scope_all": "모든 프롬프트",
+    "scope_note": "범위 밖의 프롬프트는 ‘대기 중’이 아니라 ‘범위 밖’으로 표시합니다."
   },
   "install": {
     "h2": "설치 및 사용",
@@ -166,7 +177,9 @@
     "text_h": "프롬프트 원문",
     "text_note": "에이전트에 보낸 그대로의 영어 원문이며, 번역하지 않았습니다.",
     "skill_line_note": "skill 셀에는 끝에 문장 하나를 덧붙입니다: <code>Use the &lt;name&gt; skill.</code>(Claude Code) 또는 <code>Use the $&lt;name&gt; skill.</code>(Codex).",
-    "grid_aria": "비교 그리드(가로 스크롤)"
+    "grid_aria": "비교 그리드(가로 스크롤)",
+    "showcase": "쇼케이스",
+    "showcase_hint": "특정 skill이 내세우는 강점을 보여 주기 위해 추가한 프롬프트입니다. 적용된다고 밝힌 skill만 실행하고, 네이티브 기준선과 나란히 비교합니다."
   },
   "viewer": {
     "frame_title": "생성된 페이지: {title}",
@@ -262,5 +275,13 @@
       "title": "개인 블로그 및 포트폴리오",
       "summary": "가상의 프로덕트 디자이너 Maya Lindqvist의 원페이지 사이트입니다. 사례 연구 4개, 필터링 가능한 글 목록, 전체 글 1편, 타임라인이 있는 소개 섹션, 뉴스레터 양식, 라이트/다크 전환으로 구성됩니다."
     }
+  },
+  "vote": {
+    "h2": "투표",
+    "intro": "이 결과가 더 낫다고 생각하십니까? 아래에서 👍를 누르십시오. 투표하려면 GitHub 계정이 필요합니다. 투표는 이 저장소의 GitHub Discussions에 반응(reaction)으로 저장되며, 셀마다 토론 하나를 모든 언어가 함께 사용합니다.",
+    "link": "투표하기",
+    "count_title": "마지막 빌드 기준, 이 셀 토론의 👍 수",
+    "count_note": "마지막 빌드 기준이며 몇 시간마다 갱신됩니다",
+    "noscript": "투표하려면 JavaScript가 필요합니다(giscus 사용)."
   }
 }

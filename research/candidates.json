@@ -3,6 +3,7 @@
     "project": "skill-gallery",
     "scope": "v0 网页/前端样式类 agent skill（SKILL.md 格式）",
     "checked_at": "2026-10-25T16:28Z (北京时间 2026-10-26 00:28)",
+    "batch2_checked_at": "2026-10-26T05:08Z (北京时间 2026-10-26 13:08)；第二批新增/更新的条目其 stars 与 SHA 以这个时间为准，详见 research/batch2.md",
     "method": "GitHub REST API (gh api, 只读 GET) 取 stars / HEAD SHA / 路径最后一次提交 / 文件树；临时目录浅克隆只读 SKILL.md 与 LICENSE（不执行任何脚本）；官方文档用 WebFetch 取；榜单页用 WebFetch 取。",
     "conventions": {
       "未核实": "没有直接证据或没有实测时的标注",
@@ -95,17 +96,40 @@
   "recommendation": {
     "v0": ["anthropics-frontend-design", "nextlevelbuilder-ui-ux-pro-max", "openai-frontend-skill"],
     "v0_swap_rule": "如果不想把已从 OpenAI 官方目录下架的 skill 放进第一批：把 openai-frontend-skill 换成 conardli-web-design-engineer（MIT，纯 HTML 输出、25 个风格配方、仍在活跃维护）。",
+    "v0_actual": ["anthropics-frontend-design", "nextlevelbuilder-ui-ux-pro-max", "conardli-web-design-engineer"],
+    "v0_actual_note": "v0 已按 v0_swap_rule 上线；openai-frontend-skill 因被官方下架未收，状态改为 replaced-in-v0。",
+    "batch2": ["leonxlnx-taste-skill", "addyosmani-frontend-ui-engineering", "anthropics-theme-factory"],
+    "batch2_conditions": {
+      "leonxlnx-taste-skill": "要改运行脚本（保留 index.html 引用的本地资源文件），并先跑 4 格金丝雀；见 research/batch2.md 第 3 节",
+      "addyosmani-frontend-ui-engineering": "无需改动",
+      "anthropics-theme-factory": "无需改动；金丝雀要看 agent 会不会停下来问主题"
+    },
+    "batch2_reserve": ["elayadesign-landing-page-design", "emilkowalski-emil-design-eng", "leonxlnx-taste-skill-classics"],
+    "applicable_prompts": {
+      "_rule": "按 skill 自己的原文：点名该类页面，或声称覆盖任何网页/界面则跑；原文排除或限定到别处则不跑。依据见 research/batch2.md 第 10、11 节。该判断只依据文字，没有看过任何运行结果；v0 的三个在判断前已跑完，不是跑前登记。",
+      "anthropics-frontend-design": ["landing-saas", "dashboard", "blog-portfolio"],
+      "nextlevelbuilder-ui-ux-pro-max": ["landing-saas", "dashboard", "blog-portfolio"],
+      "conardli-web-design-engineer": ["landing-saas", "dashboard", "blog-portfolio"],
+      "leonxlnx-taste-skill": ["landing-saas", "dashboard", "blog-portfolio"],
+      "addyosmani-frontend-ui-engineering": ["landing-saas", "dashboard", "blog-portfolio"],
+      "anthropics-theme-factory": ["landing-saas", "dashboard", "blog-portfolio"],
+      "_weakest_basis": "anthropics-theme-factory 的 dashboard 与 blog-portfolio：原文只靠「reportings」「any artifact」"
+    },
+    "showcase_prompts": [
+      {"id": "form-states", "path": "research/batch2-prompts/form-states.md", "for": ["addyosmani-frontend-ui-engineering"], "optional_for": ["nextlevelbuilder-ui-ux-pro-max", "conardli-web-design-engineer"], "reason": "frontend-ui-engineering 的主打是无障碍与状态处理（加载/空/错误），三道题不要求、截图也看不到"},
+      {"id": "interaction-patterns", "path": "research/batch2-prompts/interaction-patterns.md", "for": ["emilkowalski-emil-design-eng"], "needed_only_if": "收入偏动效的 skill（emil-design-eng、apple-design）；需要配合动效录屏，见 research/batch2.md 第 13 节"}
+    ],
     "backlog_order": [
-      "leonxlnx-taste-skill",
-      "conardli-web-design-engineer",
+      "alchaincyf-huashu-design",
       "pbakaus-impeccable",
-      "elayadesign-landing-page-design",
-      "anthropics-theme-factory",
       "emilkowalski-emil-design-eng",
+      "elayadesign-landing-page-design",
       "mengto-skills-collection",
+      "oil-oil-oil-ui",
       "anthropics-web-artifacts-builder",
       "vercel-web-design-guidelines"
-    ]
+    ],
+    "backlog_note": "backlog_order 里 huashu-design、impeccable、oil-ui 都在「先问用户、等选择」的门上停下，不改题目跑不了；emil-design-eng 需要先有动效取证。"
   },
 
   "candidates": [
@@ -343,8 +367,8 @@
     {
       "id": "openai-frontend-skill",
       "name": "frontend-skill",
-      "status": "v0",
-      "rank_in_status": 3,
+      "status": "replaced-in-v0",
+      "rank_in_status": null,
       "summary": "OpenAI 为 Codex 写的前端 skill：先写 visual thesis / content plan / interaction thesis，再建站；默认无卡片、满幅首屏、海报式布局、克制动效。已于 2026-04-23 从 openai/skills 的 curated 目录删除，需要钉在删除前的提交。",
       "repo": {
         "url": "https://github.com/openai/skills",
@@ -449,15 +473,15 @@
 
     {
       "id": "leonxlnx-taste-skill",
-      "name": "design-taste-frontend（taste-skill v2）",
-      "status": "backlog",
+      "name": "design-taste-frontend（taste-skill v2.1.5）",
+      "status": "batch2",
       "rank_in_status": 1,
-      "summary": "反 AI 味的前端艺术指导 skill。v2 从 247 个获奖站点提炼 20 个风格方向，脚本随机抽 3 个让 agent 选，再配色/字体/首屏/分区蓝图，最后用真实浏览器 inspector 与截图自查。",
+      "summary": "反 AI 味的前端艺术指导 skill。v2 从 247 个获奖站点提炼 20 个风格方向，脚本随机抽 3 个让 agent 选，再配色/字体/首屏/分区蓝图，要求至少 4 张真实图片，最后用真实浏览器 inspector 与截图自查。第二批重点评估对象：与题目的「不准远程图片、只写一个文件」有正面冲突，需要改运行脚本并先跑金丝雀。",
       "repo": {
         "url": "https://github.com/Leonxlnx/taste-skill",
         "owner_repo": "Leonxlnx/taste-skill",
-        "stars": 102337,
-        "stars_checked_at": "2026-10-25T16:28Z",
+        "stars": 102578,
+        "stars_checked_at": "2026-10-26T05:08Z",
         "official": false,
         "org": "个人（Leonxlnx）"
       },
@@ -468,7 +492,8 @@
         "files_in_skill_dir": 39,
         "size_kb": 2456,
         "frontmatter_name": "design-taste-frontend",
-        "note": "skills.sh 榜上同作者还有 high-end-visual-design、redesign-existing-projects、minimalist-ui 三个条目，在当前 HEAD 的仓库里不存在（只有 skills/taste-skill 一个目录），属于旧版本拆分，未核实历史提交位置。"
+        "install_as": "design-taste-frontend",
+        "note": "目录名是 taste-skill，frontmatter name 是 design-taste-frontend；画廊的 meta.name 与安装目录都要用 design-taste-frontend。skills.sh 上同作者的 high-end-visual-design、minimalist-ui、industrial-brutalist-ui、gpt-taste、stitch-design-taste、design-taste-frontend-v1 已搬到 Leonxlnx/taste-skill-classics（HEAD 5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305，MIT，16★，单个 SKILL.md、无脚本、带 disable-model-invocation:true），保留原安装名；redesign-existing-projects 并入了 design-taste-frontend（README「Moved skills」一节，第 140–156 行）。撤退时优先用 classics 的 design-taste-frontend-v1。"
       },
       "commit": {
         "repo_head_sha": "12af471f627f866411b4bd785b19646d3672784c",
@@ -476,7 +501,8 @@
         "skill_path_last_commit_sha": "af8a897996e159ccc89c9da535dff714d5dba62d",
         "skill_path_last_commit_date": "2026-10-24T23:40:02Z",
         "skill_path_last_commit_msg": "v2.1.5: community fixes (#156, #161, #163, #171) and an encoding check",
-        "pin_recommendation": "pin 到 repo_head_sha；v2.1.5，更新极频繁"
+        "pin_recommendation": "pin 到 tag v2.1.5 = 12af471f627f866411b4bd785b19646d3672784c；v2.0.0（2026-10-13）到 v2.1.5（2026-10-24）共 7 次发布，必须钉 SHA",
+        "url": "https://github.com/Leonxlnx/taste-skill/commit/12af471f627f866411b4bd785b19646d3672784c"
       },
       "license": {
         "spdx": "MIT",
@@ -484,64 +510,87 @@
         "file_opened": true,
         "copyright_holder": "Copyright (c) 2026 Leonxlnx",
         "redistribution": "yes",
-        "redistribution_notes": "MIT，需带上根 LICENSE。示例截图里的图片有各自的图片署名（examples/v2/CREDITS.md），不属于 skill 目录，别一起收。",
+        "redistribution_notes": "MIT，需带上根 LICENSE（skill 目录内没有）。示例截图里的图片有各自署名（examples/v2/CREDITS.md），不属于 skill 目录，别一起收。",
         "sources": ["https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/LICENSE"]
       },
       "popularity": {
         "official": false,
-        "stars": 102337,
+        "stars": 102578,
         "listings": [
-          {"site": "skills.sh 排行榜", "detail": "design-taste-frontend 第 72 名 674.9K；high-end-visual-design 第 146 名 458.8K；redesign-existing-projects 第 147 名；minimalist-ui 第 167 名 425.1K", "url": "https://skills.sh"},
+          {"site": "skills.sh design-taste-frontend", "detail": "677.8K 安装，首次收录 2026-02-21；Socket 与 Snyk 两项审计为 Warn（原因页面未给）；页面内容摘要仍是旧版（三个旋钮），安装数主要来自旧版（推断）", "url": "https://skills.sh/leonxlnx/taste-skill/design-taste-frontend"},
+          {"site": "skills.sh 总榜（2026-10-25 取）", "detail": "design-taste-frontend 第 72 名 674.9K；high-end-visual-design 第 146 名 458.8K；redesign-existing-projects 第 147 名；minimalist-ui 第 167 名 425.1K；trending(24h) 第 40 名 5.4K", "url": "https://skills.sh"},
+          {"site": "claudemarket UI/UX 榜", "detail": "design-taste-frontend 第 81 名 566K；high-end-visual-design 412K；stitch-design-taste 354K；design-taste-frontend-v1 289K", "url": "https://claudemarket.ai/skills/best-ui-ux-skills"},
           {"site": "Bitdoze (2026-08-28)", "detail": "第 4 条，81.1K stars", "url": "https://www.bitdoze.com/best-ai-skills-for-web-design/"}
         ],
-        "sources": ["https://api.github.com/repos/Leonxlnx/taste-skill", "https://skills.sh", "https://www.bitdoze.com/best-ai-skills-for-web-design/"]
+        "sources": ["https://api.github.com/repos/Leonxlnx/taste-skill", "https://skills.sh/leonxlnx/taste-skill/design-taste-frontend", "https://claudemarket.ai/skills/best-ui-ux-skills"]
       },
       "output": {
         "kind": "指引 + 参考文档 + JSON 方向库 + Node 脚本（draw/assets/inspect/scenes/lint）",
-        "produces": "任意栈的页面或应用界面；工作目录会生成 .taste-skill/ 与 assets/（下载的图片）",
-        "single_html_possible": "需要显式压制",
-        "extra_files_needed": ["scripts/*.mjs", "library/*.json", "references/*.md"],
-        "runtime_requirements": ["Node 22+", "Chrome / Edge / Chromium（inspect.mjs、scenes.mjs）"],
-        "network_needed": "assets.mjs 搜图需要联网；SKILL.md 写明无网络时改为绘制图片并在报告中说明；无 Chrome/Node 22 时只跑 lint.mjs",
+        "produces": "页面或应用屏；工作文件落在 .taste-skill/（direction.json、inspect/ 截图与 report.json、scenes/、app/）；assets.mjs --get 默认下载到 assets/ 并写 assets/credits.json；可选从 assets/base.css|base.js 起步；抽到滚动场景时要求复制 assets/scenes/ 下的 stage.js、stage.css 与场景文件；看板走 assets/app.css + assets/charts.js",
+        "single_html_possible": "取决于 agent 是否把本地文件内联；skill 自己的流程一定会产生 .taste-skill/ 草稿目录。需要改运行脚本保留 index.html 引用的本地文件",
+        "extra_files_needed": ["scripts/*.mjs", "library/*.json", "references/*.md", "assets/base.css", "assets/base.js", "assets/app.css", "assets/charts.js", "assets/scenes/*"],
+        "runtime_requirements": ["Node 22+（cdp.mjs 用内置 WebSocket）", "Chrome / Edge / Chromium（inspect.mjs、scenes.mjs；macOS 默认路径 /Applications/Google Chrome.app 可找到）"],
+        "network_needed": "assets.mjs 搜图与下载需要联网；无网络时 SKILL.md 要求改为自己绘制并在报告里说明。Codex 格沙箱无网络；inspect.mjs 还要在 127.0.0.1 起本地服务并启动 Chrome，沙箱里能否做到未核实",
+        "notes": "与题目的冲突：① 检查器规则 few-pictures 在页面少于 4 张非 SVG 图片时判 FAIL（软件产品的界面片段 data-ui 可计入；应用屏没有图片门槛）；② draw.mjs 的方向单把 https://picsum.photos/id/.../w/h 远程图片地址列为可用图片；③ 抽到滚动场景时要复制 assets/scenes/*（stage.js 用固定版本 CDN 加载 GSAP 与 Lenis）；④ 流程长（盘点题材、写论点、抽方向、找图、写站、1440/768/390 三宽度检查、至多 3 轮评审、动效层、再检查），建议 SG_TIMEOUT_MIN=120。以上均为静态阅读推断，未实测。",
         "source": "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/skills/taste-skill/SKILL.md"
       },
       "claude_code": {
-        "install_project": "npx skills add https://github.com/Leonxlnx/taste-skill --skill \"design-taste-frontend\"（README 推荐的 npx skills CLI，README 链接指向 vercel-labs/agent-skills；是否默认装到全局目录未核实，实验中不要用）；或手动复制 skills/taste-skill/ 到 .claude/skills/taste-skill/",
-        "install_plugin": "/plugin marketplace add Leonxlnx/taste-skill ；/plugin install taste-skill@taste-skill（README），技能命名空间 taste-skill:",
-        "invoke_headless": "claude -p \"/design-taste-frontend <题目>\" （项目级复制后，名称取 frontmatter name；插件形式带 taste-skill: 前缀，未核实）",
+        "install_project": "复制 skills/taste-skill/ 整个目录为 <项目>/.claude/skills/design-taste-frontend/（目录名用 frontmatter 的 name）",
+        "install_plugin": "/plugin marketplace add Leonxlnx/taste-skill ；/plugin install taste-skill@taste-skill（README）——实验里不要用；npx skills add https://github.com/Leonxlnx/taste-skill --skill \"design-taste-frontend\" 默认装到哪未核实；./install.sh 会往 ~/.claude/skills 建符号链接，不要用",
+        "invoke_interactive": "/design-taste-frontend <题目>",
+        "invoke_headless": "claude -p \"<题目>\\n\\nUse the design-taste-frontend skill.\" （运行脚本格式）；不要加 --bare",
         "tested": false,
         "sources": [
           "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/README.md",
-          "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/.claude-plugin/marketplace.json"
+          "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/.claude-plugin/marketplace.json",
+          "https://code.claude.com/docs/en/headless"
         ]
       },
       "codex": {
-        "install_project": "手动复制为 <项目>/.agents/skills/taste-skill/",
-        "install_plugin": "codex plugin marketplace add Leonxlnx/taste-skill ；codex plugin add taste-skill@taste-skill（README，仓库内有 .codex-plugin/plugin.json 与 .agents/plugins/marketplace.json）",
-        "invoke_explicit": "$design-taste-frontend <题目>（名称取 frontmatter name）",
+        "install_project": "复制为 <项目>/.agents/skills/design-taste-frontend/",
+        "install_plugin": "codex plugin marketplace add Leonxlnx/taste-skill ；codex plugin add taste-skill@taste-skill（README；仓库有 .codex-plugin/plugin.json 与 .agents/plugins/marketplace.json）——运行脚本里 plugins=false，不要用",
+        "invoke_explicit": "Use the $design-taste-frontend skill.",
+        "notes": "description 948 字符；Codex 源码对 name 限 64、description 限 1024 字符（codex-rs/skills/src/interface.rs），在限内。frontmatter 用 yaml 包解析过，合法。",
         "tested": false,
         "sources": [
           "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/README.md",
-          "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/.codex-plugin/plugin.json"
+          "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/.codex-plugin/plugin.json",
+          "https://github.com/openai/codex/blob/970111f6cb62cc02fe36a82ea7d71b37a2889c97/codex-rs/skills/src/interface.rs"
         ]
       },
       "fit_three_tasks": {
-        "verdict": "需要改造后才能用",
+        "verdict": "需要改运行脚本后才能公平地跑；先做金丝雀",
         "gaps": [
-          "默认流程是多步骤、多文件：抽方向 → 找图 → 写站 → 浏览器检查 → 截图迭代，产物不止一个 index.html",
-          "依赖 Node 22+ 和 Chrome，且要在 agent 沙箱里能运行；联网找图与「自包含」冲突",
-          "跑得慢、token 多，对原生组不公平，需要在文档里把「skill 额外花了多少成本」也记录下来"
-        ]
+          "「只写一个 index.html」会被 skill 自己的流程违反（.taste-skill/ 草稿目录必然出现；assets/ 与 assets/scenes/ 视 agent 取舍）",
+          "「不准远程图片」与 skill 的「至少 4 张真实图片（SVG 不算）」和方向单里的 picsum.photos 地址直接冲突；可能结果：按题目内联绘制 / 引用 picsum（被扫描器记 remote_image）/ 下载到 assets/ 本地引用 / 下载后 base64 内联",
+          "Codex 格无网络，assets.mjs 不能用；inspect.mjs 在沙箱里能否启动 Chrome 未核实",
+          "流程很长，建议 SG_TIMEOUT_MIN=120",
+          "滚动场景（钉住的舞台 + Lenis 平滑滚动）在全页 PNG 里会失真，实时 iframe 才是真实效果"
+        ],
+        "per_task": {
+          "saas_landing": "冲突较小：软件产品可以用自己界面的 HTML 片段（data-ui）满足图片门槛",
+          "dashboard": "冲突最小：走应用屏模式，没有 hero、没有图片门槛；风险是引用 assets/app.css、assets/charts.js 而不内联",
+          "blog_portfolio": "冲突最大：虚构作品要画成成品静帧，仍要 4 张以上位图，assets.mjs 会去找档案图"
+        }
       },
-      "risks": ["脚本多，收进仓库前要逐个审读", "Bitdoze 等第三方对它的 star 与实际有出入（81.1K vs 当前 102K，反映增长很快）"],
-      "unverified": ["旧版三个拆分 skill 的历史位置", "npx skills add 是否只装到项目级", "claude -p / codex exec 下的实际表现"]
+      "risks": [
+        "脚本多（Node + Chrome + 联网下载），skills.sh 上 Socket 与 Snyk 为 Warn",
+        "上游一周内连续改版；skills.sh 的 677.8K 安装与内容摘要对应旧版，不代表 v2.1.5",
+        "输出可能不止一个文件，需要运行脚本与站点构建配合（见 research/batch2.md 3.4）"
+      ],
+      "unverified": [
+        "agent 在题目约束下的实际行为（本次不允许执行 skill 脚本，也没有跑 claude -p / codex exec）",
+        "Codex 沙箱里 inspect.mjs 能否绑定 127.0.0.1 端口并启动 Chrome",
+        "skills.sh 的 Socket / Snyk Warn 原因",
+        "npx skills add 是否只装项目级"
+      ]
     },
 
     {
       "id": "conardli-web-design-engineer",
       "name": "web-design-engineer",
-      "status": "backlog",
-      "rank_in_status": 2,
+      "status": "v0",
+      "rank_in_status": 3,
       "summary": "产出始终是 HTML 的前端设计 skill：页面、看板、原型、幻灯片、动画、数据可视化；自带「设计方向顾问」与 25 个按真实产品命名的风格配方（Linear、Aesop、Bloomberg Terminal、MUJI 等）。纯指引，无脚本。",
       "repo": {
         "url": "https://github.com/ConardLi/garden-skills",
@@ -620,7 +669,7 @@
       "id": "pbakaus-impeccable",
       "name": "impeccable",
       "status": "backlog",
-      "rank_in_status": 3,
+      "rank_in_status": 2,
       "summary": "设计审查与打磨工作流：一个 /impeccable 入口带 audit、critique、polish、bolder、quieter、layout、typeset、animate 等子命令，加设计反模式检测器（引擎二进制）；按 Persuade / Operate / Read / Experience 四种模式调整设计力度。",
       "repo": {
         "url": "https://github.com/pbakaus/impeccable",
@@ -690,11 +739,16 @@
         "sources": ["https://github.com/pbakaus/impeccable/blob/658b4ce2942171ed5b3b3bec7e9d99456ba86e5e/README.md"]
       },
       "fit_three_tasks": {
-        "verdict": "不适合 v0",
-        "gaps": ["首次运行要下载二进制到 ~/.impeccable，违反「不污染全局」", "有遥测与 hooks", "流程依赖 /impeccable init 与 PRODUCT.md / DESIGN.md，headless 下不可控", "核心价值是对已有界面做审查/打磨，不是从空白出一个页面"]
+        "verdict": "不适合：流程会停在提问上（推断，未实测）",
+        "gaps": [
+          "首次运行要下载二进制到 ~/.impeccable（运行脚本用一次性 HOME 时不会污染全局，但每格都要联网重下，Codex 格没有网络）",
+          "有遥测与 hooks",
+          "第二批重读 reference/new-work.md（62KB）：「Before implementation, get the user's answer through the structured question tool … Ask two or three related questions」；方向选择有「decision page」「put in front of the user」轮次；会派 finish-reviewer、documenter 子 agent；写 PRODUCT.md / DESIGN.md / .impeccable/mocks。与「一次完成、不准追问」冲突，预期会停在提问上",
+          "核心价值是对已有界面做审查/打磨，不是从空白出一个页面"
+        ]
       },
-      "risks": ["全局写入", "遥测", "hooks 修改项目配置"],
-      "unverified": ["子命令名完整清单（SKILL.md 的 Commands 表未逐条读）", "headless 行为"]
+      "risks": ["停在提问上导致没有 index.html（推断）", "遥测", "hooks 修改项目配置", "体量大：.agents 副本含 1.1MB 字体索引、553KB live-browser.js"],
+      "unverified": ["子命令名完整清单（SKILL.md 的 Commands 表未逐条读）", "headless 行为", "HEAD 在首轮调研后已前进到 3671d50f0ac9a662ce0615e85a256110c9cd720b（2026-10-25，87,972★）；本条 pinned 链接仍是首轮的 658b4ce294"]
     },
 
     {
@@ -774,14 +828,14 @@
     {
       "id": "anthropics-theme-factory",
       "name": "theme-factory",
-      "status": "backlog",
-      "rank_in_status": 5,
+      "status": "batch2",
+      "rank_in_status": 3,
       "summary": "10 套预设色板+字体主题（Ocean Depths、Sunset Boulevard、Modern Minimalist、Tech Innovation 等）加「现场生成新主题」；描述里写明可用于幻灯片、文档、HTML 落地页。是主题应用器，不是页面设计器。",
       "repo": {
         "url": "https://github.com/anthropics/skills",
         "owner_repo": "anthropics/skills",
-        "stars": 183690,
-        "stars_checked_at": "2026-10-25T16:28Z",
+        "stars": 183806,
+        "stars_checked_at": "2026-10-26T05:08Z",
         "official": true,
         "org": "Anthropic"
       },
@@ -814,6 +868,8 @@
         "official": true,
         "stars": 183690,
         "listings": [
+          {"site": "skills.sh theme-factory", "detail": "95.4K 安装，首次收录 2026-01-19", "url": "https://skills.sh/anthropics/skills/theme-factory"},
+          {"site": "claudemarket UI/UX 榜", "detail": "第 395 名，90K 安装", "url": "https://claudemarket.ai/skills/best-ui-ux-skills"},
           {"site": "Composio (2026-05-05)", "detail": "第 6 条（来自 ComposioHQ/awesome-codex-skills 的副本）", "url": "https://composio.dev/blog/top-design-skills"}
         ],
         "sources": ["https://api.github.com/repos/anthropics/skills"]
@@ -841,24 +897,34 @@
         "sources": ["https://developers.openai.com/codex/skills"]
       },
       "fit_three_tasks": {
-        "verdict": "只能当修饰器",
-        "gaps": ["不负责布局与内容", "需要指定主题，否则会停下来问用户"]
+        "verdict": "可直接用，但一次完成下可能停下来问主题；金丝雀确认",
+        "gaps": [
+          "只管色板与字体，不负责布局与内容；预期是「模型惯用版式 + 一套固定色板」",
+          "SKILL.md 的流程是「展示 theme-showcase.pdf → 问用户选哪个 → 等待明确确认 → 应用」；一次完成、不准追问的题目下，agent 可能自己挑一个主题（预期主流），也可能停下来问（那一格就是 no_index_html）——金丝雀重点看这一点",
+          "主题文件里的字体是 DejaVu Sans 等系统字体（为 PDF/PPT 写的），网页上需要替换成 Google Fonts，题目允许",
+          "主要为幻灯片写的；description 里列了 HTML landing pages，正文 Purpose 只提幻灯片，用在网页上是延伸用法"
+        ],
+        "per_task": {
+          "saas_landing": "可用：预设主题里有 Tech Innovation、Ocean Depths 等",
+          "dashboard": "可用：Modern Minimalist、Midnight Galaxy 等深浅两类",
+          "blog_portfolio": "可用：Desert Rose、Golden Hour、Botanical Garden 等"
+        }
       },
-      "risks": [],
-      "unverified": []
+      "risks": ["agent 可能因「等待用户确认」停下来问，导致没有 index.html", "最弱的一个：只影响颜色与字体，版式差异小"],
+      "unverified": ["一次完成下 agent 是否会自己选主题", "claude -p / codex exec 下的实际触发"]
     },
 
     {
       "id": "emilkowalski-emil-design-eng",
       "name": "emil-design-eng",
       "status": "backlog",
-      "rank_in_status": 6,
+      "rank_in_status": 3,
       "summary": "Emil Kowalski 的设计工程方法：UI 打磨、组件设计、动效决策、细节品质。同仓库还有 animate、animation-performance、review-animations、break-ui 等多个动效/打磨 skill。",
       "repo": {
         "url": "https://github.com/emilkowalski/skills",
         "owner_repo": "emilkowalski/skills",
-        "stars": 49558,
-        "stars_checked_at": "2026-10-25T16:28Z",
+        "stars": 49675,
+        "stars_checked_at": "2026-10-26T05:08Z",
         "official": false,
         "org": "个人（Emil Kowalski）"
       },
@@ -889,8 +955,12 @@
       },
       "popularity": {
         "official": false,
-        "stars": 49558,
-        "listings": [{"site": "Bitdoze (2026-08-28)", "detail": "第 3 条，32.8K stars", "url": "https://www.bitdoze.com/best-ai-skills-for-web-design/"}],
+        "stars": 49675,
+        "listings": [
+          {"site": "skills.sh emil-design-eng", "detail": "387.8K 安装，首次收录 2026-03-16，三项安全审计均 Pass", "url": "https://skills.sh/emilkowalski/skills/emil-design-eng"},
+          {"site": "skills.sh apple-design（同仓库）", "detail": "244.2K 安装，首次收录 2026-07-09，同属动效物理类", "url": "https://skills.sh/emilkowalski/skills/apple-design"},
+          {"site": "Bitdoze (2026-08-28)", "detail": "第 3 条，32.8K stars", "url": "https://www.bitdoze.com/best-ai-skills-for-web-design/"}
+        ],
         "sources": ["https://api.github.com/repos/emilkowalski/skills"]
       },
       "output": {
@@ -916,10 +986,16 @@
         "sources": ["https://developers.openai.com/codex/skills"]
       },
       "fit_three_tasks": {
-        "verdict": "只能当修饰器",
-        "gaps": ["不是从零设计页面的 skill，更适合「动效/手感」专题"]
+        "verdict": "静态截图看不出差异，暂不收",
+        "gaps": [
+          "SKILL.md 几乎全是动效与交互手感（缓动、弹簧、scale(0) 禁忌、transform-origin、@starting-style、clip-path、手势、只动 transform/opacity、reduced-motion、stagger）；没有色板、字体、版式、首屏构图指导",
+          "screenshot.mjs 的全页 PNG 关闭了 CSS 动画（有限动画直接跳到终态），hover、过渡、入场 stagger 都不会出现在截图里；差异只在站内实时 iframe 里可见",
+          "要体现差异，得加几秒钟的录屏或悬停状态序列帧——新的取证功能",
+          "首次被调用且没有具体问题时只回复一句固定的话；我们的题目带完整任务，应当不会触发，未实测",
+          "要收的话需要 interaction-patterns 展示题（research/batch2-prompts/）和动效录屏（research/batch2.md 第 13 节）"
+        ]
       },
-      "risks": [],
+      "risks": ["动效取证没有之前，放进画廊会让读者看到几乎与原生一样的截图"],
       "unverified": ["与其它页面生成 skill 叠加使用的效果（-p 下一行只加载第一个 skill）"]
     },
 
@@ -927,7 +1003,7 @@
       "id": "mengto-skills-collection",
       "name": "MengTo/Skills（web-design/、ui/ 子目录）",
       "status": "backlog",
-      "rank_in_status": 7,
+      "rank_in_status": 5,
       "summary": "Meng To 的大型 skill 合集（1360 个文件），含 web-design/ 下大量页面效果配方（WebGL、GSAP、玻璃/网格布局等）和 ui/ 下 no-ai-design-slop、audit-ai-design-slop、design-first-ui-prompting 等；其中 build-awwwards-quality-sites 面向营销/作品集/落地页。",
       "repo": {
         "url": "https://github.com/MengTo/Skills",
@@ -984,18 +1060,24 @@
         "sources": ["https://developers.openai.com/codex/skills"]
       },
       "fit_three_tasks": {
-        "verdict": "未核实",
-        "gaps": ["太庞杂，需先挑出 1~2 个具体 skill（如 build-awwwards-quality-sites）再评估"]
+        "verdict": "最像的 build-awwwards-quality-sites 与题目冲突，不选",
+        "gaps": [
+          "build-awwwards-quality-sites（SKILL.md 7.2KB，路径最后提交 61239697f1，2026-07-25）：「Do not draw illustrations with model-authored SVG, CSS, or canvas paths」要求位图抠图，与题目「图片只能是内联 SVG 或 CSS」冲突",
+          "要求用 Iconify 的 Solar 图标 / SVG Logos / Logo Ipsum（外部图标源）",
+          "要求「选并点名至少一个已安装的 web-design skill」，依赖别的 skill 同时在场",
+          "要求「Run the production build」，假设有工程",
+          "合集其余约 100 个小配方（landing-page、product-proof-saas、editorial-portfolio-chapters 等）是各自单风格配方，只读了 frontmatter；要收需先挑具体一个"
+        ]
       },
       "risks": ["合集过大，选哪个 skill 本身就是一次决策"],
-      "unverified": ["全部子 skill 的输出形态与依赖"]
+      "unverified": ["除 build-awwwards-quality-sites 与 no-ai-design-slop 外各子 skill 的输出形态与依赖", "合集 HEAD 在 2026-10-26 已是 a45892d2fdadab75b31fb16abecc02f101b31c43，本条 pinned 链接仍是首轮的 0831489c02"]
     },
 
     {
       "id": "anthropics-web-artifacts-builder",
       "name": "web-artifacts-builder",
       "status": "backlog",
-      "rank_in_status": 8,
+      "rank_in_status": 7,
       "summary": "用 React 18 + TypeScript + Vite + Tailwind + shadcn/ui 起一个工程，再用 Parcel + html-inline 打包成单个 bundle.html。官方 description 自己写明「不适合简单单文件 HTML」。",
       "repo": {
         "url": "https://github.com/anthropics/skills",
@@ -1063,10 +1145,15 @@
         "sources": ["https://developers.openai.com/codex/skills"]
       },
       "fit_three_tasks": {
-        "verdict": "不适合 v0",
-        "gaps": ["要联网 npm install，并可能全局安装 pnpm", "产物体积大（整个 React+shadcn 运行时），与另外三个 skill 的产物不可比", "官方 description 已声明不适合简单单文件 HTML"]
+        "verdict": "不适合：联网装包、全局装 pnpm、cwd 里生成整个工程",
+        "gaps": [
+          "要联网 npm install，并可能全局安装 pnpm；运行脚本用一次性 HOME 不能隔离 npm 的全局前缀，npm install -g 仍会写到操作者机器的 npm 全局目录（本机 pnpm 已装在 node@22/bin，脚本检测到会跳过，但换机器就不一定）",
+          "会在 cwd 里生成整个 React 工程和 node_modules，当前 collectOutput 会把每个文件都记进 other_files，run.json 会膨胀",
+          "产物体积大（整个 React+shadcn 运行时），与另外三个 skill 的产物不可比",
+          "官方 description 已声明不适合简单单文件 HTML"
+        ]
       },
-      "risks": ["全局 npm install -g pnpm"],
+      "risks": ["全局 npm install -g pnpm", "node_modules 撑爆 other_files"],
       "unverified": []
     },
 
@@ -1074,7 +1161,7 @@
       "id": "vercel-web-design-guidelines",
       "name": "web-design-guidelines",
       "status": "backlog",
-      "rank_in_status": 9,
+      "rank_in_status": 8,
       "summary": "Vercel 的 Web Interface Guidelines 审查 skill：运行时联网拉取规则，对指定文件逐条检查，输出 file:line 格式的问题清单。是审查器，不是生成器。",
       "repo": {
         "url": "https://github.com/vercel-labs/agent-skills",
@@ -1148,6 +1235,341 @@
       },
       "risks": ["许可证不明", "规则内容会变"],
       "unverified": ["规则文件 command.md 的内容与许可证"]
+    },
+
+    {
+      "id": "addyosmani-frontend-ui-engineering",
+      "name": "frontend-ui-engineering",
+      "status": "batch2",
+      "rank_in_status": 2,
+      "summary": "Addy Osmani 的工程质量路线前端 skill：组件结构与状态管理、设计系统遵循（语义色板、间距刻度、字体层级）、「Avoid the AI Aesthetic」对照表、WCAG 2.1 AA、键盘与焦点、空/错误/加载状态、多宽度响应式。单个 SKILL.md，无脚本。",
+      "repo": {
+        "url": "https://github.com/addyosmani/agent-skills",
+        "owner_repo": "addyosmani/agent-skills",
+        "stars": 110557,
+        "stars_checked_at": "2026-10-26T05:08Z",
+        "official": false,
+        "org": "个人（Addy Osmani）"
+      },
+      "skill": {
+        "path": "skills/frontend-ui-engineering",
+        "tree_url_pinned": "https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/frontend-ui-engineering",
+        "skill_md_url_pinned": "https://github.com/addyosmani/agent-skills/blob/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/frontend-ui-engineering/SKILL.md",
+        "files_in_skill_dir": 1,
+        "size_kb": 12,
+        "frontmatter_name": "frontend-ui-engineering",
+        "note": "仓库共 25 个 skill；SKILL.md 末尾 See Also 指向 ../../references/accessibility-checklist.md（5.2KB，在 skill 目录外），只复制 skill 目录时该链接悬空"
+      },
+      "commit": {
+        "repo_head_sha": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+        "repo_head_date": "2026-10-13T20:21:06Z",
+        "skill_path_last_commit_sha": "3e1e0a2db595ab2abe89b1204f7eabb67a24eb90",
+        "skill_path_last_commit_date": "2026-10-03T15:35:42Z",
+        "skill_path_last_commit_msg": "Bind the frontend error-state retry callback",
+        "pin_recommendation": "pin 到 repo_head_sha"
+      },
+      "license": {
+        "spdx": "MIT",
+        "file_url_pinned": "https://github.com/addyosmani/agent-skills/blob/aeac41d4d005999432bb7312f7ff06383a91d59d/LICENSE",
+        "file_opened": true,
+        "copyright_holder": "Copyright (c) 2025 Addy Osmani",
+        "redistribution": "yes",
+        "redistribution_notes": "MIT，需带根 LICENSE（skill 目录内没有）。",
+        "sources": ["https://github.com/addyosmani/agent-skills/blob/aeac41d4d005999432bb7312f7ff06383a91d59d/LICENSE"]
+      },
+      "popularity": {
+        "official": false,
+        "stars": 110557,
+        "listings": [
+          {"site": "skills.sh frontend-ui-engineering", "detail": "67.2K 安装，首次收录 2026-02-16", "url": "https://skills.sh/addyosmani/agent-skills/frontend-ui-engineering"},
+          {"site": "GitHub topic agent-skills", "detail": "按 stars 排第 4", "url": "https://github.com/topics/agent-skills"}
+        ],
+        "sources": ["https://api.github.com/repos/addyosmani/agent-skills", "https://skills.sh/addyosmani/agent-skills/frontend-ui-engineering"]
+      },
+      "output": {
+        "kind": "纯指引（单个 SKILL.md），无脚本、无资源",
+        "produces": "agent 自写；示例是 React/TS，单文件里自然改写；不规定输出格式",
+        "single_html_possible": true,
+        "extra_files_needed": [],
+        "runtime_requirements": [],
+        "network_needed": false,
+        "notes": "默认前提是项目里有设计系统，没有时靠模型自己定；Verification 里提到 axe-core 与 dev tools，agent 跑不了就跳过；Reference-led UI quality 一节说要先搜参考站，Claude 格有 WebSearch、Codex 格没有。视觉差异预期比美学方向型 skill 小，差异多在无障碍结构、状态覆盖和令牌化的间距与颜色。",
+        "source": "https://github.com/addyosmani/agent-skills/blob/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/frontend-ui-engineering/SKILL.md"
+      },
+      "claude_code": {
+        "install_project": "复制为 <项目>/.claude/skills/frontend-ui-engineering/",
+        "install_plugin": "/plugin marketplace add addyosmani/agent-skills ；/plugin install agent-skills@addy-agent-skills——会一次装 25 个 skill，实验里不要用",
+        "invoke_interactive": "/frontend-ui-engineering <题目>",
+        "invoke_headless": "claude -p \"<题目>\\n\\nUse the frontend-ui-engineering skill.\" （运行脚本格式）",
+        "tested": false,
+        "sources": [
+          "https://github.com/addyosmani/agent-skills/blob/aeac41d4d005999432bb7312f7ff06383a91d59d/README.md",
+          "https://code.claude.com/docs/en/headless"
+        ]
+      },
+      "codex": {
+        "install_project": "复制为 <项目>/.agents/skills/frontend-ui-engineering/",
+        "install_plugin": "codex plugin marketplace add addyosmani/agent-skills（README；读整个 skills/，25 个）——实验里不要用",
+        "invoke_explicit": "Use the $frontend-ui-engineering skill.",
+        "tested": false,
+        "sources": [
+          "https://github.com/addyosmani/agent-skills/blob/aeac41d4d005999432bb7312f7ff06383a91d59d/README.md",
+          "https://developers.openai.com/codex/skills"
+        ]
+      },
+      "fit_three_tasks": {
+        "verdict": "可直接用",
+        "gaps": [
+          "不是美学方向型，视觉差异可能比其它候选小",
+          "没有设计系统可遵循时，「Use the project's actual design system」落空，靠模型自己定",
+          "See Also 的 accessibility-checklist.md 不会随 skill 目录一起复制"
+        ],
+        "per_task": {
+          "saas_landing": "可用：要求避开紫/靛蓝、满屏渐变、全圆角、泛用 hero",
+          "dashboard": "适合：状态覆盖（加载/空/错误）、键盘可达、响应式是它的强项",
+          "blog_portfolio": "可用：标题层级、语义标记、对比度"
+        }
+      },
+      "risks": ["与原生的视觉差异可能不明显（这本身是可展示的结果）"],
+      "unverified": ["claude -p / codex exec 下的实际触发与表现"]
+    },
+
+    {
+      "id": "alchaincyf-huashu-design",
+      "name": "huashu-design（花叔Design 3.0）",
+      "status": "backlog",
+      "rank_in_status": 1,
+      "summary": "用 HTML 做高保真原型、幻灯片、动画、可视化与评审的设计 skill，中文写成。内含「三方向门」：任何新设计先出三个方向的真实初稿给用户选，选定后才执行。",
+      "repo": {
+        "url": "https://github.com/alchaincyf/huashu-design",
+        "owner_repo": "alchaincyf/huashu-design",
+        "stars": 26335,
+        "stars_checked_at": "2026-10-26T05:08Z",
+        "official": false,
+        "org": "个人（alchaincyf，花叔）"
+      },
+      "skill": {
+        "path": ".（SKILL.md 在仓库根目录，整个仓库就是一个 skill）",
+        "tree_url_pinned": "https://github.com/alchaincyf/huashu-design/tree/4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1",
+        "skill_md_url_pinned": "https://github.com/alchaincyf/huashu-design/blob/4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1/SKILL.md",
+        "files_in_skill_dir": 390,
+        "size_kb": 40755,
+        "frontmatter_name": "huashu-design",
+        "note": "仓库约 39.8MB，含多个 4–5MB 的 mp3 配乐与音效；SKILL.md 15.6KB，refs 在 references/、scripts/ 里"
+      },
+      "commit": {
+        "repo_head_sha": "4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1",
+        "repo_head_date": "2026-10-23T15:31:58Z",
+        "skill_path_last_commit_sha": "未核实（整个仓库即 skill，取 HEAD）",
+        "skill_path_last_commit_date": "2026-10-23T15:31:58Z",
+        "skill_path_last_commit_msg": "README：头图换成 3.0 发布片，新增 3.0 案例一节",
+        "pin_recommendation": "pin 到 repo_head_sha；版本 3.0.0（2026-10-17）"
+      },
+      "license": {
+        "spdx": "MIT",
+        "file_url_pinned": "https://github.com/alchaincyf/huashu-design/blob/4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1/LICENSE",
+        "file_opened": true,
+        "copyright_holder": "Copyright (c) 2026 alchaincyf (花叔 · 花生)",
+        "redistribution": "yes",
+        "redistribution_notes": "MIT；音效等媒体文件的出处与许可证未核实。",
+        "sources": ["https://github.com/alchaincyf/huashu-design/blob/4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1/LICENSE"]
+      },
+      "popularity": {
+        "official": false,
+        "stars": 26335,
+        "listings": [{"site": "claudemarket UI/UX 榜", "detail": "第 625 名，48K 安装", "url": "https://claudemarket.ai/skills/best-ui-ux-skills"}],
+        "sources": ["https://api.github.com/repos/alchaincyf/huashu-design", "https://claudemarket.ai/skills/best-ui-ux-skills"]
+      },
+      "output": {
+        "kind": "指引 + 模块手册 + Python 脚本 + 大量素材",
+        "produces": "HTML（网页、原型、幻灯片、动画、信息图）；生产级 Web App 与需要后端的系统不适用",
+        "single_html_possible": true,
+        "extra_files_needed": ["references/**", "scripts/*.py", "assets/**"],
+        "runtime_requirements": ["python3（开工三件事会跑 learn.py / design_lint.py / capabilities.py）"],
+        "network_needed": "是（事实验证先 WebSearch）；Codex 格没有",
+        "notes": "SKILL.md 第 3 条「三方向门（100%，指定风格或品牌也不豁免）」：先出三个方向的真实初稿给用户选，「摆出来就停，结束回合等用户选，包括无人值守会话」；唯一豁免是用户本次会话明说跳过。",
+        "source": "https://github.com/alchaincyf/huashu-design/blob/4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1/SKILL.md"
+      },
+      "claude_code": {
+        "install_project": "复制整个仓库内容为 <项目>/.claude/skills/huashu-design/（40MB）",
+        "invoke_headless": "claude -p \"<题目>\\n\\nUse the huashu-design skill.\"",
+        "tested": false,
+        "sources": ["https://github.com/alchaincyf/huashu-design/blob/4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1/README.md"]
+      },
+      "codex": {
+        "install_project": "复制为 <项目>/.agents/skills/huashu-design/",
+        "invoke_explicit": "Use the $huashu-design skill.",
+        "tested": false,
+        "sources": ["https://developers.openai.com/codex/skills"]
+      },
+      "fit_three_tasks": {
+        "verdict": "不改题目跑不了",
+        "gaps": [
+          "三方向门要求停下等用户选，一次完成下大概率没有 index.html",
+          "「豁免须用户明说跳过」，题目里的「不要追问」不一定算",
+          "仓库 40MB，含大量音视频素材，复制进每个格子的工作目录很重"
+        ]
+      },
+      "risks": ["no_index_html"],
+      "unverified": ["题目的「Do not ask questions」能否让 agent 越过三方向门", "references/ 与 scripts/ 未逐个读"]
+    },
+
+    {
+      "id": "oil-oil-oil-ui",
+      "name": "oil-ui",
+      "status": "backlog",
+      "rank_in_status": 6,
+      "summary": "中文写成的 UI 设计 skill：探索设计方向、生成多风格同屏对比页、基于真实截图打磨层级。新界面的流程是先用文字写出三个方向问用户，发出后结束这一轮。",
+      "repo": {
+        "url": "https://github.com/oil-oil/oil-ui",
+        "owner_repo": "oil-oil/oil-ui",
+        "stars": 2263,
+        "stars_checked_at": "2026-10-26T05:08Z",
+        "official": false,
+        "org": "个人（oil-oil）"
+      },
+      "skill": {
+        "path": ".（SKILL.md 在仓库根目录）",
+        "tree_url_pinned": "https://github.com/oil-oil/oil-ui/tree/ff3ed0a88972747840ece9d4cd664807d6f5d501",
+        "skill_md_url_pinned": "https://github.com/oil-oil/oil-ui/blob/ff3ed0a88972747840ece9d4cd664807d6f5d501/SKILL.md",
+        "files_in_skill_dir": "约 40（含字体、图片、Python/Node 脚本、references）",
+        "frontmatter_name": "oil-ui",
+        "note": "SKILL.md 19.2KB，version 0.25.0，2026-09-30 创建"
+      },
+      "commit": {
+        "repo_head_sha": "ff3ed0a88972747840ece9d4cd664807d6f5d501",
+        "repo_head_date": "2026-10-24T16:10:41Z",
+        "skill_path_last_commit_sha": "未核实（整个仓库即 skill，取 HEAD）",
+        "skill_path_last_commit_date": "2026-10-24T16:10:41Z",
+        "skill_path_last_commit_msg": "test(skill): 同步工作区安全边界回归",
+        "pin_recommendation": "pin 到 repo_head_sha"
+      },
+      "license": {
+        "spdx": "MIT",
+        "file_url_pinned": "https://github.com/oil-oil/oil-ui/blob/ff3ed0a88972747840ece9d4cd664807d6f5d501/LICENSE",
+        "file_opened": true,
+        "copyright_holder": "Copyright (c) 2026 oil-oil",
+        "redistribution": "yes",
+        "redistribution_notes": "MIT；assets/fonts/instrument-serif 另带 OFL.txt。",
+        "sources": ["https://github.com/oil-oil/oil-ui/blob/ff3ed0a88972747840ece9d4cd664807d6f5d501/LICENSE"]
+      },
+      "popularity": {
+        "official": false,
+        "stars": 2263,
+        "listings": [],
+        "sources": ["https://api.github.com/repos/oil-oil/oil-ui"]
+      },
+      "output": {
+        "kind": "指引 + Python/Node 脚本（风格对比页生成器、截图工具）+ 参考文档",
+        "produces": "设计说明、对比页、设计稿或可运行界面，按请求交付",
+        "single_html_possible": true,
+        "extra_files_needed": ["references/**", "scripts/**", "assets/**"],
+        "runtime_requirements": ["Python 3.10+（风格对比页生成器）", "Chrome（截图工具）"],
+        "network_needed": "版本检查脚本 check_update.sh 会在每次使用开头运行",
+        "notes": "「新界面或明确要求重新探索 → 先用文字写出三个风格不同的方向问用户，发给用户后结束这一轮」；用户已把想要的说清楚时才直接做一个方向。",
+        "source": "https://github.com/oil-oil/oil-ui/blob/ff3ed0a88972747840ece9d4cd664807d6f5d501/SKILL.md"
+      },
+      "claude_code": {
+        "install_project": "复制整个仓库内容为 <项目>/.claude/skills/oil-ui/",
+        "invoke_headless": "claude -p \"<题目>\\n\\nUse the oil-ui skill.\"",
+        "tested": false,
+        "sources": ["https://github.com/oil-oil/oil-ui/blob/ff3ed0a88972747840ece9d4cd664807d6f5d501/README.md"]
+      },
+      "codex": {
+        "install_project": "复制为 <项目>/.agents/skills/oil-ui/",
+        "invoke_explicit": "Use the $oil-ui skill.",
+        "tested": false,
+        "sources": ["https://developers.openai.com/codex/skills"]
+      },
+      "fit_three_tasks": {
+        "verdict": "不改题目跑不了，且知名度低",
+        "gaps": ["先问用户选方向的门", "知名度只有 2K stars", "版本检查脚本每次运行"]
+      },
+      "risks": ["no_index_html"],
+      "unverified": ["题目已把需求说得很清楚时，「用户已说清想要什么」条款是否会让 agent 直接做"]
+    },
+
+    {
+      "id": "leonxlnx-taste-skill-classics",
+      "name": "taste-skill-classics（minimalist-ui / high-end-visual-design / industrial-brutalist-ui 等）",
+      "status": "batch2-reserve",
+      "rank_in_status": 3,
+      "summary": "taste-skill 在 v2 之前发布的几个单文件风格 skill，2026-10 搬到独立仓库并保留原安装名：minimalist-ui（暖色单色编辑式产品界面 + 平铺 bento）、high-end-visual-design（柔和对比、留白、弹簧动效）、industrial-brutalist-ui（瑞士字体、刚性网格、功能色）、gpt-taste（GPT/Codex 用）、stitch-design-taste（写 DESIGN.md，不是网页）、design-taste-frontend-v1。全部是单个 SKILL.md，无脚本，每个都声明了一种具体风格。",
+      "repo": {
+        "url": "https://github.com/Leonxlnx/taste-skill-classics",
+        "owner_repo": "Leonxlnx/taste-skill-classics",
+        "stars": 16,
+        "stars_checked_at": "2026-10-26T05:08Z",
+        "official": false,
+        "org": "个人（Leonxlnx）"
+      },
+      "skill": {
+        "path": "skills/{minimalist-skill, soft-skill, brutalist-skill, gpt-tasteskill, stitch-skill, taste-skill-v1, taste-skill-v2-experimental}",
+        "tree_url_pinned": "https://github.com/Leonxlnx/taste-skill-classics/tree/5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305/skills",
+        "skill_md_url_pinned": "https://github.com/Leonxlnx/taste-skill-classics/blob/5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305/skills/minimalist-skill/SKILL.md",
+        "files_in_skill_dir": "每个 skill 2 个文件（SKILL.md + agents/openai.yaml）；stitch-skill 多一个 DESIGN.md",
+        "size_kb": "SKILL.md 8–21KB，taste-skill-v2-experimental 89KB",
+        "frontmatter_name": "minimalist-ui / high-end-visual-design / industrial-brutalist-ui / gpt-taste / stitch-design-taste / design-taste-frontend-v1 / design-taste-frontend-v2-experimental",
+        "note": "安装名与目录名不同（如目录 minimalist-skill、名字 minimalist-ui）；README 说「kept their install names」，用 npx skills add https://github.com/Leonxlnx/taste-skill-classics --skill \"<安装名>\"。每个 SKILL.md 都有 disable-model-invocation: true，agents/openai.yaml 是 policy.allow_implicit_invocation: false，description 写「it runs only when called by name」。"
+      },
+      "commit": {
+        "repo_head_sha": "5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305",
+        "repo_head_date": "2026-10-19T21:51:34Z",
+        "skill_path_last_commit_sha": "未核实（逐个路径未查）",
+        "skill_path_last_commit_date": "2026-10-19T21:51:34Z",
+        "skill_path_last_commit_msg": "taste-skill-classics: the classic taste-skill styles and earlier versions",
+        "pin_recommendation": "pin 到 repo_head_sha"
+      },
+      "license": {
+        "spdx": "MIT",
+        "file_url_pinned": "https://github.com/Leonxlnx/taste-skill-classics/blob/5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305/LICENSE",
+        "file_opened": true,
+        "copyright_holder": "Copyright (c) 2026 Leonxlnx",
+        "redistribution": "yes",
+        "redistribution_notes": "MIT，需带根 LICENSE（skill 目录内没有）。",
+        "sources": ["https://github.com/Leonxlnx/taste-skill-classics/blob/5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305/LICENSE"]
+      },
+      "popularity": {
+        "official": false,
+        "stars": 16,
+        "listings": [
+          {"site": "skills.sh 总榜（2026-10-25 取）", "detail": "high-end-visual-design 458.8K；minimalist-ui 425.1K（沿用原名累积的安装数）", "url": "https://skills.sh"},
+          {"site": "claudemarket UI/UX 榜", "detail": "high-end-visual-design 412K；stitch-design-taste 354K；design-taste-frontend-v1 289K", "url": "https://claudemarket.ai/skills/best-ui-ux-skills"}
+        ],
+        "sources": ["https://api.github.com/repos/Leonxlnx/taste-skill-classics", "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/README.md"]
+      },
+      "output": {
+        "kind": "纯指引（单个 SKILL.md），无脚本、无资源",
+        "produces": "agent 自写；各自声明一种风格",
+        "single_html_possible": true,
+        "extra_files_needed": [],
+        "runtime_requirements": [],
+        "network_needed": false,
+        "notes": "soft-skill（high-end-visual-design）要求避开 Inter 等常见字体，并给出三种氛围（Ethereal Glass、Editorial Luxury、Soft Structuralism）；minimalist-skill 规定衬线标题 + 暖单色 + 平铺 bento。以上只读了开头与关键行，未逐条读。",
+        "source": "https://github.com/Leonxlnx/taste-skill-classics/blob/5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305/README.md"
+      },
+      "claude_code": {
+        "install_project": "复制对应目录为 <项目>/.claude/skills/<安装名>/（例如 skills/minimalist-skill → .claude/skills/minimalist-ui/）",
+        "invoke_interactive": "/minimalist-ui <题目>",
+        "invoke_headless": "claude -p \"/minimalist-ui <题目>\"——提示词必须以 /<安装名> 开头；因为 disable-model-invocation: true，运行脚本现有的结尾句「Use the <name> skill.」在 Claude 格里大概率触发不了（文档推断，未实测）",
+        "tested": false,
+        "sources": ["https://code.claude.com/docs/en/skills", "https://code.claude.com/docs/en/headless"]
+      },
+      "codex": {
+        "install_project": "复制为 <项目>/.agents/skills/<安装名>/（含 agents/openai.yaml）",
+        "invoke_explicit": "Use the $minimalist-ui skill.（显式 $ 提及不受 allow_implicit_invocation: false 影响，文档说明）",
+        "tested": false,
+        "sources": ["https://developers.openai.com/codex/skills"]
+      },
+      "fit_three_tasks": {
+        "verdict": "未细读，暂不判断适配哪几题",
+        "gaps": [
+          "各车道声明的风格很具体（minimalist-ui 偏工作区/产品界面与编辑式排版，brutalist 偏终端/遥测，high-end 给了三种氛围），是否适合 SaaS 落地页 / 看板 / 博客需要读完 SKILL.md 再定",
+          "运行脚本的结尾句触发方式对它们无效，需要改成提示词开头加 /<name>"
+        ]
+      },
+      "risks": ["仓库刚建（2026-10-19），stars 只有 16，知名度全靠沿用原名的安装数", "触发方式需要改运行脚本"],
+      "unverified": ["各 skill 的逐条规则", "是否适合三道题", "npx skills add 对 disable-model-invocation 的处理"]
     }
   ],
 
@@ -1158,10 +1580,17 @@
     {"name": "zarazhangrui/frontend-slides", "reason": "产出 HTML 幻灯片（PPT 类），按范围排除；31,262★ MIT", "url": "https://github.com/zarazhangrui/frontend-slides", "verified": "只取了 stars 与许可证"},
     {"name": "openai/skills — figma-implement-design 等 figma-*", "reason": "依赖 Figma MCP 把设计稿转代码，不是自由发挥的样式 skill", "url": "https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431/skills/.curated", "verified": "仅按目录名与描述排除"},
     {"name": "designed-by-ai/skills — design-mobile-apps", "reason": "移动 App 界面，skills.sh 第 14 名约 1.0M 安装；不是网页", "url": "https://skills.sh", "verified": "只见到排行榜条目，未打开仓库"},
-    {"name": "uizze.sh — ui-taste", "reason": "skills.sh 第 65 名约 729.4K 安装，榜上显示的是域名而非 owner/repo，没找到对应 GitHub 仓库，无法核实许可证与内容", "url": "https://skills.sh", "verified": "未核实"},
+    {"name": "uizze.sh — ui-taste", "reason": "skills.sh 约 729.4K 安装，但没有公开源码：uizze/uizze 仓库 README 第 56 行写明「UI Taste and iOS Design are distributed only from https://uizze.sh, not mirrored in this repository」，无法固定 SHA、无法核对 LICENSE；按规则排除。同仓库公开的 anti-ui-slop / ui-design（Apache-2.0）内容来自 impeccable 的剧本，仓库仅 68★", "url": "https://github.com/uizze/uizze/blob/40b0ee439ba88aecb65d68bcb379da0e716b899e/README.md", "verified": "README 与 LICENSING.md 已读；claudemarket 页面显示站内评分 69/100，provenance 低"},
     {"name": "microsoft/skills — frontend-design-review", "reason": "VoltAgent 列表条目「Review and create distinctive frontend interfaces」；仓库 3,147★ MIT，但没找到具体路径，未深入", "url": "https://github.com/microsoft/skills", "verified": "只取了仓库 stars 与许可证"},
-    {"name": "google-labs-code/stitch-skills — shadcn-ui / design-md", "reason": "shadcn/ui 组件构建与 DESIGN.md 管理，偏组件库工作流；8,588★ Apache-2.0", "url": "https://github.com/google-labs-code/stitch-skills", "verified": "只取了仓库 stars 与许可证"},
-    {"name": "wshobson/agents — 前端/落地页相关 skill", "reason": "仓库 41,686★ MIT；搜索摘要提到 brand-landingpage，未能核实该 skill 是否存在", "url": "https://github.com/wshobson/agents", "verified": "未核实"},
+    {"name": "google-labs-code/stitch-skills — design-md / shadcn-ui", "reason": "design-md（plugins/stitch-utilities/skills/design-md，最后提交 5532ce08bb）分析 Stitch 项目里已有的屏幕合成 DESIGN.md，allowed-tools 为 stitch*:*，需要 Stitch MCP，产出是设计说明文件而不是网页（skills.sh 64.7K 安装）；shadcn-ui（plugins/stitch-build/skills/shadcn-ui，最后提交 a6f6cadc65）面向 React 工程，需要 shadcn MCP。仓库 8,595★，HEAD 0337446dadde6f8c94210444e2aa9d546126480f，LICENSE 已打开确认 Apache-2.0", "url": "https://github.com/google-labs-code/stitch-skills", "verified": "两个 SKILL.md 的 frontmatter、LICENSE、skills.sh 页面"},
+    {"name": "wshobson/agents — brand-landingpage / tailwind-design-system", "reason": "仓库约 41.7K★ MIT。brand-landingpage（plugins/brand-landingpage/skills/brand-landingpage，路径最后提交 373dc369304e…，2026-10-04，claudemarket 榜 39K 安装）Phase 0 要装 Stitch SDK、配 API key、做品牌访谈，description 写明看板用 frontend-design，跑不了；tailwind-design-system（skills.sh 70.4K 安装）是 React + Tailwind v4 令牌体系，偏组件库，不是页面风格", "url": "https://github.com/wshobson/agents/tree/0874a27b17a22e2b7c2e2bcd725768e0803cad06/plugins/brand-landingpage", "verified": "brand-landingpage 的 SKILL.md 开头已读；tailwind-design-system 只看了 skills.sh 页面与文件清单"},
+    {"name": "nexu-io/open-design", "reason": "103,996★ Apache-2.0 的设计工作台应用；design-templates/*（saas-landing、dashboard、blog-post 等）和 skills/*（大量收录别人的 skill）依赖该应用的 od: 元数据与「当前 DESIGN.md」运行时，不是自包含 skill", "url": "https://github.com/nexu-io/open-design/blob/26d60298f8129e229a1c10aab4df7ca25b1e9ad3/design-templates/saas-landing/SKILL.md", "verified": "saas-landing/SKILL.md 开头已读，LICENSE 未打开"},
+    {"name": "mattpocock/skills — design-an-interface / codebase-design", "reason": "claudemarket 榜 217K / 736K 安装；名字带 design，但是软件接口/代码库设计，不是网页", "url": "https://claudemarket.ai/skills/best-ui-ux-skills", "verified": "只见到榜单条目，未打开仓库"},
+    {"name": "heygen-com/hyperframes — hyperframes-creative", "reason": "claudemarket 榜 628K 安装；HTML 转视频框架，不是网页", "url": "https://claudemarket.ai/skills/best-ui-ux-skills", "verified": "只见到榜单条目"},
+    {"name": "arvindrk/extract-design-system、firecrawl/firecrawl-workflows — firecrawl-website-design-clone", "reason": "claudemarket 榜 130K / 33K 安装；需要给一个现成网址去提取或克隆设计，不是从题目生成", "url": "https://claudemarket.ai/skills/best-ui-ux-skills", "verified": "只见到榜单条目"},
+    {"name": "emilkowalski/skills — apple-design", "reason": "skills.sh 244.2K 安装，Apple 式流畅界面的动效物理（弹簧、速度、可打断），与 emil-design-eng 同类，静态截图看不出差异", "url": "https://skills.sh/emilkowalski/skills/apple-design", "verified": "skills.sh 页面摘要，未读 SKILL.md"},
+    {"name": "tt-a1i/archify、cathrynlavery/diagram-design", "reason": "89K / 61K★；图表/示意图 skill，不是页面风格", "url": "https://github.com/tt-a1i/archify", "verified": "只取了 GitHub topic 搜索结果的描述"},
+    {"name": "superdesigndev/superdesign-skill、bitjaru/styleseed、educlopez/ui-craft", "reason": "904 / 989 / 398★，低于「知名」的门槛，未深读", "url": "https://github.com/superdesigndev/superdesign-skill", "verified": "只取了 GitHub 搜索结果"},
     {"name": "mxyhi/ok-skills — Frontend Skill", "reason": "506★ Apache-2.0；描述与 OpenAI frontend-skill 的 description 完全一致，疑似副本，未比对", "url": "https://github.com/mxyhi/ok-skills", "verified": "未核实"},
     {"name": "ComposioHQ/awesome-codex-skills — theme-factory", "reason": "Anthropic theme-factory 的副本，17,048★，仓库无 license 字段", "url": "https://github.com/ComposioHQ/awesome-codex-skills", "verified": "未核实"}
   ],
@@ -1177,14 +1606,24 @@
       "https://api.github.com/repos/ConardLi/garden-skills",
       "https://api.github.com/repos/emilkowalski/skills",
       "https://api.github.com/repos/MengTo/Skills",
-      "https://api.github.com/repos/elayadesign/ai-design-skills"
+      "https://api.github.com/repos/elayadesign/ai-design-skills",
+      "https://api.github.com/repos/addyosmani/agent-skills",
+      "https://api.github.com/repos/alchaincyf/huashu-design",
+      "https://api.github.com/repos/oil-oil/oil-ui",
+      "https://api.github.com/repos/google-labs-code/stitch-skills",
+      "https://api.github.com/repos/uizze/uizze",
+      "https://api.github.com/repos/nexu-io/open-design",
+      "https://api.github.com/repos/Leonxlnx/taste-skill-classics"
     ],
     "lists_and_leaderboards": [
       "https://skills.sh",
       "https://www.bitdoze.com/best-ai-skills-for-web-design/",
       "https://composio.dev/blog/top-design-skills",
       "https://github.com/VoltAgent/awesome-agent-skills",
-      "https://github.com/travisvn/awesome-claude-skills"
+      "https://github.com/travisvn/awesome-claude-skills",
+      "https://skills.sh/trending",
+      "https://skills.sh/hot",
+      "https://claudemarket.ai/skills/best-ui-ux-skills"
     ],
     "docs": [
       "https://code.claude.com/docs/en/skills",

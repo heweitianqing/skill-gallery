@@ -13,10 +13,15 @@ on:
       - "site/**"
       - "scripts/build-site.mjs"
       - ".github/workflows/pages.yml"
+  # Rebuild every 6 hours so the 👍 counts on the comparison pages stay current.
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: read
+  # Read-only: the build reads 👍 counts from the Votes discussions and writes nothing back.
+  discussions: read
   pages: write
   id-token: write
 
@@ -37,6 +42,9 @@ jobs:
       # No npm install: the build script has no dependencies.
       - name: Build site
         run: node scripts/build-site.mjs --out _site
+        env:
+          # Used only to read vote counts (GraphQL, discussions: read).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/configure-pages@v6
 

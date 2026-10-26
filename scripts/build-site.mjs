@@ -27,6 +27,9 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const SITE_SRC = path.join(REPO_ROOT, 'site');
 const CELL_FILES = ['index.html', 'desktop.png', 'mobile.png', 'run.json'];
 const OUT_MARKER = '.skill-gallery-site';
+// Same overrides as the run scripts, for testing the build against other inputs.
+const PROMPTS_DIR = process.env.SG_PROMPTS_DIR ? path.resolve(process.env.SG_PROMPTS_DIR) : path.join(REPO_ROOT, 'prompts');
+const SKILLS_DIR = process.env.SG_SKILLS_DIR ? path.resolve(process.env.SG_SKILLS_DIR) : path.join(REPO_ROOT, 'skills');
 
 const warnings = [];
 const warn = (msg) => {
@@ -477,7 +480,7 @@ async function writeThumbs(src, viewportWidth, aspect, targets) {
 // ---------------------------------------------------------------- inputs
 
 function loadPrompts(order) {
-  const dir = path.join(REPO_ROOT, 'prompts');
+  const dir = PROMPTS_DIR;
   const prompts = new Map();
   for (const f of isDir(dir) ? fs.readdirSync(dir).filter((x) => x.endsWith('.md')).sort() : []) {
     const text = fs.readFileSync(path.join(dir, f), 'utf8');
@@ -499,6 +502,9 @@ function loadPrompts(order) {
       id,
       title: meta.title ? String(meta.title) : id,
       version: meta.version ?? null,
+      // A showcase prompt is added to show one skill's claimed strength; skills whose
+      // meta.yaml applies_to leaves it out are shown as out of scope there.
+      showcase: meta.showcase === true || meta.kind === 'showcase',
       file: `prompts/${f}`,
       file_sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, f))).digest('hex'),
       body: m ? text.slice(m[0].length).trim() : text.trim(),
@@ -565,7 +571,7 @@ const asText = (v) => (v == null ? null : Array.isArray(v) ? v.filter((x) => x !
 // Normalized skill info. Field priority: meta.yaml > source.json > research/candidates.json.
 // The commit actually used by the runs (run.json skill.source_commit) is kept separately.
 function loadSkill(name, candidates, cells) {
-  const dir = path.join(REPO_ROOT, 'skills', name);
+  const dir = path.join(SKILLS_DIR, name);
   let meta = {};
   const metaFile = ['meta.yaml', 'meta.yml'].map((f) => path.join(dir, f)).find((f) => fs.existsSync(f));
   if (metaFile) {
@@ -609,6 +615,13 @@ function loadSkill(name, candidates, cells) {
     usage_claude: asText(pick(usage.claude_code, usage.claude)),
     usage_codex: asText(pick(usage.codex)),
     notes: [meta.notes, meta.notes_zh].flatMap((n) => (Array.isArray(n) ? n : n ? [n] : [])).map(String),
+    // What the skill's own docs claim it is good at, each with a link to where it says so.
+    strengths: (Array.isArray(meta.strengths) ? meta.strengths : [])
+      .map((x) => (typeof x === 'string' ? { text: x, source: null } : x && typeof x === 'object' ? { text: asText(pick(x.text, x.claim)), source: safeUrl(pick(x.source, x.url, x.href)) } : null))
+      .filter((x) => x && x.text),
+    // Prompt ids the skill claims to cover; null means every prompt.
+    applies_to: Array.isArray(meta.applies_to) ? meta.applies_to.map(String) : typeof meta.applies_to === 'string' ? [meta.applies_to] : null,
+    out_of_scope_reason: asText(meta.out_of_scope_reason),
     research_notes: [],
     from: metaFile ? path.relative(REPO_ROOT, metaFile) : Object.keys(sourceJson).length ? `skills/${name}/source.json` : cand ? 'research/candidates.json' : null,
     has_meta: Boolean(metaFile),
@@ -629,7 +642,7 @@ function loadSkill(name, candidates, cells) {
 
 function listSkills(config, cells) {
   const names = new Set(config.skills || []);
-  const skillsDir = path.join(REPO_ROOT, 'skills');
+  const skillsDir = SKILLS_DIR;
   for (const d of isDir(skillsDir) ? fs.readdirSync(skillsDir) : []) {
     if (SAFE_NAME.test(d) && isDir(path.join(skillsDir, d))) names.add(d);
   }
@@ -675,6 +688,7 @@ const I18N_DIR = path.join(SITE_SRC, 'i18n');
 const AGENT_ORDER = ['codex', 'claude'];
 let CONFIG;
 let AGENTS;
+let SKILLS = new Map();
 let LANGS;
 let CUR;
 let BUILD;
@@ -769,18 +783,114 @@ const pageHref = (rel, lang = CUR.lang) => `${CUR.R}${lang.prefix}${rel}` || './
 const assetHref = (rel) => `${CUR.R}${rel}`;
 const absUrl = (lang, rel) => (CONFIG.site_url ? `${CONFIG.site_url.replace(/\/?$/, '/')}${lang.prefix}${rel}` : null);
 
+// ---------------------------------------------------------------- votes
+
+// Votes are 👍 reactions on one GitHub Discussion per cell, created by giscus with
+// mapping "specific" and the term below, so all languages share one thread per cell.
+// Nothing is shown until site/config.json "votes" has every field (or
+// SG_VOTES_CATEGORY_ID is set). Counts are read at build time with GITHUB_TOKEN;
+// SG_VOTES_FILE (a JSON file of {term: count}) stands in for them in local checks.
+let VOTES = null;
+const voteCfg = () => {
+  const v = CONFIG.votes || {};
+  return { repo: v.repo || null, repo_id: v.repo_id || null, category: v.category || null, category_id: process.env.SG_VOTES_CATEGORY_ID || v.category_id || null };
+};
+const votesEnabled = () => Object.values(voteCfg()).every(Boolean);
+const voteTerm = (c) => `cell:${c.prompt}/${c.name}`;
+
+async function fetchVotes() {
+  if (!votesEnabled()) return null;
+  if (process.env.SG_VOTES_FILE) {
+    try {
+      return new Map(Object.entries(JSON.parse(fs.readFileSync(process.env.SG_VOTES_FILE, 'utf8'))).map(([k, n]) => [k, Number(n) || 0]));
+    } catch (e) {
+      warn(`SG_VOTES_FILE: ${e.message}; vote counts not shown`);
+      return null;
+    }
+  }
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) return null;
+  const { repo, category_id } = voteCfg();
+  const [owner, name] = repo.split('/');
+  const query = `query($owner: String!, $name: String!, $cat: ID!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    discussions(first: 100, after: $after, categoryId: $cat) {
+      pageInfo { hasNextPage endCursor }
+      nodes { title reactions(content: THUMBS_UP) { totalCount } }
+    }
+  }
+}`;
+  const votes = new Map();
+  let after = null;
+  try {
+    for (let page = 0; page < 50; page++) {
+      const res = await fetch('https://api.github.com/graphql', {
+        method: 'POST',
+        headers: { Authorization: `bearer ${token}`, 'Content-Type': 'application/json', 'User-Agent': 'skill-gallery-build' },
+        body: JSON.stringify({ query, variables: { owner, name, cat: category_id, after } }),
+        signal: AbortSignal.timeout(30_000),
+      });
+      const body = await res.json();
+      if (!res.ok || body.errors) throw new Error(body.errors?.map((e) => e.message).join('; ') || `HTTP ${res.status}`);
+      const d = body.data?.repository?.discussions;
+      if (!d) throw new Error('no discussions in the response');
+      for (const n of d.nodes) if (n?.title?.startsWith('cell:')) votes.set(n.title, (votes.get(n.title) || 0) + (n.reactions?.totalCount || 0));
+      if (!d.pageInfo.hasNextPage) break;
+      after = d.pageInfo.endCursor;
+    }
+    return votes;
+  } catch (e) {
+    warn(`vote counts not fetched (${e.message}); pages are built without them`);
+    return null;
+  }
+}
+
+// giscus on a cell page. site.js injects the script when the section comes into view,
+// with the page's theme; the widget itself loads its iframe lazily too.
+function voteSection(c) {
+  if (!votesEnabled() || !c.files['index.html']) return '';
+  const v = voteCfg();
+  const attrs = {
+    'data-repo': v.repo,
+    'data-repo-id': v.repo_id,
+    'data-category': v.category,
+    'data-category-id': v.category_id,
+    'data-mapping': 'specific',
+    'data-term': voteTerm(c),
+    'data-strict': '1',
+    'data-reactions-enabled': '1',
+    'data-emit-metadata': '0',
+    'data-input-position': 'top',
+    'data-lang': CUR.code,
+    'data-loading': 'lazy',
+  };
+  const n = VOTES?.get(voteTerm(c));
+  return `<section class="block votes" id="vote">
+<h2>${t('vote.h2')}</h2>
+<p class="muted">${t('vote.intro')}</p>
+${VOTES ? `<p class="vote-now"><span class="vote-count" title="${ta('vote.count_title')}">👍 ${n ?? 0}</span> <span class="muted small">${t('vote.count_note')}</span></p>` : ''}
+<div class="giscus" data-giscus="${esc(JSON.stringify(attrs))}"></div>
+<noscript><p class="small muted">${t('vote.noscript')}</p></noscript>
+</section>`;
+}
+
 // ---------------------------------------------------------------- page parts
 
 const agentLabel = (id) => AGENTS.find((a) => a.id === id)?.label || id;
+// Native cells are always in scope; a skill cell is out of scope when the skill's
+// meta.yaml applies_to leaves the prompt out (no applies_to means every prompt).
+const inScope = (variant, promptId) => variant === 'native' || !SKILLS.get(variant)?.applies_to || SKILLS.get(variant).applies_to.includes(promptId);
 const variantLabel = (v) => (v === 'native' ? t('cell.native') : `+ ${esc(v)}`);
 const cellTitleText = (agent, variant) => (variant === 'native' ? `${agentLabel(agent)} · ${tText('cell.native')}` : `${agentLabel(agent)} + ${variant}`);
 const promptTitle = (p) => (typeof lookup(`prompts.${p.id}.title`) === 'string' ? lookup(`prompts.${p.id}.title`) : p.title);
+const showcaseTag = (p) => (p.showcase ? ` <span class="tag" title="${ta('prompt.showcase_hint')}">${t('prompt.showcase')}</span>` : '');
+const listSep = () => (isCjk() ? '、' : ', ');
 const promptSummary = (p) => (typeof lookup(`prompts.${p.id}.summary`) === 'string' ? lookup(`prompts.${p.id}.summary`) : null);
 const skillSummary = (s) => (typeof lookup(`skills.${s.name}.summary`) === 'string' ? lookup(`skills.${s.name}.summary`) : s.summary);
 const skillNotes = (s) => (Array.isArray(lookup(`skills.${s.name}.notes`)) ? lookup(`skills.${s.name}.notes`).map(String) : s.notes);
 
-function cellStatus(c) {
-  if (!c) return { key: 'pending', label: t('status.pending') };
+function cellStatus(c, oos = false) {
+  if (!c) return oos ? { key: 'oos', label: t('status.out_of_scope') } : { key: 'pending', label: t('status.pending') };
   if (!c.run) return { key: 'partial', label: t(c.runInvalid ? 'status.bad_run_json' : 'status.no_run_json') };
   if (c.run.success === true) return { key: 'ok', label: t('status.ok') };
   if (c.run.success === false) return { key: 'failed', label: t('status.failed') };
@@ -835,10 +945,10 @@ function hostsSummary(refs, max = 2) {
   return hosts.length > max ? `${hosts.slice(0, max).join(', ')} +${hosts.length - max}` : hosts.join(', ');
 }
 
-function thumbBlock(c, { caption, mini = false } = {}) {
-  const st = cellStatus(c);
+function thumbBlock(c, { caption, mini = false, oos = false } = {}) {
+  const st = cellStatus(c, oos);
   if (!c || (!c.thumbs.desktop && !c.thumbs.mobile)) {
-    const msg = !c ? 'status.pending' : !c.files['index.html'] ? 'thumb.no_page' : c.badShot ? 'thumb.unreadable' : 'thumb.no_screenshot';
+    const msg = !c ? (oos ? 'status.out_of_scope' : 'status.pending') : !c.files['index.html'] ? 'thumb.no_page' : c.badShot ? 'thumb.unreadable' : 'thumb.no_screenshot';
     return `<div class="thumb thumb-empty" data-status="${st.key}"><span>${t(msg)}</span></div>`;
   }
   const img = (kind, src) =>
@@ -852,16 +962,37 @@ function thumbBlock(c, { caption, mini = false } = {}) {
 
 const metaRow = (label, value, title) => `<div class="kv"><dt>${label}</dt><dd${title ? ` title="${esc(title)}"` : ''}>${value ?? DASH}</dd></div>`;
 
+// Why a skill was not run on a prompt: the translated reason, meta.yaml's, or a generic one.
+function oosReason(variant) {
+  const sk = SKILLS.get(variant);
+  const own = lookup(`skills.${variant}.out_of_scope_reason`);
+  if (typeof own === 'string') return esc(own);
+  if (sk?.out_of_scope_reason) return esc(sk.out_of_scope_reason);
+  return t('cell.oos_default', { skill: variant });
+}
+
+// The vote line on comparison cards: 👍 count when the build could fetch it, and a link to the cell page.
+function voteLine(c) {
+  if (!votesEnabled() || !c?.files['index.html']) return '';
+  const n = VOTES?.get(voteTerm(c));
+  const count = VOTES ? `<span class="vote-count" title="${ta('vote.count_title')}">👍 ${n ?? 0}</span> · ` : '';
+  return `<p class="cell-votes">${count}<a href="${esc(pageHref(c.href.viewer))}#vote">${t('vote.link')}</a></p>`;
+}
+
 function cellCard(c, { agent, variant, prompt }) {
-  const st = cellStatus(c);
+  const oos = !inScope(variant, prompt.id);
+  const st = cellStatus(c, oos);
   const caption = `${cellTitleText(agent, variant)} — ${promptTitle(prompt)}`;
   const head = `<header class="cell-head"><h4 class="cell-title"><b>${esc(agentLabel(agent))}</b> <span>${variantLabel(variant)}</span></h4>${badge(st)}</header>`;
+  if (!c && oos) return `<article class="cell" data-status="oos">${head}${thumbBlock(null, { oos })}<p class="cell-note">${oosReason(variant)}</p></article>`;
   if (!c) return `<article class="cell" data-status="pending">${head}${thumbBlock(null)}<p class="cell-note">${t('cell.not_run')}</p></article>`;
   const r = c.run || {};
   const tok = tokenParts(r);
   const refs = cellExternal(c);
   const trig = variant === 'native' ? `<span class="na">${t('cell.na')}</span>` : r.skill_triggered === true ? `<span class="yes">${t('cell.yes')}</span>` : r.skill_triggered === false ? `<span class="no">${t('cell.no')}</span>` : null;
   const notes = [];
+  // A run outside the claimed scope is still shown, never hidden.
+  if (oos) notes.push(`<p class="cell-note cell-warn">${t('cell.oos_ran')}</p>`);
   if (st.key === 'failed' && Array.isArray(r.failure_reasons) && r.failure_reasons.length) notes.push(`<p class="cell-note cell-fail">${esc(r.failure_reasons.join('; '))}</p>`);
   if (r.prompt?.file_sha256 && prompt.file_sha256 && r.prompt.file_sha256 !== prompt.file_sha256) notes.push(`<p class="cell-note cell-warn">${t('cell.prompt_changed')}</p>`);
   const v = violations(r);
@@ -879,7 +1010,7 @@ ${metaRow(t('cell.run_date'), fmtDate(r.started_at))}
     `<a href="${esc(pageHref(c.href.viewer))}">${t(c.files['index.html'] ? 'cell.open_page' : 'cell.details')}</a>`,
     c.files['run.json'] ? `<a href="${esc(assetHref(c.href.run))}">run.json</a>` : null,
   ].filter(Boolean);
-  return `<article class="cell" data-status="${st.key}">${head}${thumbBlock(c, { caption })}${meta}${notes.join('')}<p class="cell-links">${links.join('<span aria-hidden="true"> · </span>')}</p></article>`;
+  return `<article class="cell" data-status="${st.key}">${head}${thumbBlock(c, { caption })}${meta}${notes.join('')}${voteLine(c)}<p class="cell-links">${links.join('<span aria-hidden="true"> · </span>')}</p></article>`;
 }
 
 const viewToggle = () => `<div class="seg" role="group" aria-label="${ta('view.aria')}">
@@ -959,20 +1090,21 @@ function homePage(ctx) {
           const href = v === 'native' ? pageHref(`prompts/${p.id}/`) : `${pageHref(`skills/${v}/`)}#${p.id}`;
           const minis = AGENT_ORDER.map((a) => {
             const c = cells.get(`${p.id}/${a}__${v}`) || null;
-            const st = cellStatus(c);
-            return `<a class="mini" href="${esc(href)}" data-status="${st.key}">${thumbBlock(c, { caption: cellTitleText(a, v), mini: true })}<span class="mini-label"><span class="dot dot-${st.key}" aria-hidden="true"></span>${esc(agentLabel(a))}<span class="vh"> ${variantLabel(v)}: ${st.label}</span></span></a>`;
+            const oos = !inScope(v, p.id);
+            const st = cellStatus(c, oos);
+            return `<a class="mini" href="${esc(href)}" data-status="${st.key}">${thumbBlock(c, { caption: cellTitleText(a, v), mini: true, oos })}<span class="mini-label"><span class="dot dot-${st.key}" aria-hidden="true"></span>${esc(agentLabel(a))}<span class="vh"> ${variantLabel(v)}: ${st.label}</span></span></a>`;
           }).join('');
           return `<div class="mx-cell">${minis}</div>`;
         })
         .join('');
-      return `<div class="mx-row"><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a><small><code>${esc(p.id)}</code></small></div>${cellsHtml}`;
+      return `<div class="mx-row"><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a>${showcaseTag(p)}<small><code>${esc(p.id)}</code></small></div>${cellsHtml}`;
     })
     .join('');
 
-  const perSkill = prompts.size * AGENTS.length;
   const skillCards = skills
     .map((s) => {
-      const done = [...cells.values()].filter((c) => c.variant === s.name).length;
+      const perSkill = [...prompts.values()].filter((p) => inScope(s.name, p.id)).length * AGENTS.length;
+      const done = [...cells.values()].filter((c) => c.variant === s.name && inScope(s.name, c.prompt)).length;
       const summary = skillSummary(s);
       return `<li class="card"><h3><a href="${esc(pageHref(`skills/${s.name}/`))}">${esc(s.title)}</a></h3>
 ${summary ? `<p>${esc(summary)}</p>` : ''}
@@ -980,12 +1112,12 @@ ${summary ? `<p>${esc(summary)}</p>` : ''}
     })
     .join('');
 
-  const perPrompt = (skills.length + 1) * AGENTS.length;
   const promptCards = [...prompts.values()]
     .map((p) => {
-      const done = [...cells.values()].filter((c) => c.prompt === p.id).length;
+      const perPrompt = ['native', ...skills.map((x) => x.name)].filter((v) => inScope(v, p.id)).length * AGENTS.length;
+      const done = [...cells.values()].filter((c) => c.prompt === p.id && inScope(c.variant, p.id)).length;
       const summary = promptSummary(p);
-      return `<li class="card"><h3><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a></h3>${summary ? `<p>${esc(summary)}</p>` : ''}<p class="facts"><code>${esc(p.id)}</code>${p.version != null ? ` · ${t('home.version', { v: p.version })}` : ''} · ${t('home.cells_count', { done, total: perPrompt })}</p></li>`;
+      return `<li class="card"><h3><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a>${showcaseTag(p)}</h3>${summary ? `<p>${esc(summary)}</p>` : ''}<p class="facts"><code>${esc(p.id)}</code>${p.version != null ? ` · ${t('home.version', { v: p.version })}` : ''} · ${t('home.cells_count', { done, total: perPrompt })}</p></li>`;
     })
     .join('');
 
@@ -1042,6 +1174,7 @@ ${item('isolation')}
 ${item('fire')}
 ${item('shots', { tools: shotTools.length ? paren(shotTools.join('; ')) : '' })}
 <div><dt>${t('method.dates_title')}</dt><dd>${range ? tn('method.dates_body', stats.done, { range }) : t('method.dates_none')}</dd></div>
+${votesEnabled() ? item('votes') : ''}
 </dl>
 <h3 class="limits-h">${t('method.limits_h')}</h3>
 <ul class="limits">
@@ -1059,7 +1192,7 @@ function skillPage(skill, ctx) {
     .map((p) => {
       const cards = AGENT_ORDER.flatMap((a) => ['native', skill.name].map((v) => cellCard(cells.get(`${p.id}/${a}__${v}`) || null, { agent: a, variant: v, prompt: p }))).join('');
       return `<section class="block group" id="${esc(p.id)}">
-<div class="group-head"><h2><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a></h2><code class="muted">${esc(p.id)}</code></div>
+<div class="group-head"><h2><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a>${showcaseTag(p)}</h2><code class="muted">${esc(p.id)}</code></div>
 <div class="quad">${cards}</div>
 </section>`;
     })
@@ -1088,11 +1221,29 @@ ${summary ? `<p class="lead">${esc(summary)}</p>` : ''}
 ${facts}
 <p class="muted small">${t('skill.layout_hint')}${gap()}<a href="#install">${t('skill.install_link')}</a></p>
 </section>
+${strengthsSection(skill, prompts)}
 <div class="toolbar">${viewToggle()}<nav class="jump" aria-label="${ta('skill.jump_aria')}">${[...prompts.values()].map((p) => `<a href="#${esc(p.id)}">${esc(promptTitle(p))}</a>`).join('')}</nav></div>
 ${groups}
 ${installSection(skill, ctx)}
 ${lightbox()}`;
   return layout({ title: `${skill.name} · ${CONFIG.site_title}`, description: tText('skill.description', { name: skill.name }), body, current: 'skills' });
+}
+
+// What the skill claims to be good at (with sources) and which prompts it is tested on.
+// Left out entirely when meta.yaml gives neither strengths nor applies_to.
+function strengthsSection(skill, prompts) {
+  const translated = lookup(`skills.${skill.name}.strengths`);
+  const items = skill.strengths.map((x, i) => ({ text: Array.isArray(translated) && typeof translated[i] === 'string' ? translated[i] : x.text, source: x.source }));
+  if (!items.length && !skill.applies_to) return '';
+  const scope = skill.applies_to
+    ? skill.applies_to.filter((id) => prompts.has(id)).map((id) => `<a href="${esc(pageHref(`prompts/${id}/`))}">${esc(promptTitle(prompts.get(id)))}</a>`).join(listSep())
+    : t('skill.scope_all');
+  return `<section class="block strengths" id="strengths">
+<h2>${t('skill.strengths_h')}</h2>
+${items.length ? `<p class="muted">${t('skill.strengths_intro')}</p>
+<ul class="claims">${items.map((x) => `<li>${esc(x.text).replace(/\`([^\`]+)\`/g, '<code>$1</code>')}${x.source ? ` <a class="src" href="${esc(x.source)}">${t('skill.source_link')}</a>` : ''}</li>`).join('')}</ul>` : ''}
+<p class="scope"><strong>${t('skill.scope_label')}</strong>${gap()}${scope}${skill.applies_to ? `${gap()}<span class="muted">${t('skill.scope_note')}</span>` : ''}</p>
+</section>`;
 }
 
 const looksLikeCommand = (s) => /^(npx|npm|pnpm|yarn|bunx|git|cp|mkdir|curl|uipro|claude|codex|\/plugin)\b/.test(s.trim());
@@ -1154,7 +1305,7 @@ function promptPage(prompt, ctx) {
   const body = `
 <nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(''))}#prompts">${t('nav.prompts')}</a> / <span>${esc(prompt.id)}</span></nav>
 <section class="intro">
-<h1>${esc(promptTitle(prompt))}</h1>
+<h1>${esc(promptTitle(prompt))}${showcaseTag(prompt)}</h1>${prompt.showcase ? `<p class="muted small">${t('prompt.showcase_hint')}</p>` : ''}
 ${summary ? `<p class="lead">${esc(summary)}</p>` : ''}
 <p class="muted"><code>${esc(prompt.file)}</code>${prompt.version != null ? ` · ${t('home.version', { v: prompt.version })}` : ''}${stop()}${t('prompt.layout_hint')}</p>
 <details class="prompt-text"><summary>${t('prompt.text_h')}</summary>
@@ -1258,6 +1409,7 @@ ${c.files['run.json'] ? `<a class="btn" href="${esc(assetHref(c.href.run))}">run
 </div>
 <p class="small muted">${t('viewer.sandbox_note')}</p>
 ${frame}
+${voteSection(c)}
 <section class="block">
 <h2>${t('viewer.details_h')}</h2>
 ${c.run ? `<dl class="details">${detailRows(c, ctx.prompts.get(c.prompt))}</dl>` : `<p>${t('viewer.no_run_json')}</p>`}
@@ -1324,9 +1476,13 @@ async function loadGallery({ runs, thumbsOut }) {
       }
     }
   }
-  const total = prompts.size * (skills.length + 1) * AGENTS.length;
-  const relevant = [...cells.values()].filter((c) => c.variant === 'native' || skills.some((s) => s.name === c.variant));
-  const stats = { total, done: relevant.length, failed: relevant.filter((c) => c.run?.success === false).length };
+  SKILLS = new Map(skills.map((s) => [s.name, s]));
+  for (const sk of skills) for (const id of sk.applies_to || []) if (!prompts.has(id)) warn(`skills/${sk.name}/meta.yaml: applies_to lists unknown prompt "${id}"`);
+  // Only in-scope cells count; out-of-scope ones are never "missing".
+  const expected = [];
+  for (const p of prompts.values()) for (const v of ['native', ...skills.map((x) => x.name)]) if (inScope(v, p.id)) for (const a of AGENT_ORDER) expected.push(`${p.id}/${a}__${v}`);
+  const done = expected.filter((k) => cells.has(k)).map((k) => cells.get(k));
+  const stats = { total: expected.length, done: done.length, failed: done.filter((c) => c.run?.success === false).length, dates: [...new Set(done.map((c) => fmtDate(c.run?.started_at)).filter(Boolean))].sort() };
   return { config: CONFIG, agents: AGENTS, prompts, cells, skills, stats };
 }
 
@@ -1337,6 +1493,7 @@ async function main() {
   const ctx = await loadGallery({ runs: opts.runs, thumbsOut: path.join(opts.out, 'thumbs') });
   const { prompts, cells, skills, stats } = ctx;
   LANGS = loadLanguages(CONFIG.languages);
+  VOTES = await fetchVotes();
 
   for (const c of cells.values()) {
     const dest = path.join(opts.out, 'runs', c.prompt, c.name);
@@ -1388,17 +1545,27 @@ async function main() {
     const skip = l.missing.filter((k) => !k.startsWith('meta.'));
     if (l.code !== 'en' && skip.length) missing.push(`site/i18n/${l.code}.json: ${skip.length} string(s) fall back to English (${skip.slice(0, 5).join(', ')}${skip.length > 5 ? ', …' : ''})`);
   }
+  for (const sk of skills) {
+    if (!sk.strengths.length) continue;
+    for (const l of LANGS.slice(1)) {
+      const tr = getPath(l.dict, `skills.${sk.name}.strengths`);
+      const have = Array.isArray(tr) ? tr.length : 0;
+      if (have !== sk.strengths.length) missing.push(`site/i18n/${l.code}.json: skills.${sk.name}.strengths has ${have} of ${sk.strengths.length} items (English is shown instead)`);
+    }
+  }
   if (missingStrings.size) warn(`strings missing from en.json too: ${[...missingStrings].join(', ')}`);
 
   const shown = path.relative(process.cwd(), opts.out);
   console.log(`site written to ${shown && !shown.startsWith('..') ? shown : opts.out}`);
   console.log(`  ${LANGS.length} languages (${LANGS.map((l) => l.code).join(', ')}), ${pages} pages`);
+  const voteState = !votesEnabled() ? 'off (site/config.json votes.category_id is not set)' : VOTES ? `on, 👍 counts for ${VOTES.size} discussion(s)` : 'on, no 👍 counts (no GITHUB_TOKEN or SG_VOTES_FILE, or the fetch failed; see stderr)';
+  console.log(`  votes: ${voteState}`);
   console.log(`  ${prompts.size} prompts, ${skills.length} skills, ${cells.size} cell dirs with files (${stats.done} of ${stats.total} matrix cells)`);
   if (missing.length) console.log(`  not yet provided by the inputs:\n${missing.map((m) => `    - ${m}`).join('\n')}`);
   if (warnings.length) console.log(`  ${warnings.length} warning(s), see stderr`);
 }
 
-export { loadGallery, loadLanguages, installInfo, readPngHeader, decodePngTop, resample, encodePng, writeThumbs, parseYaml, flatten, getPath, esc, fmtDate, shortSha, githubRepo, warnings };
+export { loadGallery, loadLanguages, inScope, installInfo, readPngHeader, decodePngTop, resample, encodePng, writeThumbs, parseYaml, flatten, getPath, esc, fmtDate, shortSha, githubRepo, warnings };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((e) => {

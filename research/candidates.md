@@ -2,6 +2,8 @@
 
 核实时间：2026-10-25 16:28 UTC（北京时间 2026-10-26 00:28）。机器可读版本见 [candidates.json](candidates.json)，字段更全，每个字段都带来源链接。
 
+> **后续更新（2026-10-26）**：v0 已按本文第 1 节的换位规则上线（frontend-design、ui-ux-pro-max、web-design-engineer）；第二批的选择、taste-skill 的重点评估和补查结果见 [batch2.md](batch2.md)。下文的状态与排序是第一轮的结论，以 candidates.json 里的 `status` 为准。
+
 方法：stars、HEAD SHA、路径最后一次提交、文件树都用 `gh api` 的只读 GET 取；SKILL.md 与 LICENSE 在 scratchpad 下新建的空目录里浅克隆后只读，没有执行任何脚本；官方文档用 WebFetch 取。调研期间没有往 `~/.claude/skills`、`~/.codex/skills`、`~/.agents/skills` 写任何东西，没有 star、没有发帖。
 
 ---

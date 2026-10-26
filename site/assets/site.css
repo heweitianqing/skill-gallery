@@ -171,6 +171,7 @@ pre[lang="en"] { font-family: var(--mono); }
 .dot-failed { background: var(--fail); }
 .dot-partial { background: var(--warn); }
 .dot-pending { background: transparent; border: 1px solid var(--pending); }
+.dot-oos { background: var(--border-strong); }
 
 /* thumbnails */
 .thumb { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); }
@@ -191,6 +192,8 @@ body[data-view="mobile"] .thumb:not(.thumb-mini) span.shot-mobile.shot-missing {
   background: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--surface-2) 70%, transparent) 10px 20px);
 }
 .thumb-empty span:first-child { font-weight: 600; }
+/* Out of scope: not waiting for anything, so no hatching. */
+.thumb-empty[data-status="oos"] { background: var(--surface); border-style: solid; border-color: var(--border); color: var(--muted); }
 .mx-cell .thumb-empty { font-size: 0.76rem; }
 
 /* toolbar */
@@ -224,6 +227,8 @@ body[data-view="mobile"] .thumb:not(.thumb-mini) span.shot-mobile.shot-missing {
 .badge-failed { background: var(--fail-bg); color: var(--fail); }
 .badge-partial { background: var(--warn-bg); color: var(--warn); }
 .badge-pending { background: transparent; border: 1px dashed var(--border-strong); }
+.badge-oos { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.cell[data-status="oos"] { background: transparent; }
 .meta { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 10px; font-size: 0.82rem; }
 .kv { display: contents; }
 .meta dt, .details dt, .facts-grid dt { color: var(--muted); }
@@ -232,6 +237,19 @@ body[data-view="mobile"] .thumb:not(.thumb-mini) span.shot-mobile.shot-missing {
 .cell-fail { color: var(--fail); }
 .cell-warn { color: var(--warn); }
 .cell-links { margin: auto 0 0; font-size: 0.85rem; }
+.cell-votes { margin: 0; font-size: 0.85rem; }
+.vote-count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* showcase prompts, strengths, votes */
+.tag { display: inline-block; vertical-align: middle; margin-left: 8px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--muted); }
+.strengths { max-width: 900px; }
+.claims { margin: 10px 0 0; padding-left: 1.2em; }
+.claims li { margin: 6px 0; }
+.claims .src { font-size: 0.82rem; white-space: nowrap; }
+.scope { margin-top: 12px; }
+.votes { max-width: 900px; }
+.vote-now { font-size: 1.05rem; }
+.votes .giscus { margin-top: 12px; min-height: 120px; }
 
 .facts-grid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 14px 0; font-size: 0.9rem; }
 

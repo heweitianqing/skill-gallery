@@ -28,7 +28,8 @@
     "failed": "Failed",
     "no_run_json": "No run.json",
     "bad_run_json": "Bad run.json",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "out_of_scope": "Out of scope"
   },
   "thumb": {
     "no_page": "No page",
@@ -72,7 +73,9 @@
     "details": "Details",
     "prompt_changed": "The prompt file changed after this run.",
     "breaks_rule": "Breaks a prompt rule: {rules}.",
-    "attempt": "Attempt {n}; earlier attempts are kept in {path}."
+    "attempt": "Attempt {n}; earlier attempts are kept in {path}.",
+    "oos_default": "{skill} does not claim to cover this kind of page, so it was not run on this prompt.",
+    "oos_ran": "This prompt is outside the skill's stated scope. The run is shown anyway."
   },
   "home": {
     "title": "{site}: agent skills compared",
@@ -124,7 +127,9 @@
     "limit_native": "<strong>Native means out of the box, not zero skills.</strong> Every cell, native ones included, can use the skills that ship with its agent: the 19 skills bundled with Claude Code, and Codex's system skills (<code>imagegen</code>, <code>openai-docs</code>, <code>skill-creator</code>, <code>skill-installer</code>). In the <code>dashboard</code> prompt, Claude Code's bundled <code>dataviz</code> skill fired on its own twice, once in <code>claude__native</code> and once in <code>claude__frontend-design</code>; <code>run.json</code> records this under <code>builtin_skills_used</code>. This is on purpose: the comparison is about what a reader actually gets after installing the agent.",
     "limit_disk": "<strong>Isolation means “nothing loaded”, not “nothing readable”.</strong> The agents can still read the rest of the disk: Codex's stock <code>workspace-write</code> sandbox can read <code>/</code>, and Claude Code with <code>bypassPermissions</code> has no sandbox. In the v0 runs, agents looked for <code>AGENTS.md</code> in parent directories and one used Playwright from the operator's npm cache. Stronger isolation (a separate user account or a container) is future work.",
     "limit_fixed": "<strong>Fixed sidebars in screenshots.</strong> Full-page captures draw <code>position: fixed</code> or <code>sticky</code> elements sized <code>100vh</code> at the first screen's height only, so a dashboard sidebar can look as if it stops at 900 px. This comes from the capture, not from the page.",
-    "limit_once": "<strong>One sample is not a benchmark.</strong> Each cell is a single generation. Treat the gallery as examples of what a skill tends to do, not as a score."
+    "limit_once": "<strong>One sample is not a benchmark.</strong> Each cell is a single generation. Treat the gallery as examples of what a skill tends to do, not as a score.",
+    "votes_title": "Votes",
+    "votes_body": "Each result page has a 👍 vote through <a href=\"https://giscus.app\">giscus</a>, a third-party widget that loads only on result pages, not on the rest of the gallery. Voting needs a GitHub sign-in. Votes are stored as reactions in this repository's GitHub Discussions, one discussion per cell, shared by all languages. The counts on the comparison pages are refreshed every few hours. They show what visitors prefer; they are not an evaluation."
   },
   "skill": {
     "description": "Pages built by Codex and Claude Code with and without the {name} skill.",
@@ -139,7 +144,13 @@
     "commit_in_runs": "Commit used in runs",
     "layout_hint": "Each prompt shows a fixed 2×2: Codex native, Codex + skill, Claude Code native, Claude Code + skill. Click a screenshot to see the full page.",
     "install_link": "Install and use ↓",
-    "jump_aria": "Prompts on this page"
+    "jump_aria": "Prompts on this page",
+    "strengths_h": "Strengths",
+    "strengths_intro": "What the skill's own documentation says it is good at, with a link to where it says so. These are claims, not results: compare them with the pages below.",
+    "source_link": "source",
+    "scope_label": "Test scope:",
+    "scope_all": "all prompts",
+    "scope_note": "Prompts outside this list are marked “Out of scope”, not pending."
   },
   "install": {
     "h2": "Install and use",
@@ -166,7 +177,9 @@
     "text_h": "Prompt text",
     "text_note": "In English, exactly as it was sent to the agents. It is not translated.",
     "skill_line_note": "Skill cells add one sentence at the end: <code>Use the &lt;name&gt; skill.</code> (Claude Code) or <code>Use the $&lt;name&gt; skill.</code> (Codex).",
-    "grid_aria": "Comparison grid, scrolls sideways"
+    "grid_aria": "Comparison grid, scrolls sideways",
+    "showcase": "Showcase",
+    "showcase_hint": "Added to show a particular skill's claimed strength. Only the skills that claim to cover it are run, next to the native baselines."
   },
   "viewer": {
     "frame_title": "Generated page: {title}",
@@ -262,5 +275,13 @@
       "title": "Personal blog and portfolio",
       "summary": "A one-page site for Maya Lindqvist, a fictional product designer: four case studies, a filterable post list, one full article, an about section with a timeline, a newsletter form and a light/dark switch."
     }
+  },
+  "vote": {
+    "h2": "Vote",
+    "intro": "Do you prefer this result? Give it a 👍 below. Voting needs a GitHub account. Votes are stored as reactions in this repository's GitHub Discussions, in one thread per cell that all languages share.",
+    "link": "Vote",
+    "count_title": "👍 reactions on this cell's discussion, as of the last build",
+    "count_note": "as of the last build; refreshed every few hours",
+    "noscript": "Voting needs JavaScript (it uses giscus)."
   }
 }

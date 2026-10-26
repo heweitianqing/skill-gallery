@@ -28,7 +28,8 @@
     "failed": "失敗",
     "no_run_json": "run.json なし",
     "bad_run_json": "run.json が不正",
-    "unknown": "不明"
+    "unknown": "不明",
+    "out_of_scope": "対象外"
   },
   "thumb": {
     "no_page": "ページなし",
@@ -72,7 +73,9 @@
     "details": "詳細",
     "prompt_changed": "この実行の後にプロンプトファイルが変更されました。",
     "breaks_rule": "プロンプトのルールに違反しています：{rules}。",
-    "attempt": "{n} 回目の試行です。以前の試行は {path} に保存されています。"
+    "attempt": "{n} 回目の試行です。以前の試行は {path} に保存されています。",
+    "oos_default": "{skill} はこの種のページを対象としていないため、このプロンプトでは実行していません。",
+    "oos_ran": "このプロンプトはこの skill が主張する対象範囲の外ですが、実行結果はそのまま掲載しています。"
   },
   "home": {
     "title": "{site}：エージェント skill の比較",
@@ -124,7 +127,9 @@
     "limit_native": "<strong>ネイティブとはインストールしたままの状態のことで、skill がゼロという意味ではありません。</strong>ネイティブを含むすべてのセルで、各エージェントに同梱の skill を使えます。Claude Code に組み込まれた 19 個の skill と、Codex のシステム skill（<code>imagegen</code>、<code>openai-docs</code>、<code>skill-creator</code>、<code>skill-installer</code>）です。<code>dashboard</code> のプロンプトでは、Claude Code 組み込みの <code>dataviz</code> skill が自動で 2 回発動しました（<code>claude__native</code> と <code>claude__frontend-design</code> で 1 回ずつ）。これは <code>run.json</code> の <code>builtin_skills_used</code> に記録されています。読者がエージェントをインストールしたときに実際に得られる結果を比べるため、意図的にそのままにしています。",
     "limit_disk": "<strong>隔離とは「何も読み込まない」ことであり、「何も読めない」ことではありません。</strong>エージェントはディスク上の他の場所を引き続き読み取れます。Codex 標準の <code>workspace-write</code> サンドボックスは <code>/</code> を読み取ることができ、<code>bypassPermissions</code> を指定した Claude Code にはサンドボックスがありません。v0 の実行では、エージェントが親ディレクトリの <code>AGENTS.md</code> を探したほか、あるエージェントは実行者の npm キャッシュにある Playwright を使用しました。より強力な隔離（別のユーザーアカウントやコンテナ）は今後の課題です。",
     "limit_fixed": "<strong>スクリーンショット内の固定サイドバー。</strong>ページ全体のキャプチャでは、<code>100vh</code> のサイズを持つ <code>position: fixed</code> または <code>sticky</code> の要素が最初の画面の高さでしか描画されないため、ダッシュボードのサイドバーが 900 px で途切れているように見えることがあります。これはキャプチャによるもので、ページ自体の問題ではありません。",
-    "limit_once": "<strong>1 回の生成はベンチマークではありません。</strong>各セルは 1 回だけ生成したものです。このギャラリーは、skill がどのような傾向を持つかを示す例として見てください。スコアではありません。"
+    "limit_once": "<strong>1 回の生成はベンチマークではありません。</strong>各セルは 1 回だけ生成したものです。このギャラリーは、skill がどのような傾向を持つかを示す例として見てください。スコアではありません。",
+    "votes_title": "投票",
+    "votes_body": "各結果ページでは、<a href=\"https://giscus.app\">giscus</a> を使って 👍 で投票できます。giscus はサードパーティのウィジェットで、結果ページを開いたときにだけ読み込まれ、ギャラリーのほかのページでは読み込まれません。投票には GitHub へのサインインが必要です。票はこのリポジトリの GitHub Discussions にリアクションとして保存され、セルごとに 1 つのディスカッションをすべての言語で共有します。比較ページの票数は数時間ごとに更新されます。票数は訪問者の好みを示すもので、評価の結論ではありません。"
   },
   "skill": {
     "description": "Codex と Claude Code が、{name} skill を使った場合と使わない場合に作成したページです。",
@@ -139,7 +144,13 @@
     "commit_in_runs": "実行で使用したコミット",
     "layout_hint": "各プロンプトを、Codex ネイティブ、Codex + skill、Claude Code ネイティブ、Claude Code + skill の固定 2×2 で表示します。スクリーンショットをクリックするとページ全体を表示できます。",
     "install_link": "インストールと使い方 ↓",
-    "jump_aria": "このページのプロンプト"
+    "jump_aria": "このページのプロンプト",
+    "strengths_h": "得意なこと",
+    "strengths_intro": "skill 自身のドキュメントが主張している強みを、出典とともに挙げています。これは主張であって結果ではありません。下の実際のページと見比べてください。",
+    "source_link": "出典",
+    "scope_label": "テスト範囲：",
+    "scope_all": "すべてのプロンプト",
+    "scope_note": "範囲外のプロンプトは「未実行」ではなく「対象外」と表示します。"
   },
   "install": {
     "h2": "インストールと使い方",
@@ -166,7 +177,9 @@
     "text_h": "プロンプト本文",
     "text_note": "エージェントに送信したとおりの英語の原文です。翻訳はしていません。",
     "skill_line_note": "skill のセルでは、末尾に 1 文を追加します：<code>Use the &lt;name&gt; skill.</code>（Claude Code）または <code>Use the $&lt;name&gt; skill.</code>（Codex）。",
-    "grid_aria": "比較グリッド（横スクロール）"
+    "grid_aria": "比較グリッド（横スクロール）",
+    "showcase": "ショーケース",
+    "showcase_hint": "特定の skill が主張する強みを示すために追加したプロンプトです。対象とする skill だけを実行し、ネイティブのベースラインと並べて比較します。"
   },
   "viewer": {
     "frame_title": "生成されたページ：{title}",
@@ -262,5 +275,13 @@
       "title": "個人ブログとポートフォリオ",
       "summary": "架空のプロダクトデザイナー Maya Lindqvist の 1 ページサイト。4 つのケーススタディ、絞り込み可能な記事一覧、記事 1 本の全文、経歴タイムライン付きの自己紹介、ニュースレター登録フォーム、ライト・ダークの切り替えで構成されます。"
     }
+  },
+  "vote": {
+    "h2": "投票",
+    "intro": "この結果のほうが良いと思いますか？下の 👍 を押してください。投票には GitHub アカウントが必要です。票はこのリポジトリの GitHub Discussions にリアクションとして保存され、セルごとに 1 つのスレッドをすべての言語で共有します。",
+    "link": "投票する",
+    "count_title": "前回のビルド時点での、このセルのディスカッションの 👍 の数",
+    "count_note": "前回のビルド時点。数時間ごとに更新されます",
+    "noscript": "投票には JavaScript が必要です（giscus を使用しています）。"
   }
 }

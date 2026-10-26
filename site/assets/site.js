@@ -83,6 +83,37 @@
     dlg.addEventListener('close', () => img.removeAttribute('src'));
   }
 
+  // giscus (votes): add its script only when the vote section comes near the screen,
+  // so nothing loads from giscus.app until then, and keep its theme in step with ours.
+  const giscus = document.querySelector('.giscus[data-giscus]');
+  const giscusTheme = () => (root.dataset.theme ? effective() : 'preferred_color_scheme');
+  if (giscus) {
+    const load = () => {
+      if (giscus.dataset.loaded) return;
+      giscus.dataset.loaded = '1';
+      const s = document.createElement('script');
+      s.src = 'https://giscus.app/client.js';
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      for (const [k, v] of Object.entries(JSON.parse(giscus.dataset.giscus))) s.setAttribute(k, v);
+      s.setAttribute('data-theme', giscusTheme());
+      giscus.after(s);
+    };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          load();
+        }
+      }, { rootMargin: '300px' });
+      io.observe(giscus);
+    } else load();
+    themeBtn?.addEventListener('click', () => {
+      const frame = document.querySelector('iframe.giscus-frame');
+      frame?.contentWindow?.postMessage({ giscus: { setConfig: { theme: giscusTheme() } } }, 'https://giscus.app');
+    });
+  }
+
   // Language menu: close it on Escape or a click elsewhere.
   const langMenu = document.querySelector('.lang-menu');
   if (langMenu) {

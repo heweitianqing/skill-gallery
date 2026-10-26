@@ -22,7 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadGallery, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings } from './build-site.mjs';
+import { loadGallery, inScope, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings } from './build-site.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LAUNCH = path.join(REPO_ROOT, 'docs', 'launch');
@@ -80,13 +80,8 @@ async function main() {
   const g = await loadGallery({ runs: path.join(REPO_ROOT, 'runs'), thumbsOut: null });
   const { prompts, cells, skills } = g;
   const agentLabel = (id) => g.agents.find((a) => a.id === id)?.label || id;
-  const relevant = [...cells.values()].filter((c) => c.variant === 'native' || skills.some((s) => s.name === c.variant));
-  const stats = {
-    total: prompts.size * (skills.length + 1) * AGENT_ORDER.length,
-    done: relevant.length,
-    failed: relevant.filter((c) => c.run?.success === false).length,
-    dates: [...new Set(relevant.map((c) => c.run?.started_at?.slice(0, 10)).filter(Boolean))].sort(),
-  };
+  // In-scope cells only (skills/<name>/meta.yaml applies_to), as on the site.
+  const { stats } = g;
 
   // README thumbnails: first screen at desktop width, THUMB_W wide.
   fs.rmSync(path.join(ASSETS, 'thumbs'), { recursive: true, force: true });
@@ -129,6 +124,8 @@ async function main() {
       const tds = cols.map((v) => {
         const parts = AGENT_ORDER.map((a) => {
           const c = cells.get(`${p.id}/${a}__${v}`) || null;
+          // Out of scope and never run: text only, no picture to click.
+          if (!c && !inScope(v, p.id)) return `<sub>${htmlEsc(agentLabel(a))} · ${htmlEsc(t('out_of_scope'))}</sub>`;
           const label = `${agentLabel(a)} · ${v === 'native' ? nativeLabel : `+ ${v}`}`;
           const href = c ? `${gallery}cells/${p.id}/${c.name}/` : v === 'native' ? `${gallery}prompts/${p.id}/` : `${gallery}skills/${v}/#${p.id}`;
           const img = (c && thumbFor.get(c)) || pendingRel;
@@ -137,7 +134,7 @@ async function main() {
         });
         return `<td align="center">${parts.join('<br>')}</td>`;
       });
-      return `<tr><th><a href="${gallery}prompts/${p.id}/">${htmlEsc(promptTitle(p))}</a></th>${tds.join('')}</tr>`;
+      return `<tr><th><a href="${gallery}prompts/${p.id}/">${htmlEsc(promptTitle(p))}</a>${p.showcase ? `<br><sub>${htmlEsc(t('showcase'))}</sub>` : ''}</th>${tds.join('')}</tr>`;
     });
     const pending = stats.total - stats.done;
     const sp = /^(zh|ja)\b/.test(code) ? '' : ' ';
@@ -229,7 +226,7 @@ async function renderImages(g) {
       for (const a of AGENT_ORDER) {
         const c = cells.get(`${p.id}/${a}__${v}`);
         const src = await dataUri(c, 360);
-        pair.push(`<div class="cell">${src ? `<img class="shot" src="${src}">` : `<div class="pending">${c ? 'No screenshot yet' : 'Pending'}</div>`}<div class="lab">${htmlEsc(label(a))}</div></div>`);
+        pair.push(`<div class="cell">${src ? `<img class="shot" src="${src}">` : `<div class="pending">${c ? 'No screenshot yet' : inScope(v, p.id) ? 'Pending' : 'Out of scope'}</div>`}<div class="lab">${htmlEsc(label(a))}</div></div>`);
       }
       grid += `<div class="sq">${pair.join('')}</div>`;
     }

@@ -34,7 +34,9 @@
     "status_all": "All {total} cells have run ({dates}, UTC).",
     "status_partial": "{done} of {total} cells have run so far ({dates}, UTC). The tables below are regenerated as the rest finish.",
     "status_none": "No cells have run yet.",
-    "status_failed": "Failed cells: {n}."
+    "status_failed": "Failed cells: {n}.",
+    "out_of_scope": "Out of scope",
+    "showcase": "Showcase"
   },
   "zh-CN": {
     "name": "简体中文",
@@ -71,7 +73,9 @@
     "status_all": "全部 {total} 格均已运行完毕（{dates}，UTC）。",
     "status_partial": "目前已运行 {done} / {total} 格（{dates}，UTC），其余格子跑完后会重新生成下面的表格。",
     "status_none": "还没有运行任何格子。",
-    "status_failed": "失败的格子：{n} 个。"
+    "status_failed": "失败的格子：{n} 个。",
+    "out_of_scope": "不适用",
+    "showcase": "展示题"
   },
   "zh-TW": {
     "name": "繁體中文",
@@ -108,7 +112,9 @@
     "status_all": "全部 {total} 格都已執行完畢（{dates}，UTC）。",
     "status_partial": "目前已執行 {done} / {total} 格（{dates}，UTC），其餘格子執行完後會重新產生下方的表格。",
     "status_none": "尚未執行任何格子。",
-    "status_failed": "失敗的格子：{n} 個。"
+    "status_failed": "失敗的格子：{n} 個。",
+    "out_of_scope": "不適用",
+    "showcase": "展示題"
   },
   "ja": {
     "name": "日本語",
@@ -145,7 +151,9 @@
     "status_all": "全 {total} セルの実行が完了しています（{dates}、UTC）。",
     "status_partial": "現在 {total} セル中 {done} セルを実行済みです（{dates}、UTC）。残りが終わり次第、下の表を再生成します。",
     "status_none": "まだどのセルも実行していません。",
-    "status_failed": "失敗したセル：{n} 個。"
+    "status_failed": "失敗したセル：{n} 個。",
+    "out_of_scope": "対象外",
+    "showcase": "ショーケース"
   },
   "ko": {
     "name": "한국어",
@@ -182,7 +190,9 @@
     "status_all": "셀 {total}개를 모두 실행했습니다({dates}, UTC).",
     "status_partial": "현재 셀 {total}개 중 {done}개를 실행했습니다({dates}, UTC). 나머지가 끝나면 아래 표를 다시 생성합니다.",
     "status_none": "아직 실행한 셀이 없습니다.",
-    "status_failed": "실패한 셀: {n}개."
+    "status_failed": "실패한 셀: {n}개.",
+    "out_of_scope": "범위 밖",
+    "showcase": "쇼케이스"
   },
   "es": {
     "name": "Español",
@@ -219,6 +229,8 @@
     "status_all": "Ya se han ejecutado las {total} celdas ({dates}, UTC).",
     "status_partial": "Por ahora se han ejecutado {done} de {total} celdas ({dates}, UTC). Las tablas de abajo se regeneran a medida que terminan las demás.",
     "status_none": "Todavía no se ha ejecutado ninguna celda.",
-    "status_failed": "Celdas fallidas: {n}."
+    "status_failed": "Celdas fallidas: {n}.",
+    "out_of_scope": "Fuera de alcance",
+    "showcase": "Demostración"
   }
 }
