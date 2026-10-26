@@ -75,7 +75,10 @@
     "breaks_rule": "違反題目規則：{rules}。",
     "attempt": "第 {n} 次嘗試；先前的嘗試保存在 {path}。",
     "oos_default": "{skill} 沒有宣稱適用於這類頁面，所以這個題目沒有用它來執行。",
-    "oos_ran": "這個題目不在該 skill 宣稱的適用範圍內，但這次執行的結果照樣展示。"
+    "oos_ran": "這個題目不在該 skill 宣稱的適用範圍內，但這次執行的結果照樣展示。",
+    "extra_files": "這一格寫了不只一個檔案。這是該 skill 本身流程的一部分，不算問題。",
+    "files_tag": "{n} 個檔案",
+    "files_title": "頁面會載入 index.html 旁邊儲存的檔案"
   },
   "home": {
     "title": "{site}：agent skill 比較",
@@ -87,7 +90,7 @@
     "failed_other": "{n} 格失敗",
     "pending_hint": "尚未執行的格子會顯示「待執行」。",
     "overview_h2": "總覽",
-    "overview_hint": "每一列是一個題目，每一欄是一個 skill。每個方格左邊是 Codex 的結果，右邊是 Claude Code 的結果（頁面頂端，桌面版寬度）。",
+    "overview_hint": "每一列是一個 skill，每一欄是一個題目。每個方格左邊是 Codex 的結果，右邊是 Claude Code 的結果（頁面頂端，桌面版寬度）。",
     "grid_aria": "總覽表格，可左右捲動",
     "col_prompt": "題目",
     "col_native": "原生",
@@ -96,7 +99,8 @@
     "skills_h2": "Skill",
     "prompts_h2": "題目",
     "cells_count": "{done} / {total} 格",
-    "version": "版本 {v}"
+    "version": "版本 {v}",
+    "row_skill": "Skill"
   },
   "method": {
     "h2": "方法",
@@ -129,7 +133,11 @@
     "limit_fixed": "<strong>截圖中的固定側邊欄。</strong>整頁截圖只會以第一個畫面的高度繪製尺寸為 <code>100vh</code> 的 <code>position: fixed</code> 或 <code>sticky</code> 元素，所以儀表板的側邊欄看起來可能在 900 px 處就斷了。這是截圖造成的，不是頁面本身的問題。",
     "limit_once": "<strong>單次取樣稱不上評測。</strong>每格都只生成一次。請把這個畫廊當成 skill 傾向產生什麼結果的範例，而不是分數。",
     "votes_title": "投票",
-    "votes_body": "每個結果頁都可以透過 <a href=\"https://giscus.app\">giscus</a> 按 👍 投票。giscus 是第三方元件，只在開啟結果頁之後才會載入，畫廊的其他頁面不會載入它。投票需要登入 GitHub。票數以 reaction 的形式存放在本儲存庫的 GitHub Discussions 中，每格一個討論串，所有語言共用。比較頁上的票數每幾個小時更新一次。票數只代表訪客的偏好，不是評測結論。"
+    "votes_body": "每個結果頁都可以透過 <a href=\"https://giscus.app\">giscus</a> 按 👍 投票。giscus 是第三方元件，只在開啟結果頁之後才會載入，畫廊的其他頁面不會載入它。投票需要登入 GitHub。票數以 reaction 的形式存放在本儲存庫的 GitHub Discussions 中，每格一個討論串，所有語言共用。比較頁上的票數每幾個小時更新一次。票數只代表訪客的偏好，不是評測結論。",
+    "a11y_title": "無障礙掃描",
+    "a11y_body": "每個頁面也會用自動化無障礙掃描工具檢查一次，並依嚴重程度顯示違規數量。自動化掃描只能涵蓋一部分無障礙問題（例如替代文字與焦點順序是否合理，它無法判斷），所以這些數字只是提示，不是結論。",
+    "video_title": "捲動錄影",
+    "video_body": "有些格子還附有頁面在桌面版寬度下捲動的短錄影，因為動態效果在截圖中看不出來。只有在單格頁按下播放才會載入。"
   },
   "skill": {
     "description": "Codex 與 Claude Code 使用和不使用 {name} skill 時做出的頁面。",
@@ -179,7 +187,8 @@
     "skill_line_note": "使用 skill 的格子會在結尾多加一句：<code>Use the &lt;name&gt; skill.</code>（Claude Code）或 <code>Use the $&lt;name&gt; skill.</code>（Codex）。",
     "grid_aria": "比較表格，可左右捲動",
     "showcase": "展示題",
-    "showcase_hint": "專門用來呈現某個 skill 所宣稱的優勢。只有宣稱適用的 skill 會執行這個題目，並與原生基準一起比較。"
+    "showcase_hint": "專門用來呈現某個 skill 所宣稱的優勢。只有宣稱適用的 skill 會執行這個題目，並與原生基準一起比較。",
+    "oos_list": "以下 skill 不適用於這個題目，沒有執行：{skills}。"
   },
   "viewer": {
     "frame_title": "生成的頁面：{title}",
@@ -189,7 +198,8 @@
     "sandbox_note": "沙箱預覽：頁面的腳本會執行，但頁面無法存取本站、cookie 或儲存空間，因此依賴 <code>localStorage</code> 的功能可能會有不同的表現。",
     "no_index": "這次執行沒有產生 index.html。",
     "details_h": "執行詳細資訊",
-    "no_run_json": "這個格子還沒有 <code>run.json</code>。"
+    "no_run_json": "這個格子還沒有 <code>run.json</code>。",
+    "multi_file": "這個頁面會載入旁邊儲存的檔案，所以不提供單一檔案下載。額外的 {n} 個檔案："
   },
   "details": {
     "status": "狀態",
@@ -237,7 +247,8 @@
     "failed_requests": "{n} 個失敗的請求",
     "remote_requests": "{n} 個遠端請求",
     "fonts_failed": "字型載入失敗：{list}",
-    "host": "主機"
+    "host": "主機",
+    "extra_files": "額外檔案"
   },
   "skills": {
     "frontend-design": {
@@ -245,21 +256,73 @@
       "notes": [
         "同一份 SKILL.md 也發布在 anthropics/claude-plugins-official 和 anthropics/claude-code；本畫廊使用的是 anthropics/skills。",
         "上游在 2026 年多次改寫這個 skill，所以請務必使用固定 commit。"
-      ]
+      ],
+      "strengths": [
+        "有辨識度、有意圖的視覺設計，看起來不像範本預設值",
+        "針對需求，在配色、字體與版面上做出審慎且有主見的選擇，讓每個客戶都有獨特的視覺形象",
+        "字體承載頁面的個性"
+      ],
+      "applies_to_note": "在 v0 執行之後才對照 skill 原文核對（並非事先決定）；原文沒有排除任何頁面類型。",
+      "out_of_scope_reason": "這個展示題只為 frontend-ui-engineering 而加入。"
     },
     "ui-ux-pro-max": {
       "summary": "社群製作的 UI/UX 知識庫 skill：包含本機 CSV 資料（風格、配色、字型搭配、UX 規則、圖表類型、技術堆疊），以及一支 Python 搜尋腳本，會在 agent 寫頁面之前先產出一套設計系統。",
       "notes": [
         "執行它的搜尋腳本需要 python3（只用到標準函式庫）。",
         "上游 README 建議使用 `npm i -g ui-ux-pro-max-cli`；畫廊改用指定固定版本的 npx，因此不會做任何全域安裝。"
-      ]
+      ],
+      "strengths": [
+        "適用於網頁、行動裝置與桌面介面的可搜尋本機設計資料（風格、產品配色、字體搭配、UX 準則、圖表類型、技術堆疊）",
+        "依產業的配色與推理規則，依產品類型產生設計系統",
+        "為儀表板與分析頁面推薦圖表類型"
+      ],
+      "applies_to_note": "在 v0 執行之後才對照 skill 原文核對（並非事先決定）。引文出自參考 commit 下的儲存庫；畫廊執行的是 CLI 2.15.0 產生的版本，其 description 相同。",
+      "out_of_scope_reason": "這個展示題只為 frontend-ui-engineering 而加入。"
     },
     "web-design-engineer": {
       "summary": "一個輸出一律是 HTML 的前端設計 skill（網頁、儀表板、原型、簡報、資料視覺化）。它先從確定設計方向的步驟開始，並附帶 25 套風格範本。只有指示，沒有腳本。",
       "notes": [
         "在 v0 中取代 OpenAI 的 frontend-skill，因為該 skill 已從 OpenAI 的官方目錄移除，讀者已經無法安裝。",
         "它的 React 做法會從 CDN 載入 React 和 Babel；預設的手寫 CSS 做法不需要網路。"
-      ]
+      ],
+      "strengths": [
+        "用 HTML/CSS/JavaScript 做出精緻的瀏覽器渲染視覺作品，包括頁面、儀表板與資料視覺化",
+        "追求「驚艷」，而不只是「能用」",
+        "動手前先宣告設計系統，並附反套路清單與 25 個風格配方"
+      ],
+      "applies_to_note": "在 v0 執行之後才對照 skill 原文核對（並非事先決定）；原文點名了全部三類頁面。",
+      "out_of_scope_reason": "這個展示題只為 frontend-ui-engineering 而加入。"
+    },
+    "frontend-ui-engineering": {
+      "summary": "Addy Osmani 的工程品質前端 skill：無障礙、響應式的介面，包括載入、空白與錯誤狀態、語意化 token，以及一張要避開的「AI 風格」預設做法對照表。只有說明文字，沒有腳本。",
+      "strengths": [
+        "打造生產等級、無障礙、響應式的使用者介面",
+        "看起來像頂尖公司裡有設計意識的工程師做的介面，而不是 AI 產生的",
+        "WCAG 2.1 AA 無障礙，包括鍵盤導覽與焦點管理",
+        "有意義的空白、錯誤與載入狀態",
+        "避開「AI 風格」（紫色漸層、處處圓角、千篇一律的首屏、厚重陰影）"
+      ],
+      "applies_to_note": "在第二批執行之前，依據 skill 原文決定；加入 form-states 是為了呈現它在無障礙與狀態處理上的能力。"
+    },
+    "theme-factory": {
+      "summary": "Anthropic 的主題工具包：十套預設配色與字體搭配（或產生一套自訂主題），套用到已完成的作品上，例如到達頁面。只處理顏色與字體，不處理版面。包含說明、十個小主題檔與一份展示 PDF。",
+      "strengths": [
+        "十套含配色與字體的預設主題，可以套用到任何已完成的作品上，也可以當場產生新主題",
+        "一套協調的配色（附十六進位色碼），以及標題與內文相配的字體搭配"
+      ],
+      "applies_to_note": "在第二批執行之前，依據 skill 原文決定。原文只點名了到達頁面；儀表板與部落格作品集依據的是「reportings」和「any artifact」。",
+      "out_of_scope_reason": "這個展示題只為 frontend-ui-engineering 而加入。"
+    },
+    "design-taste-frontend": {
+      "summary": "taste-skill v2：為網站與應用程式畫面提供美術方向。腳本會從一個研究過 247 個網站的方向庫中給出三個方向，agent 依選中的方向做出頁面，再用內附的檢查工具在真實瀏覽器中檢查。包含說明與 Node 腳本；需要 Node 22+、Chrome，找圖片時需要連網。",
+      "strengths": [
+        "網站美術方向，提煉自對 247 個精選畫廊網站（One Page Love、Awwwards 每日最佳）的研究",
+        "讓程式設計 agent 去設計網站與應用程式畫面，而不是拼湊出一個平均水準的到達頁面",
+        "給 agent 一個美術方向、真實的圖片，以及在真實瀏覽器中檢查自己作品的方法",
+        "創意來自主題本身，agent 會檢視自己的截圖並修改"
+      ],
+      "applies_to_note": "在第二批執行之前，依據 skill 原文決定。",
+      "out_of_scope_reason": "這個展示題只為 frontend-ui-engineering 而加入。"
     }
   },
   "prompts": {
@@ -274,6 +337,10 @@
     "blog-portfolio": {
       "title": "個人部落格與作品集",
       "summary": "虛構產品設計師 Maya Lindqvist 的單頁網站：四個案例研究、可篩選的文章列表、一篇完整文章、附時間軸的「關於我」區塊、電子報訂閱表單，以及淺色／深色切換。"
+    },
+    "form-states": {
+      "title": "表單與回饋元件狀態",
+      "summary": "一家虛構網路銀行的表單與回饋元件參考頁，所有狀態同時可見：輸入欄位、選擇控制項、按鈕、轉帳清單（載入、空白、錯誤、有資料）、提示訊息，以及一張轉帳表單。"
     }
   },
   "vote": {
@@ -283,5 +350,28 @@
     "count_title": "截至上次建置，這一格討論串上的 👍 數",
     "count_note": "截至上次建置，每幾個小時更新一次",
     "noscript": "投票需要啟用 JavaScript（使用 giscus）。"
+  },
+  "a11y": {
+    "h": "無障礙掃描",
+    "note": "對原始頁面進行的自動化掃描。自動化工具只能找出一部分無障礙問題，掃描結果乾淨並不代表頁面就符合無障礙。",
+    "tool": "工具",
+    "rules": "觸發的規則",
+    "critical": "嚴重",
+    "serious": "較嚴重",
+    "moderate": "中等",
+    "minor": "輕微",
+    "badge": "a11y {level} {n}",
+    "badge_none": "a11y：未發現問題",
+    "rules_n_one": "{n} 條規則",
+    "rules_n_other": "{n} 條規則",
+    "elements_n_one": "{n} 個元素",
+    "elements_n_other": "{n} 個元素"
+  },
+  "video": {
+    "h": "捲動錄影",
+    "note": "頁面在桌面版寬度下捲動的錄影，用來呈現截圖看不到的動態效果。按下播放後才會載入影片。",
+    "play": "播放捲動錄影",
+    "tag": "錄影",
+    "seconds": "{n} 秒"
   }
 }

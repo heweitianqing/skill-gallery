@@ -36,7 +36,10 @@
     "status_none": "No cells have run yet.",
     "status_failed": "Failed cells: {n}.",
     "out_of_scope": "Out of scope",
-    "showcase": "Showcase"
+    "showcase": "Showcase",
+    "table_standard": "Standard prompts",
+    "table_showcase": "Showcase prompts",
+    "showcase_note": "Each showcase prompt was added to show one skill’s claimed strength, so it runs only for the skills that claim it, next to the two native baselines."
   },
   "zh-CN": {
     "name": "简体中文",
@@ -75,7 +78,10 @@
     "status_none": "还没有运行任何格子。",
     "status_failed": "失败的格子：{n} 个。",
     "out_of_scope": "不适用",
-    "showcase": "展示题"
+    "showcase": "展示题",
+    "table_standard": "标准题",
+    "table_showcase": "展示题",
+    "showcase_note": "展示题是为体现某个 skill 声称的优势而加的，只给声称适用的 skill 跑，并和两格原生基线对比。"
   },
   "zh-TW": {
     "name": "繁體中文",
@@ -114,7 +120,10 @@
     "status_none": "尚未執行任何格子。",
     "status_failed": "失敗的格子：{n} 個。",
     "out_of_scope": "不適用",
-    "showcase": "展示題"
+    "showcase": "展示題",
+    "table_standard": "標準題",
+    "table_showcase": "展示題",
+    "showcase_note": "展示題是為了呈現某個 skill 宣稱的優勢而加入的，只讓宣稱適用的 skill 執行，並與兩格原生基準比較。"
   },
   "ja": {
     "name": "日本語",
@@ -153,7 +162,10 @@
     "status_none": "まだどのセルも実行していません。",
     "status_failed": "失敗したセル：{n} 個。",
     "out_of_scope": "対象外",
-    "showcase": "ショーケース"
+    "showcase": "ショーケース",
+    "table_standard": "標準プロンプト",
+    "table_showcase": "ショーケース プロンプト",
+    "showcase_note": "ショーケース プロンプトは、ある skill が主張する強みを示すために追加したもので、その強みを主張する skill だけを実行し、2 つのネイティブのベースラインと比べます。"
   },
   "ko": {
     "name": "한국어",
@@ -192,7 +204,10 @@
     "status_none": "아직 실행한 셀이 없습니다.",
     "status_failed": "실패한 셀: {n}개.",
     "out_of_scope": "범위 밖",
-    "showcase": "쇼케이스"
+    "showcase": "쇼케이스",
+    "table_standard": "표준 프롬프트",
+    "table_showcase": "쇼케이스 프롬프트",
+    "showcase_note": "쇼케이스 프롬프트는 특정 skill이 내세우는 강점을 보여 주려고 추가한 것으로, 그 강점을 내세우는 skill만 실행해 두 네이티브 기준선과 비교합니다."
   },
   "es": {
     "name": "Español",
@@ -231,6 +246,9 @@
     "status_none": "Todavía no se ha ejecutado ninguna celda.",
     "status_failed": "Celdas fallidas: {n}.",
     "out_of_scope": "Fuera de alcance",
-    "showcase": "Demostración"
+    "showcase": "Demostración",
+    "table_standard": "Prompts estándar",
+    "table_showcase": "Prompts de demostración",
+    "showcase_note": "Cada prompt de demostración se añadió para mostrar un punto fuerte que declara un skill, así que solo se ejecuta con los skills que lo declaran, junto a las dos referencias nativas."
   }
 }

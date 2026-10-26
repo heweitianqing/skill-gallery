@@ -27,20 +27,22 @@ Each language gets its own page tree: English at the root, the others under `/zh
 
 | Output (per language) | Content |
 | --- | --- |
-| `index.html` | Overview grid (prompt × skill, Codex and Claude Code thumbnails per square), skills, prompts, method |
-| `skills/<name>/` | Claimed strengths and test scope (when `meta.yaml` has them), one 2×2 per prompt (Codex native, Codex + skill, Claude Code native, Claude Code + skill), then install and use for both agents |
+| `index.html` | Overview grid (skills down the side, prompts across, Codex and Claude Code thumbnails per square), skills, prompts, method |
+| `skills/<name>/` | Claimed strengths and test scope (when `meta.yaml` has them), one 2×2 per prompt in scope or with a run (Codex native, Codex + skill, Claude Code native, Claude Code + skill), then install and use for both agents |
 | `prompts/<id>/` | Every skill side by side for one prompt, plus the prompt text |
-| `cells/<prompt>/<agent>__<variant>/` | The original `index.html` in `<iframe sandbox="allow-scripts">` (no same-origin access) at fit, 1440 or 390 px, the vote (when enabled) and the full run details |
-| `runs/…` | `index.html`, `desktop.png`, `mobile.png`, `run.json` copied byte for byte |
+| `cells/<prompt>/<agent>__<variant>/` | The original `index.html` in `<iframe sandbox="allow-scripts">` (no same-origin access) at fit, 1440 or 390 px, the scroll recording (a play button; nothing loads before the click), the accessibility scan, the vote (when enabled) and the full run details. Pages that load files next to them get a list of those files instead of the single-file download |
+| `runs/…` | `index.html`, `desktop.png`, `mobile.png`, `run.json`, the files in `output.kept_assets` and the `video` file, copied byte for byte at their original relative paths |
 | `thumbs/…` | First-screen crops of the screenshots (720 and 360 px wide for desktop, 390 for mobile), made by a small PNG codec inside the build script |
 
 A cell with no files shows **Pending** (待运行), unless the skill's `applies_to` leaves that prompt out: then it shows **Out of scope** (不适用) with the reason, and it does not count as missing. A run that exists outside the stated scope is still shown, with a note. An empty cell directory counts as still running. Failed runs are shown with their `failure_reasons`; a missing screenshot, page, `run.json` or field shows a placeholder or `—`. The build prints which fields the inputs do not provide yet.
 
 ## Fields the pages read
 
-`run.json` (see `docs/run-schema.md`): `success`, `failure_reasons`, `model`, `effort`, `cli.version`, `started_at`, `duration_ms`, `usage.*_tokens`, `usage.num_turns`, `usage.total_cost_usd`, `skill_triggered`, `skill_evidence`, `skill.*` (including `fetch`), `prompt.skill_line`, `prompt.file_sha256` (compared with the current prompt file), `external_refs.refs`, `rule_violations`, `runtime_remote_images`, `attempt`, `previous_attempts`, `isolation.ok` and `isolation.checks`, `output`, `activity`, `screenshots.<desktop|mobile>` (viewport size is used for the thumbnail crop), `host`. If `external_refs` is absent, the build scans `index.html` itself.
+`run.json` (see `docs/run-schema.md`): `success`, `failure_reasons`, `model`, `effort`, `cli.version`, `started_at`, `duration_ms`, `usage.*_tokens`, `usage.num_turns`, `usage.total_cost_usd`, `skill_triggered`, `skill_evidence`, `skill.*` (including `fetch`), `prompt.skill_line`, `prompt.file_sha256` (compared with the current prompt file), `external_refs.refs`, `rule_violations` (`extra_files` is shown as information, not as a fault), `runtime_remote_images`, `attempt`, `previous_attempts`, `isolation.ok` and `isolation.checks`, `output` (including `kept_assets: [{path, bytes, sha256}]`; paths that are absolute or leave the cell folder are refused with a warning), `a11y: {tool, version, violations: {critical, serious, moderate, minor}, rule_ids}` (a tag on comparison cards, a full summary on the cell page), `video: {file, width, seconds, bytes}` (a scroll recording), `activity`, `screenshots.<desktop|mobile>` (viewport size is used for the thumbnail crop), `host`. If `external_refs` is absent, the build scans `index.html` itself.
 
 `skills/<name>/meta.yaml`: `summary`, `research_id`, `upstream.repo|path|commit|skill_md`, `license.spdx|file|copyright`, `fetch.method|package|version|output_path`, `install.claude|codex` (a command is shown as is; a sentence is shown above generated `git clone` + `cp` commands), `invoke.claude|codex`, `notes`. Without `meta.yaml` the build falls back to `skills/<name>/source.json`, then to `research/candidates.json` (also the source of the Chinese summary).
+
+`display_name` (optional) is what readers call the skill when it differs from its name, for example `display_name: taste-skill` for `design-taste-frontend`. Titles, table headers and the overview grid show it with the real name after it, "taste-skill (`design-taste-frontend`)"; card titles, breadcrumbs and captions show it alone. URLs, folders and install commands keep the real name.
 
 Optional fields for strengths and test scope, read by the gallery (written by whoever maintains `meta.yaml`):
 
@@ -58,20 +60,24 @@ applies_to: [landing-saas, blog-portfolio]
 
 # Optional: why the other prompts are out of scope (English). Without it a generic sentence is shown.
 out_of_scope_reason: Its SKILL.md covers marketing pages and slides, not data dashboards.
+
+# Optional: when and how applies_to was decided; shown under the test scope.
+applies_to_note: Decided from the skill text before the runs.
 ```
 
-Translations go in `site/i18n/<lang>.json`, under the skill, in the same order as `meta.yaml`. English falls back to `meta.yaml`; the build lists languages that miss some items.
+English always comes from `meta.yaml`. Translations go in `site/i18n/<lang>.json` under the skill: `strengths` as a list of strings in the same order as `meta.yaml` (they share its sources), plus `out_of_scope_reason` and `applies_to_note`. The build lists languages whose `strengths` are missing or have a different number of items than `meta.yaml`. (A list of `{text, source}` objects is also accepted and used as it is, for skills without `meta.yaml` strengths.)
 
 ```json
 "skills": {
   "frontend-design": {
     "strengths": ["敢于选定鲜明的设计方向，而不是用通用默认样式", "落地页的字体和版式更讲究"],
-    "out_of_scope_reason": "它的 SKILL.md 讲的是营销页和幻灯片，不是数据看板。"
+    "out_of_scope_reason": "它的 SKILL.md 讲的是营销页和幻灯片，不是数据看板。",
+    "applies_to_note": "在运行之前，依据 skill 原文决定。"
   }
 }
 ```
 
-A prompt whose frontmatter has `showcase: true` (or `kind: showcase`) is labelled as a showcase prompt: one added to show a particular skill's claimed strength. Only the skills whose `applies_to` lists it are expected to run it, next to the two native cells.
+A prompt listed in `showcase_prompts` in `config.json`, or whose frontmatter has `showcase: true` (or `kind: showcase`), is labelled as a showcase prompt: one added to show a particular skill's claimed strength. Only the skills whose `applies_to` lists it are expected to run it, next to the two native cells. Prompt pages leave out skills that are out of scope and have no run, and name them in one line; the README puts showcase prompts in a table of their own.
 
 ## Votes
 

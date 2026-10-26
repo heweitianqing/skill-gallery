@@ -75,7 +75,10 @@
     "breaks_rule": "Breaks a prompt rule: {rules}.",
     "attempt": "Attempt {n}; earlier attempts are kept in {path}.",
     "oos_default": "{skill} does not claim to cover this kind of page, so it was not run on this prompt.",
-    "oos_ran": "This prompt is outside the skill's stated scope. The run is shown anyway."
+    "oos_ran": "This prompt is outside the skill's stated scope. The run is shown anyway.",
+    "extra_files": "This cell wrote more than one file. That is part of the skill’s own workflow, not a fault.",
+    "files_tag": "{n} files",
+    "files_title": "The page loads files saved next to its index.html"
   },
   "home": {
     "title": "{site}: agent skills compared",
@@ -87,7 +90,7 @@
     "failed_other": "{n} failed",
     "pending_hint": "Cells that have not run yet show “Pending”.",
     "overview_h2": "Overview",
-    "overview_hint": "Rows are prompts, columns are skills. Each square shows the Codex result on the left and the Claude Code result on the right (top of the page, desktop width).",
+    "overview_hint": "Rows are skills, columns are prompts. Each square shows the Codex result on the left and the Claude Code result on the right (top of the page, desktop width).",
     "grid_aria": "Overview grid, scrolls sideways",
     "col_prompt": "Prompt",
     "col_native": "Native",
@@ -96,7 +99,8 @@
     "skills_h2": "Skills",
     "prompts_h2": "Prompts",
     "cells_count": "{done} of {total} cells",
-    "version": "version {v}"
+    "version": "version {v}",
+    "row_skill": "Skill"
   },
   "method": {
     "h2": "Method",
@@ -129,7 +133,11 @@
     "limit_fixed": "<strong>Fixed sidebars in screenshots.</strong> Full-page captures draw <code>position: fixed</code> or <code>sticky</code> elements sized <code>100vh</code> at the first screen's height only, so a dashboard sidebar can look as if it stops at 900 px. This comes from the capture, not from the page.",
     "limit_once": "<strong>One sample is not a benchmark.</strong> Each cell is a single generation. Treat the gallery as examples of what a skill tends to do, not as a score.",
     "votes_title": "Votes",
-    "votes_body": "Each result page has a 👍 vote through <a href=\"https://giscus.app\">giscus</a>, a third-party widget that loads only on result pages, not on the rest of the gallery. Voting needs a GitHub sign-in. Votes are stored as reactions in this repository's GitHub Discussions, one discussion per cell, shared by all languages. The counts on the comparison pages are refreshed every few hours. They show what visitors prefer; they are not an evaluation."
+    "votes_body": "Each result page has a 👍 vote through <a href=\"https://giscus.app\">giscus</a>, a third-party widget that loads only on result pages, not on the rest of the gallery. Voting needs a GitHub sign-in. Votes are stored as reactions in this repository's GitHub Discussions, one discussion per cell, shared by all languages. The counts on the comparison pages are refreshed every few hours. They show what visitors prefer; they are not an evaluation.",
+    "a11y_title": "Accessibility scan",
+    "a11y_body": "Each page is also checked with an automated accessibility scanner, and the number of violations by severity is shown. Automated scans catch only part of accessibility problems (they cannot judge, for example, whether alt text or focus order make sense), so treat the counts as a pointer, not a verdict.",
+    "video_title": "Scroll recordings",
+    "video_body": "Some cells also have a short recording of the page being scrolled at desktop width, because motion does not show in screenshots. It loads only when you press play on the cell page."
   },
   "skill": {
     "description": "Pages built by Codex and Claude Code with and without the {name} skill.",
@@ -179,7 +187,8 @@
     "skill_line_note": "Skill cells add one sentence at the end: <code>Use the &lt;name&gt; skill.</code> (Claude Code) or <code>Use the $&lt;name&gt; skill.</code> (Codex).",
     "grid_aria": "Comparison grid, scrolls sideways",
     "showcase": "Showcase",
-    "showcase_hint": "Added to show a particular skill's claimed strength. Only the skills that claim to cover it are run, next to the native baselines."
+    "showcase_hint": "Added to show a particular skill's claimed strength. Only the skills that claim to cover it are run, next to the native baselines.",
+    "oos_list": "Out of scope for this prompt, so not run: {skills}."
   },
   "viewer": {
     "frame_title": "Generated page: {title}",
@@ -189,7 +198,8 @@
     "sandbox_note": "Sandboxed preview: the page's scripts run, but the page cannot reach this site, cookies or storage, so features that rely on <code>localStorage</code> may behave differently.",
     "no_index": "This run produced no index.html.",
     "details_h": "Run details",
-    "no_run_json": "No <code>run.json</code> for this cell yet."
+    "no_run_json": "No <code>run.json</code> for this cell yet.",
+    "multi_file": "This page loads files saved next to it, so there is no single-file download. Its {n} extra file(s):"
   },
   "details": {
     "status": "Status",
@@ -237,7 +247,8 @@
     "failed_requests": "{n} failed request(s)",
     "remote_requests": "{n} remote request(s)",
     "fonts_failed": "fonts failed: {list}",
-    "host": "Host"
+    "host": "Host",
+    "extra_files": "Extra files"
   },
   "skills": {
     "frontend-design": {
@@ -274,6 +285,10 @@
     "blog-portfolio": {
       "title": "Personal blog and portfolio",
       "summary": "A one-page site for Maya Lindqvist, a fictional product designer: four case studies, a filterable post list, one full article, an about section with a timeline, a newsletter form and a light/dark switch."
+    },
+    "form-states": {
+      "title": "Form and feedback component states",
+      "summary": "A reference page for a fictional online bank’s form and feedback components, with every state visible at once: text fields, choices, buttons, a transfers list (loading, empty, error, filled), messages and a transfer form."
     }
   },
   "vote": {
@@ -283,5 +298,28 @@
     "count_title": "👍 reactions on this cell's discussion, as of the last build",
     "count_note": "as of the last build; refreshed every few hours",
     "noscript": "Voting needs JavaScript (it uses giscus)."
+  },
+  "a11y": {
+    "h": "Accessibility scan",
+    "note": "An automated scan of the original page. Automated tools find only some accessibility problems, so a clean result does not mean the page is accessible.",
+    "tool": "Tool",
+    "rules": "Rules triggered",
+    "critical": "critical",
+    "serious": "serious",
+    "moderate": "moderate",
+    "minor": "minor",
+    "badge": "a11y {n} {level}",
+    "badge_none": "a11y: none found",
+    "rules_n_one": "{n} rule",
+    "rules_n_other": "{n} rules",
+    "elements_n_one": "{n} element",
+    "elements_n_other": "{n} elements"
+  },
+  "video": {
+    "h": "Scroll recording",
+    "note": "A recording of the page being scrolled at desktop width, for motion that screenshots cannot show. The video loads only when you press play.",
+    "play": "Play the scroll recording",
+    "tag": "video",
+    "seconds": "{n} s"
   }
 }

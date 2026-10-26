@@ -75,7 +75,10 @@
     "breaks_rule": "违反题目规则：{rules}。",
     "attempt": "第 {n} 次尝试；之前的尝试保存在 {path}。",
     "oos_default": "{skill} 没有声称适用于这类页面，所以这道题没有用它来跑。",
-    "oos_ran": "这道题不在该 skill 声称的适用范围内，但这次运行照样展示。"
+    "oos_ran": "这道题不在该 skill 声称的适用范围内，但这次运行照样展示。",
+    "extra_files": "这一格写了不止一个文件。这是该 skill 自身流程的一部分，不算问题。",
+    "files_tag": "{n} 个文件",
+    "files_title": "页面会加载 index.html 旁边保存的文件"
   },
   "home": {
     "title": "{site}：agent skill 对比",
@@ -87,7 +90,7 @@
     "failed_other": "{n} 格失败",
     "pending_hint": "尚未运行的格子显示“待运行”。",
     "overview_h2": "总览",
-    "overview_hint": "行是题目，列是 skill。每个方块左边是 Codex 的结果，右边是 Claude Code 的结果（页面顶部，桌面宽度）。",
+    "overview_hint": "行是 skill，列是题目。每个方块左边是 Codex 的结果，右边是 Claude Code 的结果（页面顶部，桌面宽度）。",
     "grid_aria": "总览表格，可横向滚动",
     "col_prompt": "题目",
     "col_native": "原生",
@@ -96,7 +99,8 @@
     "skills_h2": "Skill",
     "prompts_h2": "题目",
     "cells_count": "{done} / {total} 格",
-    "version": "版本 {v}"
+    "version": "版本 {v}",
+    "row_skill": "Skill"
   },
   "method": {
     "h2": "方法",
@@ -129,7 +133,11 @@
     "limit_fixed": "<strong>截图中的固定侧边栏。</strong>整页截图对尺寸为 <code>100vh</code> 的 <code>position: fixed</code> 或 <code>sticky</code> 元素，只按首屏高度绘制，所以看板的侧边栏可能看起来在 900 px 处就断了。这是截图方式造成的，不是页面本身的问题。",
     "limit_once": "<strong>一次采样不等于基准测试。</strong>每格只生成一次。请把画廊当作 skill 大致效果的示例，而不是评分。",
     "votes_title": "投票",
-    "votes_body": "每个结果页都可以通过 <a href=\"https://giscus.app\">giscus</a> 点 👍 投票。giscus 是第三方组件，只在打开结果页后才会加载，画廊的其他页面不会加载它。投票需要登录 GitHub。票数以 reaction 的形式存在本仓库的 GitHub Discussions 里，每格一个讨论帖，所有语言共用。对比页上的票数每几个小时更新一次。票数只代表访客的偏好，不是评测结论。"
+    "votes_body": "每个结果页都可以通过 <a href=\"https://giscus.app\">giscus</a> 点 👍 投票。giscus 是第三方组件，只在打开结果页后才会加载，画廊的其他页面不会加载它。投票需要登录 GitHub。票数以 reaction 的形式存在本仓库的 GitHub Discussions 里，每格一个讨论帖，所有语言共用。对比页上的票数每几个小时更新一次。票数只代表访客的偏好，不是评测结论。",
+    "a11y_title": "无障碍扫描",
+    "a11y_body": "每个页面还会用自动化无障碍扫描工具检查一遍，按严重程度显示违规数量。自动化扫描只能覆盖一部分无障碍问题（比如替代文字和焦点顺序是否合理，它判断不了），所以这些数字只是提示，不是结论。",
+    "video_title": "滚动录屏",
+    "video_body": "有些格子还附带页面在桌面宽度下滚动的短录屏，因为动效在截图里看不出来。只有在单格页点了播放才会加载。"
   },
   "skill": {
     "description": "Codex 和 Claude Code 在用与不用 {name} skill 时生成的页面。",
@@ -179,7 +187,8 @@
     "skill_line_note": "skill 格子会在末尾加一句：<code>Use the &lt;name&gt; skill.</code>（Claude Code）或 <code>Use the $&lt;name&gt; skill.</code>（Codex）。",
     "grid_aria": "对比表格，可横向滚动",
     "showcase": "展示题",
-    "showcase_hint": "专门用来体现某个 skill 所声称的优势。只有声称适用的 skill 会跑这道题，并和原生基线放在一起对比。"
+    "showcase_hint": "专门用来体现某个 skill 所声称的优势。只有声称适用的 skill 会跑这道题，并和原生基线放在一起对比。",
+    "oos_list": "以下 skill 不适用于这道题，没有运行：{skills}。"
   },
   "viewer": {
     "frame_title": "生成的页面：{title}",
@@ -189,7 +198,8 @@
     "sandbox_note": "沙箱预览：页面的脚本会运行，但页面无法访问本站、cookie 或存储，所以依赖 <code>localStorage</code> 的功能可能表现不同。",
     "no_index": "这次运行没有生成 index.html。",
     "details_h": "运行详情",
-    "no_run_json": "这个格子还没有 <code>run.json</code>。"
+    "no_run_json": "这个格子还没有 <code>run.json</code>。",
+    "multi_file": "这个页面会加载旁边保存的文件，所以不提供单文件下载。额外的 {n} 个文件："
   },
   "details": {
     "status": "状态",
@@ -237,7 +247,8 @@
     "failed_requests": "{n} 个失败的请求",
     "remote_requests": "{n} 个远程请求",
     "fonts_failed": "字体加载失败：{list}",
-    "host": "主机"
+    "host": "主机",
+    "extra_files": "额外文件"
   },
   "skills": {
     "frontend-design": {
@@ -245,21 +256,73 @@
       "notes": [
         "同一份 SKILL.md 也发布在 anthropics/claude-plugins-official 和 anthropics/claude-code 中；本画廊使用的是 anthropics/skills 里的版本。",
         "上游在 2026 年多次重写过这个 skill，所以请始终使用固定 commit。"
-      ]
+      ],
+      "strengths": [
+        "有辨识度、有意图的视觉设计，看起来不像模板默认值",
+        "针对需求，在配色、字体和版式上做出审慎而有主见的选择，让每个客户都有独特的视觉形象",
+        "字体承载页面的个性"
+      ],
+      "applies_to_note": "在 v0 运行之后才对照 skill 原文核对（不是事先决定的）；原文没有排除任何页面类型。",
+      "out_of_scope_reason": "这道展示题只为 frontend-ui-engineering 而加。"
     },
     "ui-ux-pro-max": {
       "summary": "一个社区维护的 UI/UX 知识库 skill：本地 CSV 数据（风格、配色、字体搭配、UX 规则、图表类型、技术栈），外加一个 Python 搜索脚本，在 agent 写页面之前先生成一套设计系统。",
       "notes": [
         "运行它的搜索脚本需要 python3（只用到标准库）。",
         "上游 README 推荐使用 `npm i -g ui-ux-pro-max-cli`；画廊改用固定版本的 npx，不做任何全局安装。"
-      ]
+      ],
+      "strengths": [
+        "面向网页、移动端和桌面端界面的可检索本地设计数据（风格、产品配色、字体搭配、UX 准则、图表类型、技术栈）",
+        "按行业的配色方案和推理规则，按产品类型生成设计系统",
+        "为看板和分析页面推荐图表类型"
+      ],
+      "applies_to_note": "在 v0 运行之后才对照 skill 原文核对（不是事先决定的）。引文来自参考 commit 下的仓库；画廊运行的是 CLI 2.15.0 生成的版本，其 description 相同。",
+      "out_of_scope_reason": "这道展示题只为 frontend-ui-engineering 而加。"
     },
     "web-design-engineer": {
       "summary": "一个前端设计 skill，输出总是 HTML（页面、看板、原型、幻灯片、数据可视化）。它先确定设计方向，并自带 25 套风格配方。只有说明文字，没有脚本。",
       "notes": [
         "在 v0 中替代 OpenAI 的 frontend-skill，因为那个 skill 已从 OpenAI 官方目录中移除，读者已无法安装。",
         "它的 React 路径会从 CDN 加载 React 和 Babel；默认的手写 CSS 路径不需要联网。"
-      ]
+      ],
+      "strengths": [
+        "用 HTML/CSS/JavaScript 做精致的浏览器渲染视觉作品，包括页面、看板和数据可视化",
+        "追求“惊艳”，而不只是“能用”",
+        "动手前先声明设计系统，配有反套路清单和 25 个风格配方"
+      ],
+      "applies_to_note": "在 v0 运行之后才对照 skill 原文核对（不是事先决定的）；原文点名了全部三类页面。",
+      "out_of_scope_reason": "这道展示题只为 frontend-ui-engineering 而加。"
+    },
+    "frontend-ui-engineering": {
+      "summary": "Addy Osmani 的工程品质前端 skill：无障碍、响应式的界面，包括加载、空和错误状态、语义化令牌，以及一张要避开的“AI 风格”默认做法对照表。只有说明文字，没有脚本。",
+      "strengths": [
+        "构建生产级、无障碍、响应式的用户界面",
+        "看起来像顶尖公司里有设计意识的工程师做的界面，而不是 AI 生成的",
+        "WCAG 2.1 AA 无障碍，包括键盘导航和焦点管理",
+        "有意义的空状态、错误状态和加载状态",
+        "避开“AI 风格”（紫色渐变、处处圆角、千篇一律的首屏、厚重阴影）"
+      ],
+      "applies_to_note": "在第二批运行之前，依据 skill 原文决定；加入 form-states 是为了展示它在无障碍和状态处理上的能力。"
+    },
+    "theme-factory": {
+      "summary": "Anthropic 的主题工具包：十套预设配色及字体搭配（或生成一套自定义主题），套用到已完成的作品上，比如落地页。只管颜色和字体，不管版式。包括说明、十个小主题文件和一份展示 PDF。",
+      "strengths": [
+        "十套带配色和字体的预设主题，可以套用到任何已完成的作品上，也可以现场生成新主题",
+        "一套协调的配色（附十六进制色值），以及标题与正文相配的字体搭配"
+      ],
+      "applies_to_note": "在第二批运行之前，依据 skill 原文决定。原文只点名了落地页；看板和博客作品集依据的是 “reportings” 和 “any artifact”。",
+      "out_of_scope_reason": "这道展示题只为 frontend-ui-engineering 而加。"
+    },
+    "design-taste-frontend": {
+      "summary": "taste-skill v2：为网站和应用界面提供美术方向。脚本会从一个研究过 247 个网站的方向库里给出三个方向，agent 按选中的方向做页面，再用自带的检查工具在真实浏览器里检查。包括说明和 Node 脚本；需要 Node 22+、Chrome，找图片时需要联网。",
+      "strengths": [
+        "网站美术方向，提炼自对 247 个精选画廊网站（One Page Love、Awwwards 每日最佳）的研究",
+        "让编程 agent 去设计网站和应用界面，而不是拼出一个平均水平的落地页",
+        "给 agent 一个美术方向、真实的图片，以及在真实浏览器里检查自己作品的办法",
+        "创意来自主题本身，agent 会查看自己的截图并修改"
+      ],
+      "applies_to_note": "在第二批运行之前，依据 skill 原文决定。",
+      "out_of_scope_reason": "这道展示题只为 frontend-ui-engineering 而加。"
     }
   },
   "prompts": {
@@ -274,6 +337,10 @@
     "blog-portfolio": {
       "title": "个人博客与作品集",
       "summary": "虚构产品设计师 Maya Lindqvist 的单页网站：四个案例研究、可筛选的文章列表、一篇完整文章、带时间线的个人简介、邮件订阅表单和浅色/深色切换。"
+    },
+    "form-states": {
+      "title": "表单与反馈组件状态",
+      "summary": "一家虚构网银的表单与反馈组件参考页，所有状态同时可见：输入框、选择控件、按钮、转账列表（加载、空、错误、有数据）、提示信息，以及一张转账表单。"
     }
   },
   "vote": {
@@ -283,5 +350,28 @@
     "count_title": "截至上次构建，这一格讨论帖上的 👍 数",
     "count_note": "截至上次构建，每几个小时更新一次",
     "noscript": "投票需要启用 JavaScript（用的是 giscus）。"
+  },
+  "a11y": {
+    "h": "无障碍扫描",
+    "note": "对原始页面做的自动化扫描。自动化工具只能发现一部分无障碍问题，扫描结果干净并不代表页面就是无障碍的。",
+    "tool": "工具",
+    "rules": "触发的规则",
+    "critical": "严重",
+    "serious": "较严重",
+    "moderate": "中等",
+    "minor": "轻微",
+    "badge": "a11y {level} {n}",
+    "badge_none": "a11y：未发现问题",
+    "rules_n_one": "{n} 条规则",
+    "rules_n_other": "{n} 条规则",
+    "elements_n_one": "{n} 个元素",
+    "elements_n_other": "{n} 个元素"
+  },
+  "video": {
+    "h": "滚动录屏",
+    "note": "页面在桌面宽度下滚动的录屏，用来展示截图看不到的动效。点了播放才会加载视频。",
+    "play": "播放滚动录屏",
+    "tag": "录屏",
+    "seconds": "{n} 秒"
   }
 }

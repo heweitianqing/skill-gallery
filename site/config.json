@@ -9,8 +9,9 @@
     "category_id": "DIC_kwDOVXc5mM4DJocJ"
   },
   "languages": ["en", "zh-CN", "zh-TW", "ja", "ko", "es"],
-  "prompts": ["landing-saas", "dashboard", "blog-portfolio"],
-  "skills": ["frontend-design", "ui-ux-pro-max", "web-design-engineer"],
+  "prompts": ["landing-saas", "dashboard", "blog-portfolio", "form-states"],
+  "showcase_prompts": ["form-states"],
+  "skills": ["frontend-design", "ui-ux-pro-max", "web-design-engineer", "design-taste-frontend", "frontend-ui-engineering", "theme-factory"],
   "agents": [
     { "id": "codex", "label": "Codex", "cli": "Codex CLI", "model": "gpt-6.1-sol", "effort": "high" },
     { "id": "claude", "label": "Claude Code", "cli": "Claude Code", "model": "claude-opus-5-5", "effort": "high" }

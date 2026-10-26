@@ -75,7 +75,10 @@
     "breaks_rule": "Incumple una regla del prompt: {rules}.",
     "attempt": "Intento {n}; los intentos anteriores se conservan en {path}.",
     "oos_default": "{skill} no dice cubrir este tipo de página, así que no se ejecutó con este prompt.",
-    "oos_ran": "Este prompt queda fuera del alcance que declara el skill, pero la ejecución se muestra igualmente."
+    "oos_ran": "Este prompt queda fuera del alcance que declara el skill, pero la ejecución se muestra igualmente.",
+    "extra_files": "Esta celda escribió más de un archivo. Forma parte del propio flujo del skill; no es un fallo.",
+    "files_tag": "{n} archivos",
+    "files_title": "La página carga archivos guardados junto a su index.html"
   },
   "home": {
     "title": "{site}: comparación de skills para agentes",
@@ -87,7 +90,7 @@
     "failed_other": "{n} fallidas",
     "pending_hint": "Las celdas que aún no se han ejecutado muestran “Pendiente”.",
     "overview_h2": "Resumen",
-    "overview_hint": "Las filas son prompts y las columnas, skills. Cada cuadro muestra el resultado de Codex a la izquierda y el de Claude Code a la derecha (parte superior de la página, ancho de escritorio).",
+    "overview_hint": "Las filas son skills y las columnas, prompts. Cada cuadro muestra el resultado de Codex a la izquierda y el de Claude Code a la derecha (parte superior de la página, ancho de escritorio).",
     "grid_aria": "Cuadrícula de resumen, se desplaza en horizontal",
     "col_prompt": "Prompt",
     "col_native": "Nativo",
@@ -96,7 +99,8 @@
     "skills_h2": "Skills",
     "prompts_h2": "Prompts",
     "cells_count": "{done} de {total} celdas",
-    "version": "versión {v}"
+    "version": "versión {v}",
+    "row_skill": "Skill"
   },
   "method": {
     "h2": "Método",
@@ -129,7 +133,11 @@
     "limit_fixed": "<strong>Barras laterales fijas en las capturas.</strong> Las capturas de página completa dibujan los elementos <code>position: fixed</code> o <code>sticky</code> con altura <code>100vh</code> solo a la altura de la primera pantalla, así que la barra lateral de un panel puede parecer que termina a los 900 px. Esto se debe a la captura, no a la página.",
     "limit_once": "<strong>Una sola muestra no es un benchmark.</strong> Cada celda es una única generación. Toma la galería como ejemplos de lo que un skill tiende a hacer, no como una puntuación.",
     "votes_title": "Votos",
-    "votes_body": "Cada página de resultado tiene un voto 👍 mediante <a href=\"https://giscus.app\">giscus</a>, un widget de terceros que solo se carga en las páginas de resultado, no en el resto de la galería. Para votar hay que iniciar sesión en GitHub. Los votos se guardan como reacciones en las GitHub Discussions de este repositorio, con una discusión por celda que comparten todos los idiomas. Los recuentos de las páginas de comparación se actualizan cada pocas horas. Muestran lo que prefieren los visitantes, no una evaluación."
+    "votes_body": "Cada página de resultado tiene un voto 👍 mediante <a href=\"https://giscus.app\">giscus</a>, un widget de terceros que solo se carga en las páginas de resultado, no en el resto de la galería. Para votar hay que iniciar sesión en GitHub. Los votos se guardan como reacciones en las GitHub Discussions de este repositorio, con una discusión por celda que comparten todos los idiomas. Los recuentos de las páginas de comparación se actualizan cada pocas horas. Muestran lo que prefieren los visitantes, no una evaluación.",
+    "a11y_title": "Análisis de accesibilidad",
+    "a11y_body": "Cada página se revisa también con un analizador automático de accesibilidad, y se muestra el número de incumplimientos por gravedad. Los análisis automáticos solo cubren una parte de los problemas de accesibilidad (no pueden juzgar, por ejemplo, si el texto alternativo o el orden del foco tienen sentido), así que los recuentos son una pista, no un veredicto.",
+    "video_title": "Grabaciones del desplazamiento",
+    "video_body": "Algunas celdas incluyen además una grabación corta de la página al desplazarse en ancho de escritorio, porque el movimiento no se ve en las capturas. Solo se carga al pulsar reproducir en la página de la celda."
   },
   "skill": {
     "description": "Páginas creadas por Codex y Claude Code con y sin el skill {name}.",
@@ -179,7 +187,8 @@
     "skill_line_note": "Las celdas con skill añaden una frase al final: <code>Use the &lt;name&gt; skill.</code> (Claude Code) o <code>Use the $&lt;name&gt; skill.</code> (Codex).",
     "grid_aria": "Cuadrícula comparativa, se desplaza en horizontal",
     "showcase": "Demostración",
-    "showcase_hint": "Se añadió para mostrar un punto fuerte que declara un skill concreto. Solo se ejecutan los skills que dicen cubrirlo, junto a las referencias nativas."
+    "showcase_hint": "Se añadió para mostrar un punto fuerte que declara un skill concreto. Solo se ejecutan los skills que dicen cubrirlo, junto a las referencias nativas.",
+    "oos_list": "Fuera de alcance para este prompt, así que no se ejecutaron: {skills}."
   },
   "viewer": {
     "frame_title": "Página generada: {title}",
@@ -189,7 +198,8 @@
     "sandbox_note": "Vista previa en sandbox: los scripts de la página se ejecutan, pero la página no puede acceder a este sitio, a las cookies ni al almacenamiento, así que las funciones que dependen de <code>localStorage</code> pueden comportarse de otra manera.",
     "no_index": "Esta ejecución no generó ningún index.html.",
     "details_h": "Detalles de la ejecución",
-    "no_run_json": "Esta celda aún no tiene <code>run.json</code>."
+    "no_run_json": "Esta celda aún no tiene <code>run.json</code>.",
+    "multi_file": "Esta página carga archivos guardados junto a ella, así que no hay descarga de un solo archivo. Archivos adicionales ({n}):"
   },
   "details": {
     "status": "Estado",
@@ -237,7 +247,8 @@
     "failed_requests": "{n} solicitud(es) fallida(s)",
     "remote_requests": "{n} solicitud(es) remota(s)",
     "fonts_failed": "fuentes que fallaron: {list}",
-    "host": "Host"
+    "host": "Host",
+    "extra_files": "Archivos adicionales"
   },
   "skills": {
     "frontend-design": {
@@ -245,21 +256,73 @@
       "notes": [
         "El mismo SKILL.md también se publica en anthropics/claude-plugins-official y anthropics/claude-code; esta galería usa anthropics/skills.",
         "Este skill se reescribió varias veces en upstream durante 2026, así que usa siempre el commit fijado."
-      ]
+      ],
+      "strengths": [
+        "Diseño visual distintivo e intencionado que no parece valores por defecto de plantilla",
+        "Decisiones deliberadas y con criterio sobre paleta, tipografía y maquetación, específicas del encargo, que dan a cada cliente una identidad visual propia",
+        "La tipografía lleva la personalidad de la página"
+      ],
+      "applies_to_note": "Comprobado con el texto del skill después de las ejecuciones v0 (no decidido de antemano); el texto no excluye ningún tipo de página.",
+      "out_of_scope_reason": "Este prompt de demostración se añadió solo para frontend-ui-engineering."
     },
     "ui-ux-pro-max": {
       "summary": "Un skill comunitario de base de conocimiento de UI/UX: datos CSV locales (estilos, paletas, combinaciones tipográficas, reglas de UX, tipos de gráficos, stacks) y un script de búsqueda en Python que genera un sistema de diseño antes de que el agente escriba la página.",
       "notes": [
         "Necesita python3 (solo la biblioteca estándar) para ejecutar sus scripts de búsqueda.",
         "El README original recomienda `npm i -g ui-ux-pro-max-cli`; la galería usa en su lugar npx con una versión fijada, así que no se instala nada de forma global."
-      ]
+      ],
+      "strengths": [
+        "Datos de diseño locales y consultables para interfaces web, móviles y de escritorio (estilos, paletas por producto, combinaciones de fuentes, pautas de UX, tipos de gráficos, stacks)",
+        "Paletas por sector y reglas de razonamiento que generan un sistema de diseño según el tipo de producto",
+        "Recomendaciones de tipos de gráficos para paneles y analítica"
+      ],
+      "applies_to_note": "Comprobado con el texto del skill después de las ejecuciones v0 (no decidido de antemano). Las citas son del repositorio en el commit de referencia; la galería ejecuta la salida de la CLI 2.15.0, cuya descripción es la misma.",
+      "out_of_scope_reason": "Este prompt de demostración se añadió solo para frontend-ui-engineering."
     },
     "web-design-engineer": {
       "summary": "Un skill de diseño front-end cuya salida es siempre HTML (páginas, paneles, prototipos, diapositivas, visualización de datos). Empieza con un paso de dirección de diseño e incluye 25 recetas de estilo. Solo instrucciones, sin scripts.",
       "notes": [
         "Ocupa en v0 el lugar del frontend-skill de OpenAI, porque ese skill se retiró del catálogo oficial de OpenAI y los lectores ya no pueden instalarlo.",
         "Su modo React carga React y Babel desde una CDN; el modo predeterminado, con CSS escrito a mano, no necesita red."
-      ]
+      ],
+      "strengths": [
+        "Piezas visuales pulidas renderizadas en el navegador con HTML/CSS/JavaScript, incluidas páginas, paneles y visualizaciones de datos",
+        "Busca lo “impresionante”, no solo lo “funcional”",
+        "Declara un sistema de diseño antes de construir, con una lista contra los clichés y 25 recetas de estilo"
+      ],
+      "applies_to_note": "Comprobado con el texto del skill después de las ejecuciones v0 (no decidido de antemano); el texto nombra los tres tipos de página.",
+      "out_of_scope_reason": "Este prompt de demostración se añadió solo para frontend-ui-engineering."
+    },
+    "frontend-ui-engineering": {
+      "summary": "Skill de frontend con calidad de ingeniería de Addy Osmani: interfaces accesibles y adaptables con estados de carga, vacíos y de error, tokens semánticos y una tabla de valores por defecto con “estética de IA” que conviene evitar. Solo instrucciones, sin scripts.",
+      "strengths": [
+        "Construye interfaces de usuario de calidad de producción, accesibles y adaptables",
+        "Una interfaz que parece hecha por un ingeniero con sensibilidad de diseño en una empresa puntera, no generada por una IA",
+        "Accesibilidad WCAG 2.1 AA, con navegación por teclado y gestión del foco",
+        "Estados vacíos, de error y de carga con sentido",
+        "Evita la “estética de IA” (degradados morados, todo redondeado, heros genéricos, sombras pesadas)"
+      ],
+      "applies_to_note": "Decidido a partir del texto del skill antes de las ejecuciones del segundo lote; form-states se añadió para mostrar su accesibilidad y su manejo de estados."
+    },
+    "theme-factory": {
+      "summary": "El kit de temas de Anthropic: diez paletas de colores predefinidas con combinaciones de fuentes (o un tema personalizado generado) que se aplican a una pieza terminada, como una landing page. Solo color y tipografía, no maquetación. Instrucciones más diez pequeños archivos de tema y un PDF de muestra.",
+      "strengths": [
+        "Diez temas predefinidos con colores y fuentes que se pueden aplicar a cualquier pieza terminada, o un tema nuevo generado al momento",
+        "Una paleta de colores coherente con códigos hexadecimales y combinaciones de fuentes complementarias para títulos y texto"
+      ],
+      "applies_to_note": "Decidido a partir del texto del skill antes de las ejecuciones del segundo lote. Solo nombra las landing pages; panel y blog-portafolio se apoyan en «reportings» y «any artifact».",
+      "out_of_scope_reason": "Este prompt de demostración se añadió solo para frontend-ui-engineering."
+    },
+    "design-taste-frontend": {
+      "summary": "taste-skill v2: dirección de arte para sitios web y pantallas de aplicaciones. Un script reparte tres direcciones documentadas a partir de una biblioteca de 247 sitios estudiados; el agente construye la página con la elegida y luego la revisa en un navegador real con un inspector incluido. Instrucciones más scripts de Node; necesita Node 22+, Chrome y red para buscar imágenes.",
+      "strengths": [
+        "Dirección de arte para sitios web, extraída de un estudio de 247 sitios de galerías seleccionados (One Page Love, Awwwards Sites of the Day)",
+        "Hace que los agentes de programación diseñen sitios web y pantallas de aplicaciones en lugar de montar la landing page promedio",
+        "Da al agente una dirección de arte, imágenes reales y una forma de revisar su propio trabajo en un navegador real",
+        "La idea sale del tema, y el agente revisa sus propias capturas y corrige"
+      ],
+      "applies_to_note": "Decidido a partir del texto del skill antes de las ejecuciones del segundo lote.",
+      "out_of_scope_reason": "Este prompt de demostración se añadió solo para frontend-ui-engineering."
     }
   },
   "prompts": {
@@ -274,6 +337,10 @@
     "blog-portfolio": {
       "title": "Blog y portafolio personal",
       "summary": "Un sitio de una sola página para Maya Lindqvist, una diseñadora de producto ficticia: cuatro casos de estudio, una lista de artículos filtrable, un artículo completo, una sección “sobre mí” con cronología, un formulario de suscripción al boletín y un selector de tema claro/oscuro."
+    },
+    "form-states": {
+      "title": "Estados de componentes de formulario y respuesta",
+      "summary": "Una página de referencia de los componentes de formulario y de respuesta de un banco en línea ficticio, con todos los estados visibles a la vez: campos de texto, controles de selección, botones, una lista de transferencias (cargando, vacía, con error y con datos), mensajes y un formulario de transferencia."
     }
   },
   "vote": {
@@ -283,5 +350,28 @@
     "count_title": "👍 en la discusión de esta celda, según la última actualización del sitio",
     "count_note": "según la última actualización del sitio; se actualiza cada pocas horas",
     "noscript": "Para votar hace falta JavaScript (usa giscus)."
+  },
+  "a11y": {
+    "h": "Análisis de accesibilidad",
+    "note": "Un análisis automático de la página original. Las herramientas automáticas solo detectan una parte de los problemas de accesibilidad, así que un resultado limpio no significa que la página sea accesible.",
+    "tool": "Herramienta",
+    "rules": "Reglas incumplidas",
+    "critical": "crítico",
+    "serious": "grave",
+    "moderate": "moderado",
+    "minor": "menor",
+    "badge": "a11y · {level}: {n}",
+    "badge_none": "a11y: sin problemas detectados",
+    "rules_n_one": "{n} regla",
+    "rules_n_other": "{n} reglas",
+    "elements_n_one": "{n} elemento",
+    "elements_n_other": "{n} elementos"
+  },
+  "video": {
+    "h": "Grabación del desplazamiento",
+    "note": "Una grabación de la página al desplazarse en ancho de escritorio, para el movimiento que no se ve en las capturas. El vídeo solo se carga al pulsar reproducir.",
+    "play": "Reproducir la grabación",
+    "tag": "vídeo",
+    "seconds": "{n} s"
   }
 }

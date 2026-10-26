@@ -114,6 +114,25 @@
     });
   }
 
+  // Scroll recordings: the button is a plain link to the file; with JS it becomes a player
+  // on click, so nothing is downloaded before that and nothing plays by itself.
+  document.querySelectorAll('[data-video-src]').forEach((a) =>
+    a.addEventListener('click', (e) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const v = document.createElement('video');
+      v.src = a.dataset.videoSrc;
+      v.controls = true;
+      v.playsInline = true;
+      v.preload = 'auto';
+      v.setAttribute('aria-label', a.dataset.videoLabel || '');
+      if (a.dataset.videoWidth) v.style.maxWidth = `${a.dataset.videoWidth}px`;
+      a.closest('[data-video-box]').replaceChildren(v);
+      v.focus();
+      v.play().catch(() => {});
+    }),
+  );
+
   // Language menu: close it on Escape or a click elsewhere.
   const langMenu = document.querySelector('.lang-menu');
   if (langMenu) {

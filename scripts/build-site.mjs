@@ -479,7 +479,7 @@ async function writeThumbs(src, viewportWidth, aspect, targets) {
 
 // ---------------------------------------------------------------- inputs
 
-function loadPrompts(order) {
+function loadPrompts(order, showcaseIds = []) {
   const dir = PROMPTS_DIR;
   const prompts = new Map();
   for (const f of isDir(dir) ? fs.readdirSync(dir).filter((x) => x.endsWith('.md')).sort() : []) {
@@ -504,7 +504,7 @@ function loadPrompts(order) {
       version: meta.version ?? null,
       // A showcase prompt is added to show one skill's claimed strength; skills whose
       // meta.yaml applies_to leaves it out are shown as out of scope there.
-      showcase: meta.showcase === true || meta.kind === 'showcase',
+      showcase: meta.showcase === true || meta.kind === 'showcase' || showcaseIds.includes(id),
       file: `prompts/${f}`,
       file_sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, f))).digest('hex'),
       body: m ? text.slice(m[0].length).trim() : text.trim(),
@@ -597,7 +597,8 @@ function loadSkill(name, candidates, cells) {
 
   const info = {
     name,
-    title: asText(pick(meta.title, meta.display_name)) || name,
+    // What readers call the skill (meta.yaml display_name); URLs, folders and commands keep name.
+    title: asText(pick(meta.display_name, meta.title)) || name,
     summary: asText(pick(meta.summary, meta.description)),
     summary_zh: asText(pick(meta.summary_zh, cand?.summary)),
     repo: safeUrl(pick(src.repo, src.url, typeof meta.source === 'string' ? meta.source : null, meta.repo, sourceJson.url, cand?.repo?.url, runSkills[0]?.source_url)),
@@ -622,6 +623,8 @@ function loadSkill(name, candidates, cells) {
     // Prompt ids the skill claims to cover; null means every prompt.
     applies_to: Array.isArray(meta.applies_to) ? meta.applies_to.map(String) : typeof meta.applies_to === 'string' ? [meta.applies_to] : null,
     out_of_scope_reason: asText(meta.out_of_scope_reason),
+    // When and how applies_to was decided (for example "checked after the v0 runs").
+    applies_to_note: asText(meta.applies_to_note),
     research_notes: [],
     from: metaFile ? path.relative(REPO_ROOT, metaFile) : Object.keys(sourceJson).length ? `skills/${name}/source.json` : cand ? 'research/candidates.json' : null,
     has_meta: Boolean(metaFile),
@@ -678,6 +681,51 @@ function externalRefs(html) {
   for (const [, url] of html.matchAll(/\bimport\s*(?:[\w*{}\s,]+from\s*)?\(?\s*["'](https?:\/\/[^"']+)["']/g)) add(url, 'js-import');
   return [...refs.values()];
 }
+
+// ---------------------------------------------------------------- extra cell files
+
+// A relative path inside the cell folder, or null (absolute paths, "..", odd characters).
+function safeRelPath(p) {
+  if (typeof p !== 'string' || !p || p.includes('\\') || p.includes('\0') || path.isAbsolute(p)) return null;
+  const norm = path.posix.normalize(p).replace(/^\.\/+/, '');
+  if (!norm || norm.startsWith('../') || norm === '..' || norm.split('/').some((x) => x === '..' || x === '')) return null;
+  return CELL_FILES.includes(norm) ? null : norm;
+}
+
+// run.json output.kept_assets: files a page needs next to index.html (some skills write
+// images or scripts as part of their own workflow). Copied unchanged into the site.
+function keptAssets(c) {
+  const list = c.run?.output?.kept_assets;
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const a of list) {
+    const p = safeRelPath(typeof a === 'string' ? a : a?.path);
+    if (!p) {
+      warn(`runs/${c.prompt}/${c.name}: kept asset ${JSON.stringify(a?.path ?? a)} skipped (not a plain relative path)`);
+      continue;
+    }
+    if (!fs.existsSync(path.join(c.dir, p))) {
+      warn(`runs/${c.prompt}/${c.name}: kept asset ${p} is listed in run.json but missing`);
+      continue;
+    }
+    out.push({ path: p, bytes: isNum(a?.bytes) ? a.bytes : fs.statSync(path.join(c.dir, p)).size });
+  }
+  return out;
+}
+
+// run.json video: a scroll recording next to index.html.
+function cellVideo(c) {
+  const v = c.run?.video;
+  if (!v || typeof v !== 'object') return null;
+  const file = safeRelPath(v.file);
+  if (!file || !fs.existsSync(path.join(c.dir, file))) {
+    if (v.file) warn(`runs/${c.prompt}/${c.name}: video ${v.file} missing or not a plain relative path`);
+    return null;
+  }
+  return { file, width: isNum(v.width) ? v.width : null, seconds: isNum(v.seconds) ? v.seconds : null, bytes: isNum(v.bytes) ? v.bytes : fs.statSync(path.join(c.dir, file)).size };
+}
+
+const fmtBytes = (n) => (!isNum(n) ? null : n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 // ---------------------------------------------------------------- i18n
 
@@ -879,9 +927,14 @@ ${VOTES ? `<p class="vote-now"><span class="vote-count" title="${ta('vote.count_
 const agentLabel = (id) => AGENTS.find((a) => a.id === id)?.label || id;
 // Native cells are always in scope; a skill cell is out of scope when the skill's
 // meta.yaml applies_to leaves the prompt out (no applies_to means every prompt).
+const shownOn = (variant, promptId, cells) => inScope(variant, promptId) || AGENT_ORDER.some((a) => cells.has(`${promptId}/${a}__${variant}`));
 const inScope = (variant, promptId) => variant === 'native' || !SKILLS.get(variant)?.applies_to || SKILLS.get(variant).applies_to.includes(promptId);
-const variantLabel = (v) => (v === 'native' ? t('cell.native') : `+ ${esc(v)}`);
-const cellTitleText = (agent, variant) => (variant === 'native' ? `${agentLabel(agent)} · ${tText('cell.native')}` : `${agentLabel(agent)} + ${variant}`);
+// A skill's display name, and the same with its real name after it where the two differ
+// (for headings and table headers): taste-skill (design-taste-frontend).
+const skillLabel = (name) => SKILLS.get(name)?.title || name;
+const skillLabelFull = (name) => (skillLabel(name) !== name ? `${esc(skillLabel(name))} <span class="real-name">(<code>${esc(name)}</code>)</span>` : esc(name));
+const variantLabel = (v) => (v === 'native' ? t('cell.native') : `+ ${esc(skillLabel(v))}`);
+const cellTitleText = (agent, variant) => (variant === 'native' ? `${agentLabel(agent)} · ${tText('cell.native')}` : `${agentLabel(agent)} + ${skillLabel(variant)}`);
 const promptTitle = (p) => (typeof lookup(`prompts.${p.id}.title`) === 'string' ? lookup(`prompts.${p.id}.title`) : p.title);
 const showcaseTag = (p) => (p.showcase ? ` <span class="tag" title="${ta('prompt.showcase_hint')}">${t('prompt.showcase')}</span>` : '');
 const listSep = () => (isCjk() ? '、' : ', ');
@@ -937,12 +990,40 @@ function cellExternal(c) {
 }
 
 const refsFromRun = (c) => Boolean(c.run?.external_refs ?? c.run?.output?.external_refs);
+// Rules that are reported but are not problems with the page (extra_files: the skill's own workflow wrote more files).
+const INFO_RULES = new Set(['extra_files']);
 const violations = (r) => [...new Set([...(Array.isArray(r?.rule_violations) ? r.rule_violations : []), ...(Array.isArray(r?.external_refs?.violations) ? r.external_refs.violations : [])])];
 
 function hostsSummary(refs, max = 2) {
   if (!refs.length) return tText('cell.none');
   const hosts = [...new Set(refs.map((r) => r.host))];
   return hosts.length > max ? `${hosts.slice(0, max).join(', ')} +${hosts.length - max}` : hosts.join(', ');
+}
+
+// run.json a11y: an automated scan ({tool, version, violations: {critical, serious, moderate, minor}, rule_ids}).
+const A11Y_LEVELS = ['critical', 'serious', 'moderate', 'minor'];
+function a11yCounts(a) {
+  const v = a?.violations;
+  if (!v || typeof v !== 'object') return null;
+  return A11Y_LEVELS.map((k) => [k, isNum(v[k]) ? v[k] : 0]);
+}
+
+// Small tag for comparison cards: the most severe level found, all counts in the tooltip.
+function a11yBadge(a) {
+  const counts = a11yCounts(a);
+  if (!counts) return '';
+  const top = counts.find(([, n]) => n > 0);
+  const title = `${tText('a11y.h')}: ${counts.map(([k, n]) => `${tText(`a11y.${k}`)} ${n}`).join(', ')}`;
+  const label = top ? t('a11y.badge', { n: top[1], level: tText(`a11y.${top[0]}`) }) : t('a11y.badge_none');
+  return `<span class="chip a11y-${top ? top[0] : 'none'}" title="${esc(title)}">${label}</span>`;
+}
+
+function cellTags(c) {
+  const tags = [a11yBadge(c.run?.a11y)];
+  if (c.video) tags.push(`<a class="chip" href="${esc(pageHref(c.href.viewer))}#video">▶ ${t('video.tag')}</a>`);
+  if (c.kept.length) tags.push(`<span class="chip" title="${ta('cell.files_title')}">${t('cell.files_tag', { n: c.kept.length + 1 })}</span>`);
+  const html = tags.filter(Boolean).join('');
+  return html ? `<p class="cell-tags">${html}</p>` : '';
 }
 
 function thumbBlock(c, { caption, mini = false, oos = false } = {}) {
@@ -968,7 +1049,7 @@ function oosReason(variant) {
   const own = lookup(`skills.${variant}.out_of_scope_reason`);
   if (typeof own === 'string') return esc(own);
   if (sk?.out_of_scope_reason) return esc(sk.out_of_scope_reason);
-  return t('cell.oos_default', { skill: variant });
+  return t('cell.oos_default', { skill: skillLabel(variant) });
 }
 
 // The vote line on comparison cards: 👍 count when the build could fetch it, and a link to the cell page.
@@ -995,8 +1076,9 @@ function cellCard(c, { agent, variant, prompt }) {
   if (oos) notes.push(`<p class="cell-note cell-warn">${t('cell.oos_ran')}</p>`);
   if (st.key === 'failed' && Array.isArray(r.failure_reasons) && r.failure_reasons.length) notes.push(`<p class="cell-note cell-fail">${esc(r.failure_reasons.join('; '))}</p>`);
   if (r.prompt?.file_sha256 && prompt.file_sha256 && r.prompt.file_sha256 !== prompt.file_sha256) notes.push(`<p class="cell-note cell-warn">${t('cell.prompt_changed')}</p>`);
-  const v = violations(r);
+  const v = violations(r).filter((x) => !INFO_RULES.has(x));
   if (v.length) notes.push(`<p class="cell-note cell-warn">${t('cell.breaks_rule', { rules: v.join(', ').replace(/_/g, ' ') })}</p>`);
+  if (violations(r).includes('extra_files')) notes.push(`<p class="cell-note">${t('cell.extra_files')}</p>`);
   if (isNum(r.attempt) && r.attempt > 1) notes.push(`<p class="cell-note">${t('cell.attempt', { n: r.attempt, path: html(`<code>runs/${esc(c.prompt)}/_attempts/</code>`) })}</p>`);
   const meta = `<dl class="meta">
 ${metaRow(t('cell.model'), r.model ? `<code>${esc(r.model)}</code>${r.effort ? ` · ${esc(r.effort)}` : ''}` : null)}
@@ -1010,7 +1092,7 @@ ${metaRow(t('cell.run_date'), fmtDate(r.started_at))}
     `<a href="${esc(pageHref(c.href.viewer))}">${t(c.files['index.html'] ? 'cell.open_page' : 'cell.details')}</a>`,
     c.files['run.json'] ? `<a href="${esc(assetHref(c.href.run))}">run.json</a>` : null,
   ].filter(Boolean);
-  return `<article class="cell" data-status="${st.key}">${head}${thumbBlock(c, { caption })}${meta}${notes.join('')}${voteLine(c)}<p class="cell-links">${links.join('<span aria-hidden="true"> · </span>')}</p></article>`;
+  return `<article class="cell" data-status="${st.key}">${head}${thumbBlock(c, { caption })}${meta}${notes.join('')}${cellTags(c)}${voteLine(c)}<p class="cell-links">${links.join('<span aria-hidden="true"> · </span>')}</p></article>`;
 }
 
 const viewToggle = () => `<div class="seg" role="group" aria-label="${ta('view.aria')}">
@@ -1079,26 +1161,26 @@ ${CUR.lang.prefix ? `<p>${t('footer.ai_translation')}</p>` : ''}
 
 function homePage(ctx) {
   const { prompts, skills, cells, stats } = ctx;
-  const cols = ['native', ...skills.map((s) => s.name)];
-  const matrixHead = `<div class="mx-corner">${t('home.col_prompt')}</div>${cols
-    .map((v) => (v === 'native' ? `<div class="mx-col">${t('home.col_native')}<small>${t('home.col_native_sub')}</small></div>` : `<div class="mx-col"><a href="${esc(pageHref(`skills/${v}/`))}">${esc(v)}</a><small>${t('home.col_skill_sub')}</small></div>`))
+  // Skills down the side, prompts across: stays narrow as skills are added.
+  const variants = ['native', ...skills.map((x) => x.name)];
+  const plist = [...prompts.values()];
+  const square = (p, v) => {
+    const href = v === 'native' ? pageHref(`prompts/${p.id}/`) : `${pageHref(`skills/${v}/`)}#${p.id}`;
+    const minis = AGENT_ORDER.map((a) => {
+      const c = cells.get(`${p.id}/${a}__${v}`) || null;
+      const oos = !inScope(v, p.id);
+      const st = cellStatus(c, oos);
+      // Out of scope and never run: nothing to open, so no link.
+      const tag = !c && oos ? 'span' : 'a';
+      return `<${tag} class="mini"${tag === 'a' ? ` href="${esc(href)}"` : ''} data-status="${st.key}">${thumbBlock(c, { caption: cellTitleText(a, v), mini: true, oos })}<span class="mini-label"><span class="dot dot-${st.key}" aria-hidden="true"></span>${esc(agentLabel(a))}<span class="vh"> ${variantLabel(v)}: ${st.label}</span></span></${tag}>`;
+    }).join('');
+    return `<div class="mx-cell">${minis}</div>`;
+  };
+  const matrixHead = `<div class="mx-corner">${t('home.row_skill')}</div>${plist
+    .map((p) => `<div class="mx-col"><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a>${showcaseTag(p)}<small><code>${esc(p.id)}</code></small></div>`)
     .join('')}`;
-  const matrixRows = [...prompts.values()]
-    .map((p) => {
-      const cellsHtml = cols
-        .map((v) => {
-          const href = v === 'native' ? pageHref(`prompts/${p.id}/`) : `${pageHref(`skills/${v}/`)}#${p.id}`;
-          const minis = AGENT_ORDER.map((a) => {
-            const c = cells.get(`${p.id}/${a}__${v}`) || null;
-            const oos = !inScope(v, p.id);
-            const st = cellStatus(c, oos);
-            return `<a class="mini" href="${esc(href)}" data-status="${st.key}">${thumbBlock(c, { caption: cellTitleText(a, v), mini: true, oos })}<span class="mini-label"><span class="dot dot-${st.key}" aria-hidden="true"></span>${esc(agentLabel(a))}<span class="vh"> ${variantLabel(v)}: ${st.label}</span></span></a>`;
-          }).join('');
-          return `<div class="mx-cell">${minis}</div>`;
-        })
-        .join('');
-      return `<div class="mx-row"><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a>${showcaseTag(p)}<small><code>${esc(p.id)}</code></small></div>${cellsHtml}`;
-    })
+  const matrixRows = variants
+    .map((v) => `<div class="mx-row">${v === 'native' ? `${t('home.col_native')}<small>${t('home.col_native_sub')}</small>` : `<a href="${esc(pageHref(`skills/${v}/`))}">${skillLabelFull(v)}</a><small>${t('home.col_skill_sub')}</small>`}</div>${plist.map((p) => square(p, v)).join('')}`)
     .join('');
 
   const skillCards = skills
@@ -1106,7 +1188,7 @@ function homePage(ctx) {
       const perSkill = [...prompts.values()].filter((p) => inScope(s.name, p.id)).length * AGENTS.length;
       const done = [...cells.values()].filter((c) => c.variant === s.name && inScope(s.name, c.prompt)).length;
       const summary = skillSummary(s);
-      return `<li class="card"><h3><a href="${esc(pageHref(`skills/${s.name}/`))}">${esc(s.title)}</a></h3>
+      return `<li class="card"><h3><a href="${esc(pageHref(`skills/${s.name}/`))}">${skillLabelFull(s.name)}</a></h3>
 ${summary ? `<p>${esc(summary)}</p>` : ''}
 <p class="facts">${[s.repo ? `<a href="${esc(s.repo)}">${esc(s.repo.replace(/^https:\/\/github\.com\//, ''))}</a>` : null, s.license ? esc(s.license) : null, t('home.cells_count', { done, total: perSkill })].filter(Boolean).join(' · ')}</p></li>`;
     })
@@ -1131,7 +1213,7 @@ ${summary ? `<p>${esc(summary)}</p>` : ''}
 <section id="overview" class="block">
 <h2>${t('home.overview_h2')}</h2>
 <p class="muted">${t('home.overview_hint')}</p>
-<div class="scroll-x" tabindex="0" role="region" aria-label="${ta('home.grid_aria')}"><div class="matrix" style="--cols:${cols.length}">${matrixHead}${matrixRows}</div></div>
+<div class="scroll-x" tabindex="0" role="region" aria-label="${ta('home.grid_aria')}"><div class="matrix" style="--cols:${plist.length}">${matrixHead}${matrixRows}</div></div>
 </section>
 
 <section id="skills" class="block">
@@ -1173,6 +1255,8 @@ ${item('prompt')}
 ${item('isolation')}
 ${item('fire')}
 ${item('shots', { tools: shotTools.length ? paren(shotTools.join('; ')) : '' })}
+${runs.some((r) => r.a11y) ? item('a11y') : ''}
+${runs.some((r) => r.video) ? item('video') : ''}
 <div><dt>${t('method.dates_title')}</dt><dd>${range ? tn('method.dates_body', stats.done, { range }) : t('method.dates_none')}</dd></div>
 ${votesEnabled() ? item('votes') : ''}
 </dl>
@@ -1187,7 +1271,9 @@ ${votesEnabled() ? item('votes') : ''}
 }
 
 function skillPage(skill, ctx) {
-  const { prompts, cells } = ctx;
+  const { cells } = ctx;
+  // Out-of-scope prompts without any run are left out; the Test scope line lists the rest.
+  const prompts = new Map([...ctx.prompts].filter(([id]) => shownOn(skill.name, id, cells)));
   const groups = [...prompts.values()]
     .map((p) => {
       const cards = AGENT_ORDER.flatMap((a) => ['native', skill.name].map((v) => cellCard(cells.get(`${p.id}/${a}__${v}`) || null, { agent: a, variant: v, prompt: p }))).join('');
@@ -1214,9 +1300,9 @@ ${skill.run_commits.length && skill.run_commits.some((c) => c !== skill.commit) 
 
   const summary = skillSummary(skill);
   const body = `
-<nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(''))}#skills">${t('nav.skills')}</a> / <span>${esc(skill.name)}</span></nav>
+<nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(''))}#skills">${t('nav.skills')}</a> / <span>${esc(skillLabel(skill.name))}</span></nav>
 <section class="intro">
-<h1>${esc(skill.title)}</h1>
+<h1>${skillLabelFull(skill.name)}</h1>
 ${summary ? `<p class="lead">${esc(summary)}</p>` : ''}
 ${facts}
 <p class="muted small">${t('skill.layout_hint')}${gap()}<a href="#install">${t('skill.install_link')}</a></p>
@@ -1226,14 +1312,30 @@ ${strengthsSection(skill, prompts)}
 ${groups}
 ${installSection(skill, ctx)}
 ${lightbox()}`;
-  return layout({ title: `${skill.name} · ${CONFIG.site_title}`, description: tText('skill.description', { name: skill.name }), body, current: 'skills' });
+  return layout({ title: `${skillLabel(skill.name)} · ${CONFIG.site_title}`, description: tText('skill.description', { name: skillLabel(skill.name) }), body, current: 'skills' });
+}
+
+const appliesNote = (skill) => (typeof lookup(`skills.${skill.name}.applies_to_note`) === 'string' && CUR.lang !== LANGS[0] ? lookup(`skills.${skill.name}.applies_to_note`) : skill.applies_to_note);
+
+// Claimed strengths for the current language. meta.yaml (English, with sources) is the
+// source of truth for English. A language's site/i18n list may hold strings (matched to
+// meta.yaml by position, sharing its sources) or {text, source} objects (used as they are).
+function strengthItems(skill) {
+  const norm = (list, metaList) =>
+    list
+      .map((x, i) => (typeof x === 'string' ? { text: x, source: metaList[i]?.source || null } : x && typeof x === 'object' && x.text ? { text: String(x.text), source: safeUrl(x.source) } : null))
+      .filter(Boolean);
+  const own = getPath(CUR.dict, `skills.${skill.name}.strengths`);
+  const en = getPath(CUR.en, `skills.${skill.name}.strengths`);
+  if (CUR.lang === LANGS[0]) return skill.strengths.length ? skill.strengths : Array.isArray(own) ? norm(own, []) : [];
+  if (Array.isArray(own) && own.length) return norm(own, skill.strengths);
+  return skill.strengths.length ? skill.strengths : Array.isArray(en) ? norm(en, []) : [];
 }
 
 // What the skill claims to be good at (with sources) and which prompts it is tested on.
 // Left out entirely when meta.yaml gives neither strengths nor applies_to.
 function strengthsSection(skill, prompts) {
-  const translated = lookup(`skills.${skill.name}.strengths`);
-  const items = skill.strengths.map((x, i) => ({ text: Array.isArray(translated) && typeof translated[i] === 'string' ? translated[i] : x.text, source: x.source }));
+  const items = strengthItems(skill);
   if (!items.length && !skill.applies_to) return '';
   const scope = skill.applies_to
     ? skill.applies_to.filter((id) => prompts.has(id)).map((id) => `<a href="${esc(pageHref(`prompts/${id}/`))}">${esc(promptTitle(prompts.get(id)))}</a>`).join(listSep())
@@ -1242,7 +1344,8 @@ function strengthsSection(skill, prompts) {
 <h2>${t('skill.strengths_h')}</h2>
 ${items.length ? `<p class="muted">${t('skill.strengths_intro')}</p>
 <ul class="claims">${items.map((x) => `<li>${esc(x.text).replace(/\`([^\`]+)\`/g, '<code>$1</code>')}${x.source ? ` <a class="src" href="${esc(x.source)}">${t('skill.source_link')}</a>` : ''}</li>`).join('')}</ul>` : ''}
-<p class="scope"><strong>${t('skill.scope_label')}</strong>${gap()}${scope}${skill.applies_to ? `${gap()}<span class="muted">${t('skill.scope_note')}</span>` : ''}</p>
+<p class="scope"><strong>${t('skill.scope_label')}</strong>${gap()}${scope}${skill.applies_to ? `${stop()}<span class="muted">${t('skill.scope_note')}</span>` : ''}</p>
+${appliesNote(skill) ? `<p class="muted small">${esc(appliesNote(skill))}</p>` : ''}
 </section>`;
 }
 
@@ -1298,8 +1401,9 @@ ${notes.length ? `<h3>${t('install.notes_h')}</h3><ul class="notes">${notes.map(
 
 function promptPage(prompt, ctx) {
   const { skills, cells } = ctx;
-  const cols = ['native', ...skills.map((s) => s.name)];
-  const head = cols.map((v) => `<div class="cmp-col">${v === 'native' ? t('home.col_native') : `<a href="${esc(pageHref(`skills/${v}/`))}">${esc(v)}</a>`}</div>`).join('');
+  const cols = ['native', ...skills.map((s) => s.name).filter((v) => shownOn(v, prompt.id, cells))];
+  const hidden = skills.map((s) => s.name).filter((v) => !shownOn(v, prompt.id, cells));
+  const head = cols.map((v) => `<div class="cmp-col">${v === 'native' ? t('home.col_native') : `<a href="${esc(pageHref(`skills/${v}/`))}">${skillLabelFull(v)}</a>`}</div>`).join('');
   const rows = AGENT_ORDER.map((a) => `<div class="cmp-row-label">${esc(agentLabel(a))}</div>${cols.map((v) => cellCard(cells.get(`${prompt.id}/${a}__${v}`) || null, { agent: a, variant: v, prompt })).join('')}`).join('');
   const summary = promptSummary(prompt);
   const body = `
@@ -1312,6 +1416,7 @@ ${summary ? `<p class="lead">${esc(summary)}</p>` : ''}
 <p class="small muted">${t('prompt.text_note')}</p><pre lang="en">${esc(prompt.body)}</pre>
 <p class="small muted">${t('prompt.skill_line_note')}</p></details>
 </section>
+${hidden.length ? `<p class="muted small">${t('prompt.oos_list', { skills: html(hidden.map((v) => `<a href="${esc(pageHref(`skills/${v}/`))}">${esc(skillLabel(v))}</a>`).join(listSep())) })}</p>` : ''}
 <div class="toolbar">${viewToggle()}</div>
 <div class="scroll-x" tabindex="0" role="region" aria-label="${ta('prompt.grid_aria')}"><div class="compare" style="--cols:${cols.length}"><div class="cmp-corner"></div>${head}${rows}</div></div>
 ${lightbox()}`;
@@ -1360,7 +1465,8 @@ function detailRows(c, prompt) {
   }
   const refs = cellExternal(c);
   add('external_refs', `${refs.length ? `<ul class="refs">${refs.map((x) => `<li><code>${esc(x.url)}</code>${x.context || x.kind ? ` <span class="small muted">${esc(x.context || x.kind)}</span>` : ''}</li>`).join('')}</ul>` : `${t('cell.none')} `}<span class="small muted">${t(refsFromRun(c) ? 'details.refs_from_run' : 'details.refs_parsed')}</span>`);
-  const v = violations(r);
+  const v = violations(r).filter((x) => !INFO_RULES.has(x));
+  if (violations(r).includes('extra_files')) add('extra_files', t('cell.extra_files'));
   add('rule_violations', v.length ? `<span class="no">${esc(v.join(', '))}</span>${Array.isArray(r.runtime_remote_images) && r.runtime_remote_images.length ? ` <span class="small">(${esc(r.runtime_remote_images.join(', '))})</span>` : ''}` : t('cell.none'));
   const o = r.output;
   if (o && typeof o === 'object') {
@@ -1391,6 +1497,41 @@ function detailRows(c, prompt) {
   return rows.join('\n');
 }
 
+// Scroll recording: a link to the file that site.js turns into a player on click.
+// Nothing is downloaded until then, and it never plays by itself.
+function videoSection(c) {
+  if (!c.video) return '';
+  const v = c.video;
+  const facts = [isNum(v.seconds) ? t('video.seconds', { n: Math.round(v.seconds) }) : null, fmtBytes(v.bytes), isNum(v.width) ? `${v.width} px` : null].filter(Boolean).join(' · ');
+  return `<section class="block video" id="video">
+<h2>${t('video.h')}</h2>
+<p class="muted small">${t('video.note')}</p>
+<div class="video-box" data-video-box>
+<a class="btn video-play" href="${esc(assetHref(c.href.video))}" data-video-src="${esc(assetHref(c.href.video))}"${isNum(v.width) ? ` data-video-width="${v.width}"` : ''} data-video-label="${ta('video.h')}">▶ ${t('video.play')}</a>
+${facts ? `<span class="muted small">${esc(facts)}</span>` : ''}
+</div>
+</section>`;
+}
+
+// Automated accessibility scan, in full.
+function a11ySection(c) {
+  const a = c.run?.a11y;
+  const counts = a11yCounts(a);
+  if (!counts) return '';
+  const ver = typeof a.version === 'string' ? a.version : '';
+  const docs = /axe/i.test(a.tool || '') && /^\d+\.\d+/.test(ver) ? `https://dequeuniversity.com/rules/axe/${ver.match(/^\d+\.\d+/)[0]}/` : null;
+  const rules = Array.isArray(a.rule_ids) ? a.rule_ids.filter((x) => typeof x === 'string') : [];
+  return `<section class="block a11y" id="a11y">
+<h2>${t('a11y.h')}</h2>
+<p class="muted small">${t('a11y.note')}</p>
+<dl class="details">
+${metaRow(t('a11y.tool'), a.tool ? `${esc(a.tool)}${ver ? ` <code>${esc(ver)}</code>` : ''}` : null)}
+${counts.map(([k, n]) => metaRow(t(`a11y.${k}`), `<span class="${n ? 'no' : 'yes'}">${tn('a11y.rules_n', n)}</span>${isNum(a.violation_nodes?.[k]) && n ? ` · ${tn('a11y.elements_n', a.violation_nodes[k])}` : ''}`)).join('\n')}
+${metaRow(t('a11y.rules'), rules.length ? rules.map((id) => (docs ? `<a href="${esc(docs + encodeURIComponent(id))}"><code>${esc(id)}</code></a>` : `<code>${esc(id)}</code>`)).join(', ') : t('cell.none'))}
+</dl>
+</section>`;
+}
+
 function viewerPage(c, ctx) {
   const prompt = ctx.prompts.get(c.prompt) || { id: c.prompt, title: c.prompt };
   const title = `${cellTitleText(c.agent, c.variant)} — ${promptTitle(prompt)}`;
@@ -1398,17 +1539,20 @@ function viewerPage(c, ctx) {
     ? `<div class="frame-wrap" data-frame-wrap><iframe sandbox="allow-scripts" src="${esc(assetHref(c.href.html))}" title="${ta('viewer.frame_title', { title })}" referrerpolicy="no-referrer"></iframe></div>`
     : `<div class="thumb thumb-empty frame-empty"><span>${t('viewer.no_index')}</span></div>`;
   const body = `
-<nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(`prompts/${prompt.id}/`))}">${esc(promptTitle(prompt))}</a>${c.variant !== 'native' ? ` / <a href="${esc(pageHref(`skills/${c.variant}/`))}#${esc(prompt.id)}">${esc(c.variant)}</a>` : ''} / <span>${esc(cellTitleText(c.agent, c.variant))}</span></nav>
+<nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(`prompts/${prompt.id}/`))}">${esc(promptTitle(prompt))}</a>${c.variant !== 'native' ? ` / <a href="${esc(pageHref(`skills/${c.variant}/`))}#${esc(prompt.id)}">${esc(skillLabel(c.variant))}</a>` : ''} / <span>${esc(cellTitleText(c.agent, c.variant))}</span></nav>
 <div class="viewer-head">
 <h1>${esc(cellTitleText(c.agent, c.variant))} <span class="muted">· ${esc(promptTitle(prompt))}</span></h1>
 <div class="viewer-tools">
 ${c.files['index.html'] ? `<div class="seg" role="group" aria-label="${ta('viewer.width_aria')}"><button type="button" data-frame="fit" aria-pressed="true">${t('viewer.fit')}</button><button type="button" data-frame="1440" aria-pressed="false">${t('view.desktop')} <small>1440</small></button><button type="button" data-frame="390" aria-pressed="false">${t('view.mobile')} <small>390</small></button></div>` : ''}
-${c.files['index.html'] ? `<a class="btn" href="${esc(assetHref(c.href.html))}" download="index.html">${t('viewer.download')}</a>` : ''}
+${c.files['index.html'] && !c.kept.length ? `<a class="btn" href="${esc(assetHref(c.href.html))}" download="index.html">${t('viewer.download')}</a>` : ''}
 ${c.files['run.json'] ? `<a class="btn" href="${esc(assetHref(c.href.run))}">run.json</a>` : ''}
 </div>
 </div>
 <p class="small muted">${t('viewer.sandbox_note')}</p>
+${c.kept.length ? `<p class="small muted">${t('viewer.multi_file', { n: c.kept.length })} ${c.kept.map((a) => `<a href="${esc(assetHref(`runs/${c.prompt}/${c.name}/${a.path}`))}"><code>${esc(a.path)}</code></a>`).join(', ')}</p>` : ''}
 ${frame}
+${videoSection(c)}
+${a11ySection(c)}
 ${voteSection(c)}
 <section class="block">
 <h2>${t('viewer.details_h')}</h2>
@@ -1430,7 +1574,7 @@ function loadConfig() {
 async function loadGallery({ runs, thumbsOut }) {
   CONFIG = loadConfig();
   AGENTS = AGENT_ORDER.map((id) => ({ id, label: id, ...(CONFIG.agents || []).find((a) => a.id === id) }));
-  const prompts = loadPrompts(CONFIG.prompts || []);
+  const prompts = loadPrompts(CONFIG.prompts || [], CONFIG.showcase_prompts || []);
   const cells = scanRuns(runs, AGENT_ORDER);
   for (const c of cells.values()) {
     if (!prompts.has(c.prompt)) {
@@ -1450,6 +1594,9 @@ async function loadGallery({ runs, thumbsOut }) {
       viewer: `cells/${c.prompt}/${c.name}/`,
     };
     c.refs = c.files['index.html'] ? externalRefs(fs.readFileSync(path.join(c.dir, 'index.html'), 'utf8')) : [];
+    c.kept = keptAssets(c);
+    c.video = cellVideo(c);
+    if (c.video) c.href.video = `${rel}/${c.video.file}`;
     c.thumbs = {};
     if (!thumbsOut) continue;
     const tdir = path.join(thumbsOut, c.prompt, c.name);
@@ -1499,6 +1646,11 @@ async function main() {
     const dest = path.join(opts.out, 'runs', c.prompt, c.name);
     fs.mkdirSync(dest, { recursive: true });
     for (const f of CELL_FILES) if (c.files[f]) fs.copyFileSync(path.join(c.dir, f), path.join(dest, f));
+    // Files the page loads from next to it, and the scroll recording, at their original paths.
+    for (const p of new Set([...c.kept.map((a) => a.path), ...(c.video ? [c.video.file] : [])])) {
+      fs.mkdirSync(path.dirname(path.join(dest, p)), { recursive: true });
+      fs.copyFileSync(path.join(c.dir, p), path.join(dest, p));
+    }
   }
   const assets = path.join(SITE_SRC, 'assets');
   fs.mkdirSync(path.join(opts.out, 'assets'), { recursive: true });
@@ -1546,11 +1698,11 @@ async function main() {
     if (l.code !== 'en' && skip.length) missing.push(`site/i18n/${l.code}.json: ${skip.length} string(s) fall back to English (${skip.slice(0, 5).join(', ')}${skip.length > 5 ? ', …' : ''})`);
   }
   for (const sk of skills) {
-    if (!sk.strengths.length) continue;
     for (const l of LANGS.slice(1)) {
       const tr = getPath(l.dict, `skills.${sk.name}.strengths`);
       const have = Array.isArray(tr) ? tr.length : 0;
-      if (have !== sk.strengths.length) missing.push(`site/i18n/${l.code}.json: skills.${sk.name}.strengths has ${have} of ${sk.strengths.length} items (English is shown instead)`);
+      if (sk.strengths.length && !have) missing.push(`site/i18n/${l.code}.json: no skills.${sk.name}.strengths (meta.yaml's English is shown)`);
+      else if (sk.strengths.length && have !== sk.strengths.length) missing.push(`site/i18n/${l.code}.json: skills.${sk.name}.strengths has ${have} items, meta.yaml has ${sk.strengths.length}; check they say the same`);
     }
   }
   if (missingStrings.size) warn(`strings missing from en.json too: ${[...missingStrings].join(', ')}`);
@@ -1565,7 +1717,7 @@ async function main() {
   if (warnings.length) console.log(`  ${warnings.length} warning(s), see stderr`);
 }
 
-export { loadGallery, loadLanguages, inScope, installInfo, readPngHeader, decodePngTop, resample, encodePng, writeThumbs, parseYaml, flatten, getPath, esc, fmtDate, shortSha, githubRepo, warnings };
+export { loadGallery, loadLanguages, inScope, shownOn, installInfo, readPngHeader, decodePngTop, resample, encodePng, writeThumbs, parseYaml, flatten, getPath, esc, fmtDate, shortSha, githubRepo, warnings };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((e) => {

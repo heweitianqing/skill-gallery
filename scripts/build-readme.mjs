@@ -4,6 +4,7 @@
 //   node scripts/build-readme.mjs               # tables, thumbnails and images
 //   node scripts/build-readme.mjs --no-images   # skip the two Playwright images
 //   node scripts/build-readme.mjs --lang en,ja  # only these READMEs
+//   node scripts/build-readme.mjs --runs <dir>  # read cells from another runs/ tree (testing)
 //
 // Each README (README.md and README.<lang>.md, one per language in
 // scripts/build-readme.strings.json) has three blocks, filled in its own language:
@@ -22,7 +23,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadGallery, inScope, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings } from './build-site.mjs';
+import { loadGallery, inScope, shownOn, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings } from './build-site.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LAUNCH = path.join(REPO_ROOT, 'docs', 'launch');
@@ -36,8 +37,11 @@ const args = process.argv.slice(2);
 const withImages = !args.includes('--no-images');
 const langIdx = args.indexOf('--lang');
 const onlyLangs = langIdx >= 0 ? (args[langIdx + 1] || '').split(',').filter(Boolean) : null;
-if (args.some((a, i) => a !== '--no-images' && a !== '--lang' && i !== langIdx + 1) || (onlyLangs && !onlyLangs.length)) {
-  console.error('usage: node scripts/build-readme.mjs [--no-images] [--lang en,zh-CN,…]');
+const runsIdx = args.indexOf('--runs');
+const RUNS = runsIdx >= 0 ? path.resolve(args[runsIdx + 1] || '') : path.join(REPO_ROOT, 'runs');
+const valued = new Set([langIdx + 1, runsIdx + 1].filter((i) => i > 0));
+if (args.some((a, i) => !['--no-images', '--lang', '--runs'].includes(a) && !valued.has(i)) || (onlyLangs && !onlyLangs.length) || (runsIdx >= 0 && !args[runsIdx + 1])) {
+  console.error('usage: node scripts/build-readme.mjs [--no-images] [--lang en,zh-CN,…] [--runs <dir>]');
   process.exit(2);
 }
 
@@ -77,9 +81,11 @@ function fillBlock(text, name, content, file) {
 }
 
 async function main() {
-  const g = await loadGallery({ runs: path.join(REPO_ROOT, 'runs'), thumbsOut: null });
+  const g = await loadGallery({ runs: RUNS, thumbsOut: null });
   const { prompts, cells, skills } = g;
   const agentLabel = (id) => g.agents.find((a) => a.id === id)?.label || id;
+  // Display name (meta.yaml display_name) for readers; links and commands keep the real name.
+  const disp = (v) => skills.find((x) => x.name === v)?.title || v;
   // In-scope cells only (skills/<name>/meta.yaml applies_to), as on the site.
   const { stats } = g;
 
@@ -116,33 +122,42 @@ async function main() {
     const promptTitle = (p) => STRINGS[code].prompts?.[p.id] || STRINGS.en.prompts?.[p.id] || p.title;
     const nativeLabel = t('native');
 
-    // Results grid. Codex above Claude Code in each square, so the table fits GitHub's width.
-    const head = `<tr><th>${htmlEsc(t('th_prompt'))}</th>${cols
-      .map((v) => (v === 'native' ? `<th>${htmlEsc(t('th_native'))}</th>` : `<th><a href="${gallery}skills/${v}/">${htmlEsc(v)}</a></th>`))
-      .join('')}</tr>`;
-    const rows = [...prompts.values()].map((p) => {
-      const tds = cols.map((v) => {
-        const parts = AGENT_ORDER.map((a) => {
-          const c = cells.get(`${p.id}/${a}__${v}`) || null;
-          // Out of scope and never run: text only, no picture to click.
-          if (!c && !inScope(v, p.id)) return `<sub>${htmlEsc(agentLabel(a))} · ${htmlEsc(t('out_of_scope'))}</sub>`;
-          const label = `${agentLabel(a)} · ${v === 'native' ? nativeLabel : `+ ${v}`}`;
-          const href = c ? `${gallery}cells/${p.id}/${c.name}/` : v === 'native' ? `${gallery}prompts/${p.id}/` : `${gallery}skills/${v}/#${p.id}`;
-          const img = (c && thumbFor.get(c)) || pendingRel;
-          const state = !c ? ` · ${t('pending')}` : c.run?.success === false ? ` · ${t('failed')}` : !thumbFor.get(c) ? ` · ${t('no_screenshot')}` : '';
-          return `<a href="${href}"><img src="${img}" width="${THUMB_W}" alt="${htmlEsc(t('thumb_alt', { cell: label, prompt: promptTitle(p) }))}"></a><br><sub>${htmlEsc(agentLabel(a))}${htmlEsc(state)}</sub>`;
-        });
-        return `<td align="center">${parts.join('<br>')}</td>`;
+    // Results tables: skills down the side, prompts across, Codex above Claude Code in each
+    // square, so the tables stay within GitHub's width as skills are added. Standard prompts
+    // and showcase prompts get separate tables; a showcase table only lists the skills run on it.
+    const square = (p, v) => {
+      const parts = AGENT_ORDER.map((a) => {
+        const c = cells.get(`${p.id}/${a}__${v}`) || null;
+        // Out of scope and never run: text only, no picture to click.
+        if (!c && !inScope(v, p.id)) return `<sub>${htmlEsc(agentLabel(a))} · ${htmlEsc(t('out_of_scope'))}</sub>`;
+        const label = `${agentLabel(a)} · ${v === 'native' ? nativeLabel : `+ ${disp(v)}`}`;
+        const href = c ? `${gallery}cells/${p.id}/${c.name}/` : v === 'native' ? `${gallery}prompts/${p.id}/` : `${gallery}skills/${v}/#${p.id}`;
+        const img = (c && thumbFor.get(c)) || pendingRel;
+        const state = !c ? ` · ${t('pending')}` : c.run?.success === false ? ` · ${t('failed')}` : !thumbFor.get(c) ? ` · ${t('no_screenshot')}` : '';
+        return `<a href="${href}"><img src="${img}" width="${THUMB_W}" alt="${htmlEsc(t('thumb_alt', { cell: label, prompt: promptTitle(p) }))}"></a><br><sub>${htmlEsc(agentLabel(a))}${htmlEsc(state)}</sub>`;
       });
-      return `<tr><th><a href="${gallery}prompts/${p.id}/">${htmlEsc(promptTitle(p))}</a>${p.showcase ? `<br><sub>${htmlEsc(t('showcase'))}</sub>` : ''}</th>${tds.join('')}</tr>`;
-    });
+      return `<td align="center">${parts.join('<br>')}</td>`;
+    };
+    const table = (plist) => {
+      const variants = cols.filter((v) => plist.some((p) => shownOn(v, p.id, cells)));
+      const head = `<tr><th>${htmlEsc(t('th_skill'))}</th>${plist.map((p) => `<th><a href="${gallery}prompts/${p.id}/">${htmlEsc(promptTitle(p))}</a></th>`).join('')}</tr>`;
+      const rows = variants.map((v) => {
+        const rowHead = v === 'native' ? htmlEsc(t('th_native')) : `<a href="${gallery}skills/${v}/">${htmlEsc(disp(v))}</a>${disp(v) !== v ? `<br><sub><code>${htmlEsc(v)}</code></sub>` : ''}`;
+        return `<tr><th>${rowHead}</th>${plist.map((p) => square(p, v)).join('')}</tr>`;
+      });
+      return `<table>\n<thead>${head}</thead>\n<tbody>\n${rows.join('\n')}\n</tbody>\n</table>`;
+    };
+    const standard = [...prompts.values()].filter((p) => !p.showcase);
+    const showcase = [...prompts.values()].filter((p) => p.showcase);
     const pending = stats.total - stats.done;
     const sp = /^(zh|ja)\b/.test(code) ? '' : ' ';
     const results = [
       t('results_note'),
       '',
       ...(pending ? [`${t('progress', { done: stats.done, total: stats.total })}${sp}${t('pending_note')}`, ''] : []),
-      `<table>\n<thead>${head}</thead>\n<tbody>\n${rows.join('\n')}\n</tbody>\n</table>`,
+      ...(standard.length && showcase.length ? [`**${t('table_standard')}**`, ''] : []),
+      table(standard),
+      ...(showcase.length ? ['', `**${t('table_showcase')}**`, '', t('showcase_note'), '', table(showcase)] : []),
     ].join('\n');
 
     // One status line, so it never lags behind runs/. The space after the bold label is
@@ -158,7 +173,7 @@ async function main() {
       const how = (a, invoke) => `${a.install.command ? t('install_run', { cmd: mdCode(a.install.cmds[0]) }) : t('install_copy', { path: mdCode(a.install.dir.replace(/^<project>\//, '')) })}${t('then_sep')}${invoke}`;
       const claude = how(info.claude, t('invoke_claude', { line: mdCode(info.claude.line), slash: mdCode(`${info.claude.slash} …`) }));
       const codex = how(info.codex, t('invoke_codex', { mention: mdCode(info.codex.mention) }));
-      return `| [${s.name}](${gallery}skills/${s.name}/#install) | ${claude} | ${codex} |`;
+      return `| [${disp(s.name)}](${gallery}skills/${s.name}/#install)${disp(s.name) !== s.name ? ` (\`${s.name}\`)` : ''} | ${claude} | ${codex} |`;
     });
     const skillsBlock = [`| ${t('th_skill')} | ${t('th_claude')} | ${t('th_codex')} |`, '| --- | --- | --- |', ...skillRows].join('\n');
 
@@ -171,7 +186,7 @@ async function main() {
       const tree = gh && s.commit ? `${gh}/tree/${s.commit}${s.path ? `/${s.path}` : ''}` : null;
       const sha = s.commit ? (tree ? `[${mdCode(shortSha(s.commit))}](${tree})` : mdCode(shortSha(s.commit))) : '—';
       const commit = s.fetch.method === 'npm-cli' ? `${t('via_cli', { pkg: mdCode(`${s.fetch.package}@${s.fetch.version}`) })}<br><sub>${sha}</sub>` : sha;
-      return `| [${s.name}](${gallery}skills/${s.name}/) | ${source}${owner} | ${license} | ${commit} |`;
+      return `| [${disp(s.name)}](${gallery}skills/${s.name}/)${disp(s.name) !== s.name ? ` (\`${s.name}\`)` : ''} | ${source}${owner} | ${license} | ${commit} |`;
     });
     const credits = [`| ${t('th_skill')} | ${t('th_source')} | ${t('th_license')} | ${t('th_commit')} |`, '| --- | --- | --- | --- |', ...creditRows].join('\n');
 
@@ -200,6 +215,7 @@ async function renderImages(g) {
     return;
   }
   const { prompts, cells, skills } = g;
+  const disp = (v) => skills.find((x) => x.name === v)?.title || v;
   const tmp = fs.mkdtempSync(path.join(fs.realpathSync(process.env.TMPDIR || '/tmp'), 'sg-readme-'));
   const dataUri = async (c, width) => {
     if (!c?.files['desktop.png']) return null;
@@ -217,11 +233,13 @@ async function renderImages(g) {
 .shot{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:top;border:1px solid #dcdce0;border-radius:6px;background:#fff}
 .pending{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:4/3;border:1px dashed #c3c4ca;border-radius:6px;color:#63646c;font-size:13px;background:repeating-linear-gradient(135deg,#ececee 0 10px,#f3f3f5 10px 20px)}`;
 
-  // Overview: prompts × (native + skills), Codex and Claude Code in each square.
+  // Overview: skills down the side, the standard prompts across (showcase prompts would add
+  // a column of mostly out-of-scope squares), Codex and Claude Code in each square.
+  const std = [...prompts.values()].filter((p) => !p.showcase);
   let grid = '';
-  for (const p of prompts.values()) {
-    grid += `<div class="rh">${htmlEsc(p.title)}</div>`;
-    for (const v of cols) {
+  for (const v of cols) {
+    grid += `<div class="rh">${v === 'native' ? 'Native<small>no added skill</small>' : `${htmlEsc(disp(v))}<small>${disp(v) !== v ? `${htmlEsc(v)} · ` : ''}with skill</small>`}</div>`;
+    for (const p of std) {
       const pair = [];
       for (const a of AGENT_ORDER) {
         const c = cells.get(`${p.id}/${a}__${v}`);
@@ -233,10 +251,10 @@ async function renderImages(g) {
   }
   const overview = `<!doctype html><html><head><meta charset="utf-8"><style>${css}
 body{width:1600px;padding:36px 40px 40px}.top{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}.top b{font-size:28px}.top span{color:#5d5e66;font-size:17px}
-.grid{display:grid;grid-template-columns:170px repeat(${cols.length},1fr);gap:12px;align-items:stretch}.ch{font-weight:650;font-size:16px;padding:0 2px 2px;align-self:end}.ch small{display:block;font-weight:400;color:#5d5e66;font-size:13px}
-.rh{font-weight:650;font-size:16px;padding-top:8px}.sq{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#fff;border:1px solid #dcdce0;border-radius:8px;padding:8px}.lab{font-size:12px;color:#5d5e66;padding-top:4px}</style></head><body>
+.grid{display:grid;grid-template-columns:200px repeat(${std.length},1fr);gap:12px;align-items:stretch}.ch{font-weight:650;font-size:16px;padding:0 2px 2px;align-self:end}
+.rh{font-weight:650;font-size:16px;padding-top:8px}.rh small{display:block;font-weight:400;color:#5d5e66;font-size:13px}.sq{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#fff;border:1px solid #dcdce0;border-radius:8px;padding:8px}.lab{font-size:12px;color:#5d5e66;padding-top:4px}</style></head><body>
 <div class="top"><b>skill-gallery</b><span>Same prompts, Codex and Claude Code, with and without each skill</span></div>
-<div class="grid"><div></div>${cols.map((v) => `<div class="ch">${v === 'native' ? 'Native<small>no added skill</small>' : `${htmlEsc(v)}<small>with skill</small>`}</div>`).join('')}${grid}</div></body></html>`;
+<div class="grid"><div></div>${std.map((p) => `<div class="ch">${htmlEsc(p.title)}</div>`).join('')}${grid}</div></body></html>`;
 
   // Social preview: title on the left, six results on the right.
   const preferred = [];
