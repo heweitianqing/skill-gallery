@@ -47,11 +47,12 @@ Skills have to be public, and their license has to allow fetching and running th
 
 ## Translations
 
-The README comes in six languages; the gallery is in English with key notes in Chinese.
+The README and the gallery both come in six languages: English, 简体中文, 繁體中文, 日本語, 한국어 and Español.
 
 | Part | Files |
 | --- | --- |
 | README | `README.<lang>.md` |
+| Gallery pages | `site/i18n/<lang>.json` |
 | Text inside the README's generated tables | `scripts/build-readme.strings.json` |
 | This guide | `CONTRIBUTING.zh-CN.md` (others welcome) |
 

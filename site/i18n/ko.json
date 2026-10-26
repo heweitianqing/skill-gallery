@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "name": "한국어",
+    "readme_file": "README.ko.md"
+  },
+  "nav": {
+    "aria": "사이트",
+    "skip": "본문으로 건너뛰기",
+    "overview": "개요",
+    "skills": "Skill",
+    "prompts": "프롬프트",
+    "method": "방법",
+    "language": "언어",
+    "theme_dark": "다크",
+    "theme_light": "라이트",
+    "theme_to_dark": "다크 테마로 전환",
+    "theme_to_light": "라이트 테마로 전환"
+  },
+  "footer": {
+    "built": "{date} 빌드",
+    "license": "갤러리 코드: MIT. 각 skill에는 자체 라이선스가 적용됩니다. {runs} 아래의 페이지는 편집하지 않은 모델 출력입니다.",
+    "ai_translation": "이 페이지는 AI로 번역했습니다. 수정 제안은 풀 리퀘스트로 환영합니다.",
+    "disclaimer": "Anthropic 또는 OpenAI와 제휴 관계가 없습니다. 모든 상표는 각 소유자에게 있습니다."
+  },
+  "status": {
+    "pending": "대기 중",
+    "ok": "성공",
+    "failed": "실패",
+    "no_run_json": "run.json 없음",
+    "bad_run_json": "잘못된 run.json",
+    "unknown": "알 수 없음"
+  },
+  "thumb": {
+    "no_page": "페이지 없음",
+    "unreadable": "스크린샷을 읽을 수 없음",
+    "no_screenshot": "아직 스크린샷 없음",
+    "no_desktop": "데스크톱 스크린샷 없음",
+    "no_mobile": "모바일 스크린샷 없음",
+    "alt": "{caption}, {kind} 스크린샷(페이지 상단)",
+    "enlarge": "전체 페이지 스크린샷 크게 보기: {caption}"
+  },
+  "view": {
+    "aria": "스크린샷 크기",
+    "desktop": "데스크톱",
+    "mobile": "모바일"
+  },
+  "lightbox": {
+    "aria": "전체 페이지 스크린샷",
+    "close": "닫기",
+    "full_alt": "{caption}, {kind} 전체 페이지 스크린샷",
+    "desktop": "데스크톱 1440",
+    "mobile": "모바일 390"
+  },
+  "crumbs": {
+    "aria": "이동 경로",
+    "gallery": "갤러리"
+  },
+  "cell": {
+    "native": "네이티브",
+    "not_run": "아직 실행되지 않았습니다.",
+    "na": "해당 없음",
+    "yes": "예",
+    "no": "아니요",
+    "none": "없음",
+    "model": "모델",
+    "time": "시간",
+    "tokens": "토큰",
+    "skill_used": "Skill 사용",
+    "external": "외부 참조",
+    "run_date": "실행 날짜",
+    "open_page": "페이지 열기",
+    "details": "세부 정보",
+    "prompt_changed": "이 실행 이후 프롬프트 파일이 변경되었습니다.",
+    "breaks_rule": "프롬프트 규칙을 위반했습니다: {rules}.",
+    "attempt": "{n}번째 시도입니다. 이전 시도는 {path}에 보관되어 있습니다."
+  },
+  "home": {
+    "title": "{site}: 에이전트 skill 비교",
+    "description": "Codex와 Claude Code가 에이전트 skill을 쓸 때와 쓰지 않을 때 만든 웹 페이지를 나란히 비교합니다.",
+    "h1": "에이전트 skill은 웹 페이지를 어떻게 바꾸는가",
+    "lead": "같은 프롬프트로 <strong>Codex</strong>와 <strong>Claude Code</strong>가 각각 웹 디자인 skill(<code>SKILL.md</code>)을 쓸 때와 쓰지 않을 때 페이지를 만듭니다. 각 프롬프트는 Codex 네이티브, Codex + skill, Claude Code 네이티브, Claude Code + skill의 2×2 구성으로 실행됩니다. 네이티브 셀은 모든 skill이 공유합니다.",
+    "progress": "{total}개 셀 중 {done}개 실행 완료",
+    "failed_one": "{n}개 실패",
+    "failed_other": "{n}개 실패",
+    "pending_hint": "아직 실행되지 않은 셀에는 “대기 중”이 표시됩니다.",
+    "overview_h2": "개요",
+    "overview_hint": "행은 프롬프트, 열은 skill입니다. 각 칸의 왼쪽은 Codex 결과, 오른쪽은 Claude Code 결과입니다(데스크톱 너비, 페이지 상단).",
+    "grid_aria": "개요 그리드(가로 스크롤)",
+    "col_prompt": "프롬프트",
+    "col_native": "네이티브",
+    "col_native_sub": "skill 추가 없음, 공통 기준선",
+    "col_skill_sub": "skill 사용",
+    "skills_h2": "Skill",
+    "prompts_h2": "프롬프트",
+    "cells_count": "{total}개 셀 중 {done}개",
+    "version": "버전 {v}"
+  },
+  "method": {
+    "h2": "방법",
+    "th_agent": "에이전트",
+    "th_model": "모델",
+    "th_effort": "Effort",
+    "th_cli": "CLI 버전",
+    "th_runs": "실행",
+    "runs_one": "{n}회",
+    "runs_other": "{n}회",
+    "no_runs": "설정됨, 아직 실행 없음",
+    "table_note": "모델과 effort는 실행 스크립트에 고정되어 있습니다. 표에는 <code>run.json</code> 파일에 기록된 값을 표시합니다.",
+    "sample_title": "셀마다 한 번만 생성, 결과 골라내기 없음",
+    "sample_body": "각 셀은 후속 턴 없이 한 번에 한 번만 생성합니다. 결과는 실패한 실행을 포함해 나온 그대로 보여 줍니다. 셀을 다시 실행하면 이전 시도는 <code>runs/&lt;prompt&gt;/_attempts/</code>에 보관됩니다.",
+    "prompt_title": "네 셀 모두 같은 프롬프트",
+    "prompt_body": "프롬프트는 스타일 형용사 없이 중립적인 표현으로 작성했습니다. skill 셀에는 skill 이름을 지정하는 마지막 문장 하나만 덧붙입니다. Claude Code는 <code>Use the &lt;name&gt; skill.</code>, Codex는 <code>Use the $&lt;name&gt; skill.</code>입니다.",
+    "isolation_title": "격리",
+    "isolation_body": "모든 실행은 저장소 밖의 새 임시 디렉터리에서 시작하며, 빈 <code>HOME</code>, 전용 설정 홈(<code>CLAUDE_CONFIG_DIR</code> 또는 <code>CODEX_HOME</code>), 처음부터 새로 구성한 환경을 사용합니다. 사용자 설정, 플러그인, 사용자 수준 skill, MCP 서버, 메모리는 전혀 로드하지 않습니다. 테스트 대상 skill은 해당 임시 프로젝트의 skill 폴더(<code>.claude/skills/</code> 또는 <code>.agents/skills/</code>)에만 복사합니다. 각 CLI에 번들된 skill은 그대로 사용할 수 있으며 네이티브로 간주합니다. 근거는 각 에이전트의 자체 로그에서 가져오며 <code>run.json</code>의 <code>isolation</code> 항목에 저장됩니다.",
+    "fire_title": "skill이 실제로 호출되어야 함",
+    "fire_body": "skill 셀은 로그에 skill이 로드되었다는 기록(<code>skill_triggered</code>)이 있어야 합니다. 기록이 없으면 그 셀은 skill 결과로 보여 주지 않고 실패로 표시합니다.",
+    "shots_title": "스크린샷",
+    "shots_body": "네트워크가 유휴 상태가 되고 폰트가 로드된 뒤, 애니메이션을 끈 상태에서 1440 CSS px 및 390 CSS px 너비로 전체 페이지를 캡처합니다{tools}. 썸네일은 페이지 상단을 보여 줍니다. “페이지 열기”를 누르면 원본 <code>index.html</code>을 샌드박스 iframe(<code>sandbox=\"allow-scripts\"</code>, same-origin 접근 불가)에서 불러옵니다.",
+    "dates_title": "실행 날짜",
+    "dates_body_one": "{range} (UTC), 셀 {n}개.",
+    "dates_body_other": "{range} (UTC), 셀 {n}개.",
+    "dates_none": "아직 실행된 셀이 없습니다.",
+    "limits_h": "알려진 한계",
+    "limit_native": "<strong>네이티브는 skill이 하나도 없는 상태가 아니라 기본 설치 상태를 뜻합니다.</strong> 네이티브 셀을 포함한 모든 셀에서 각 에이전트에 기본으로 들어 있는 skill을 사용할 수 있습니다. Claude Code에 내장된 skill 19개와 Codex의 시스템 skill(<code>imagegen</code>, <code>openai-docs</code>, <code>skill-creator</code>, <code>skill-installer</code>)입니다. <code>dashboard</code> 프롬프트에서는 Claude Code에 내장된 <code>dataviz</code> skill이 스스로 두 번 실행되었습니다. <code>claude__native</code>에서 한 번, <code>claude__frontend-design</code>에서 한 번이며, <code>run.json</code>의 <code>builtin_skills_used</code>에 기록되어 있습니다. 이는 의도한 것입니다. 독자가 에이전트를 설치했을 때 실제로 얻는 결과를 비교하기 때문입니다.",
+    "limit_disk": "<strong>격리는 “아무것도 로드하지 않음”을 뜻할 뿐, “아무것도 읽을 수 없음”을 뜻하지는 않습니다.</strong> 에이전트는 여전히 디스크의 나머지 부분을 읽을 수 있습니다. Codex의 기본 <code>workspace-write</code> 샌드박스는 <code>/</code>를 읽을 수 있고, <code>bypassPermissions</code>로 실행한 Claude Code에는 샌드박스가 없습니다. v0 실행에서는 에이전트가 상위 디렉터리에서 <code>AGENTS.md</code>를 찾았고, 한 에이전트는 운영자의 npm 캐시에 있던 Playwright를 사용했습니다. 더 강한 격리(별도 사용자 계정이나 컨테이너)는 향후 과제입니다.",
+    "limit_fixed": "<strong>스크린샷 속 고정 사이드바.</strong> 전체 페이지 캡처는 높이가 <code>100vh</code>인 <code>position: fixed</code> 또는 <code>sticky</code> 요소를 첫 화면 높이로만 그리기 때문에, 대시보드 사이드바가 900 px에서 끊긴 것처럼 보일 수 있습니다. 이는 페이지가 아니라 캡처 방식 때문입니다.",
+    "limit_once": "<strong>샘플 하나로는 벤치마크가 되지 않습니다.</strong> 각 셀은 한 번 생성한 결과입니다. 갤러리는 점수가 아니라 skill이 보이는 경향을 보여 주는 예시로 보아야 합니다."
+  },
+  "skill": {
+    "description": "Codex와 Claude Code가 {name} skill을 쓸 때와 쓰지 않을 때 만든 페이지입니다.",
+    "source": "출처",
+    "path": "경로",
+    "pinned_commit": "고정 커밋",
+    "upstream_commit": "업스트림 커밋",
+    "reference": "(참고용)",
+    "installed_with": "설치 도구",
+    "own_cli": "(skill 자체 CLI)",
+    "license": "라이선스",
+    "commit_in_runs": "실행에 사용한 커밋",
+    "layout_hint": "각 프롬프트는 Codex 네이티브, Codex + skill, Claude Code 네이티브, Claude Code + skill의 고정 2×2로 표시됩니다. 스크린샷을 클릭하면 전체 페이지를 볼 수 있습니다.",
+    "install_link": "설치 및 사용 ↓",
+    "jump_aria": "이 페이지의 프롬프트"
+  },
+  "install": {
+    "h2": "설치 및 사용",
+    "intro_git": "프로젝트 수준 설치: skill 폴더(<code>SKILL.md</code>가 들어 있는 폴더)를 고정 커밋 기준으로 프로젝트에 복사합니다. 갤러리 실행에서도 같은 방식으로 설치했습니다.",
+    "intro_npm": "이 skill은 자체 CLI({pkg})가 에이전트별로 생성합니다. 갤러리 실행에는 그 출력을 사용했습니다.",
+    "install_h": "설치",
+    "use_h": "사용",
+    "copy_to": "폴더를 {path}에 복사합니다.",
+    "writes": "현재 프로젝트의 {path}에 파일을 생성합니다.",
+    "home_hint": "모든 프로젝트에서 사용하려면 대신 {path}에 폴더를 두면 됩니다.",
+    "auto_claude": "요청이 skill 설명과 일치하면 Claude Code가 skill을 스스로 로드할 수도 있습니다.",
+    "auto_codex": "Codex도 설명을 보고 skill을 스스로 선택할 수 있습니다.",
+    "your_task": "<작업 내용>",
+    "c_interactive": "대화형",
+    "c_end_with": "또는 요청 끝에 다음 문장 추가",
+    "c_headless": "헤드리스(갤러리 실행과 동일)",
+    "c_mention": "대화형: 이름으로 언급하거나 /skills에서 선택",
+    "notes_h": "참고",
+    "metadata": "메타데이터: {file}"
+  },
+  "prompt": {
+    "description": "{title}: 모든 skill을 나란히 비교합니다.",
+    "layout_hint": "모든 skill을 나란히 보여 줍니다. 열은 skill, 행은 에이전트입니다.",
+    "text_h": "프롬프트 원문",
+    "text_note": "에이전트에 보낸 그대로의 영어 원문이며, 번역하지 않았습니다.",
+    "skill_line_note": "skill 셀에는 끝에 문장 하나를 덧붙입니다: <code>Use the &lt;name&gt; skill.</code>(Claude Code) 또는 <code>Use the $&lt;name&gt; skill.</code>(Codex).",
+    "grid_aria": "비교 그리드(가로 스크롤)"
+  },
+  "viewer": {
+    "frame_title": "생성된 페이지: {title}",
+    "width_aria": "미리보기 너비",
+    "fit": "맞춤",
+    "download": "HTML 다운로드",
+    "sandbox_note": "샌드박스 미리보기: 페이지의 스크립트는 실행되지만 페이지가 이 사이트, 쿠키, 저장소에 접근할 수 없으므로 <code>localStorage</code>에 의존하는 기능은 다르게 동작할 수 있습니다.",
+    "no_index": "이 실행에서는 index.html이 생성되지 않았습니다.",
+    "details_h": "실행 세부 정보",
+    "no_run_json": "이 셀에는 아직 <code>run.json</code>이 없습니다."
+  },
+  "details": {
+    "status": "상태",
+    "agent": "에이전트",
+    "model": "모델",
+    "effort": "Effort",
+    "prompt": "프롬프트",
+    "file_changed": "(이후 파일 변경됨)",
+    "skill_sentence": "Skill 문장",
+    "skill_source": "Skill 출처",
+    "skill_commit": "Skill 커밋",
+    "dirty": "(커밋되지 않은 변경 있음)",
+    "skill_fetched_by": "Skill 가져온 방법",
+    "installed_to": "설치 위치",
+    "skill_triggered": "Skill 호출 여부",
+    "evidence": "근거",
+    "bundled_skills": "사용한 번들 skill",
+    "started": "시작",
+    "duration": "소요 시간",
+    "exit": "종료",
+    "exit_code": "코드 {n}",
+    "timed_out": "시간 초과",
+    "attempt": "시도",
+    "earlier_attempts": "이전 시도",
+    "tokens": "토큰",
+    "turns": "턴",
+    "cost": "비용",
+    "activity": "활동",
+    "isolation": "격리",
+    "iso_ok": "모든 검사 통과",
+    "iso_fail": "일부 검사 실패",
+    "external_refs": "외부 참조",
+    "refs_from_run": "<code>run.json</code>에 기록된 <code>index.html</code> 정적 스캔 결과입니다.",
+    "refs_parsed": "사이트 빌드 시 <code>index.html</code>에서 추출했습니다.",
+    "rule_violations": "규칙 위반",
+    "output": "출력",
+    "no_index": "index.html 없음",
+    "other_files": "기타 파일: {files}",
+    "screenshot": "스크린샷({kind})",
+    "page_tall": "페이지 높이 {h} px",
+    "overflow": "가로 넘침({w} px)",
+    "net_not_idle": "네트워크 유휴 상태 아님",
+    "console_errors": "콘솔 오류 {n}건",
+    "page_errors": "페이지 오류 {n}건",
+    "failed_requests": "실패한 요청 {n}건",
+    "remote_requests": "원격 요청 {n}건",
+    "fonts_failed": "폰트 로드 실패: {list}",
+    "host": "호스트"
+  },
+  "skills": {
+    "frontend-design": {
+      "summary": "Anthropic의 공식 프런트엔드 디자인 skill입니다. 코드를 작성하기 전에 디자인 방향(팔레트, 서체, 레이아웃, 원칙)을 먼저 정하고, 흔한 AI 기본값과 비교해 점검하도록 에이전트에게 요구합니다. 지침만 있고 스크립트는 없습니다.",
+      "notes": [
+        "같은 SKILL.md가 anthropics/claude-plugins-official과 anthropics/claude-code에도 공개되어 있으며, 이 갤러리는 anthropics/skills를 사용합니다.",
+        "업스트림에서 2026년에 이 skill을 여러 차례 다시 작성했으므로 항상 고정 커밋을 사용해야 합니다."
+      ]
+    },
+    "ui-ux-pro-max": {
+      "summary": "커뮤니티에서 만든 UI/UX 지식 베이스 skill입니다. 로컬 CSV 데이터(스타일, 팔레트, 폰트 조합, UX 규칙, 차트 유형, 기술 스택)와 Python 검색 스크립트로 구성되며, 에이전트가 페이지를 작성하기 전에 디자인 시스템을 만들어 냅니다.",
+      "notes": [
+        "검색 스크립트를 실행하려면 python3(표준 라이브러리만 사용)가 필요합니다.",
+        "업스트림 README는 `npm i -g ui-ux-pro-max-cli`를 권장하지만, 갤러리는 대신 버전을 고정한 npx를 사용하므로 전역으로 설치되는 것이 없습니다."
+      ]
+    },
+    "web-design-engineer": {
+      "summary": "출력이 항상 HTML(페이지, 대시보드, 프로토타입, 슬라이드, 데이터 시각화)인 프런트엔드 디자인 skill입니다. 디자인 방향을 정하는 단계로 시작하며, 25가지 스타일 레시피를 함께 제공합니다. 지침만 있고 스크립트는 없습니다.",
+      "notes": [
+        "v0에서 OpenAI의 frontend-skill을 대신합니다. 해당 skill은 OpenAI 공식 카탈로그에서 제거되어 이제 독자가 설치할 수 없기 때문입니다.",
+        "React 경로는 CDN에서 React와 Babel을 불러오며, 기본값인 직접 작성 CSS 경로는 네트워크가 필요 없습니다."
+      ]
+    }
+  },
+  "prompts": {
+    "landing-saas": {
+      "title": "SaaS 랜딩 페이지",
+      "summary": "가상의 온콜 일정 관리 도구 Rotaline의 마케팅 페이지입니다. 제품 일러스트가 들어간 히어로, 기능, 사용 단계, 성과, 고객 후기, 월간/연간 전환 토글이 있는 요금제, FAQ, 푸터로 구성됩니다."
+    },
+    "dashboard": {
+      "title": "데이터 대시보드",
+      "summary": "Kestrel Coffee Roasters의 매출·운영 대시보드입니다. KPI 카드, 채널 필터가 있는 월별 매출 차트, 카테고리별 비중, 정렬 가능한 카페 표, 최근 주문, 재고 경고로 구성되며 모두 고정 데이터를 사용합니다."
+    },
+    "blog-portfolio": {
+      "title": "개인 블로그 및 포트폴리오",
+      "summary": "가상의 프로덕트 디자이너 Maya Lindqvist의 원페이지 사이트입니다. 사례 연구 4개, 필터링 가능한 글 목록, 전체 글 1편, 타임라인이 있는 소개 섹션, 뉴스레터 양식, 라이트/다크 전환으로 구성됩니다."
+    }
+  }
+}

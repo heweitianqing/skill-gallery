@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "name": "简体中文",
+    "readme_file": "README.zh-CN.md"
+  },
+  "nav": {
+    "aria": "站点导航",
+    "skip": "跳到正文",
+    "overview": "总览",
+    "skills": "Skill",
+    "prompts": "题目",
+    "method": "方法",
+    "language": "语言",
+    "theme_dark": "深色",
+    "theme_light": "浅色",
+    "theme_to_dark": "切换到深色主题",
+    "theme_to_light": "切换到浅色主题"
+  },
+  "footer": {
+    "built": "构建于 {date}",
+    "license": "画廊代码采用 MIT 许可证。各 skill 沿用各自的许可证。{runs} 下的页面是未经编辑的模型输出。",
+    "ai_translation": "本页由 AI 翻译。欢迎通过 pull request 提交更正。",
+    "disclaimer": "本项目与 Anthropic、OpenAI 均无关联。所有商标归各自所有者所有。"
+  },
+  "status": {
+    "pending": "待运行",
+    "ok": "成功",
+    "failed": "失败",
+    "no_run_json": "缺少 run.json",
+    "bad_run_json": "run.json 无效",
+    "unknown": "未知"
+  },
+  "thumb": {
+    "no_page": "无页面",
+    "unreadable": "截图无法读取",
+    "no_screenshot": "暂无截图",
+    "no_desktop": "暂无桌面截图",
+    "no_mobile": "暂无手机截图",
+    "alt": "{caption}，{kind}截图（页面顶部）",
+    "enlarge": "放大查看整页截图：{caption}"
+  },
+  "view": {
+    "aria": "截图尺寸",
+    "desktop": "桌面",
+    "mobile": "手机"
+  },
+  "lightbox": {
+    "aria": "整页截图",
+    "close": "关闭",
+    "full_alt": "{caption}，{kind}整页截图",
+    "desktop": "桌面 1440",
+    "mobile": "手机 390"
+  },
+  "crumbs": {
+    "aria": "面包屑导航",
+    "gallery": "画廊"
+  },
+  "cell": {
+    "native": "原生",
+    "not_run": "尚未运行。",
+    "na": "不适用",
+    "yes": "是",
+    "no": "否",
+    "none": "无",
+    "model": "模型",
+    "time": "耗时",
+    "tokens": "Token",
+    "skill_used": "使用 skill",
+    "external": "外部资源",
+    "run_date": "运行日期",
+    "open_page": "打开页面",
+    "details": "详情",
+    "prompt_changed": "这次运行之后，题目文件有改动。",
+    "breaks_rule": "违反题目规则：{rules}。",
+    "attempt": "第 {n} 次尝试；之前的尝试保存在 {path}。"
+  },
+  "home": {
+    "title": "{site}：agent skill 对比",
+    "description": "Codex 和 Claude Code 在用与不用 agent skill 时生成的网页，并排对比。",
+    "h1": "Agent skill 给网页带来了什么变化",
+    "lead": "同样的题目，分别交给 <strong>Codex</strong> 和 <strong>Claude Code</strong>，每个 agent 都在用与不用网页设计 skill（<code>SKILL.md</code>）两种情况下各做一次。每道题目按 2×2 运行：Codex 原生、Codex + skill、Claude Code 原生、Claude Code + skill。原生格子由所有 skill 共用。",
+    "progress": "已运行 {done} / {total} 格",
+    "failed_one": "{n} 格失败",
+    "failed_other": "{n} 格失败",
+    "pending_hint": "尚未运行的格子显示“待运行”。",
+    "overview_h2": "总览",
+    "overview_hint": "行是题目，列是 skill。每个方块左边是 Codex 的结果，右边是 Claude Code 的结果（页面顶部，桌面宽度）。",
+    "grid_aria": "总览表格，可横向滚动",
+    "col_prompt": "题目",
+    "col_native": "原生",
+    "col_native_sub": "不额外加 skill，共用基线",
+    "col_skill_sub": "使用 skill",
+    "skills_h2": "Skill",
+    "prompts_h2": "题目",
+    "cells_count": "{done} / {total} 格",
+    "version": "版本 {v}"
+  },
+  "method": {
+    "h2": "方法",
+    "th_agent": "Agent",
+    "th_model": "模型",
+    "th_effort": "Effort",
+    "th_cli": "CLI 版本",
+    "th_runs": "运行次数",
+    "runs_one": "{n} 次运行",
+    "runs_other": "{n} 次运行",
+    "no_runs": "已配置，尚未运行",
+    "table_note": "模型和 effort 在运行脚本里是固定的。表中显示的是 <code>run.json</code> 文件实际记录的值。",
+    "sample_title": "每格只采样一次，不挑图",
+    "sample_body": "每个格子只生成一次，一次完成，不追加对话轮次。结果原样展示，失败的运行也包括在内。如果某格重新运行，之前的尝试会保存在 <code>runs/&lt;prompt&gt;/_attempts/</code>。",
+    "prompt_title": "四个格子用同一道题目",
+    "prompt_body": "题目措辞中性，不含风格形容词。skill 格子在末尾多加一句点名 skill 的话：Claude Code 用 <code>Use the &lt;name&gt; skill.</code>，Codex 用 <code>Use the $&lt;name&gt; skill.</code>。",
+    "isolation_title": "隔离",
+    "isolation_body": "每次运行都从仓库之外一个全新的临时目录开始：<code>HOME</code> 为空，配置目录独立（<code>CLAUDE_CONFIG_DIR</code> 或 <code>CODEX_HOME</code>），环境变量从零构建。不加载任何用户设置、插件、用户级 skill、MCP 服务器或记忆。被测的 skill 只复制到这个临时项目的 skill 文件夹（<code>.claude/skills/</code> 或 <code>.agents/skills/</code>）。各 CLI 自带的 skill 仍然可用，算作原生。证据来自各 agent 自己的日志，存放在 <code>run.json</code> 的 <code>isolation</code> 字段下。",
+    "fire_title": "Skill 必须真正触发",
+    "fire_body": "对于 skill 格子，日志必须显示 skill 已被加载（<code>skill_triggered</code>）。否则该格标为失败，不会当作 skill 的结果展示。",
+    "shots_title": "截图",
+    "shots_body": "整页截图，宽度为 1440 和 390 CSS px，在网络空闲、字体加载完成后截取，并禁用动画{tools}。缩略图显示页面顶部。“打开页面”会在沙箱 iframe 中加载原始的 <code>index.html</code>（<code>sandbox=\"allow-scripts\"</code>，没有同源访问权限）。",
+    "dates_title": "运行日期",
+    "dates_body_one": "{range}（UTC），共 {n} 格。",
+    "dates_body_other": "{range}（UTC），共 {n} 格。",
+    "dates_none": "还没有运行过任何格子。",
+    "limits_h": "已知局限",
+    "limit_native": "<strong>“原生”指开箱即用的状态，不是零 skill。</strong>每一格（包括原生格）都能用 agent 自带的 skill：Claude Code 内置的 19 个 skill，以及 Codex 的系统 skill（<code>imagegen</code>、<code>openai-docs</code>、<code>skill-creator</code>、<code>skill-installer</code>）。在 <code>dashboard</code> 这道题里，Claude Code 内置的 <code>dataviz</code> skill 自己触发了两次，<code>claude__native</code> 一次，<code>claude__frontend-design</code> 一次，记录在 <code>run.json</code> 的 <code>builtin_skills_used</code> 里。这是有意保留的：比较的是读者装好 agent 之后实际得到的效果。",
+    "limit_disk": "<strong>隔离指的是“什么都不加载”，而不是“什么都读不到”。</strong>agent 仍然可以读取磁盘上的其他内容：Codex 默认的 <code>workspace-write</code> 沙箱可以读取 <code>/</code>，而使用 <code>bypassPermissions</code> 的 Claude Code 根本没有沙箱。在 v0 的运行中，agent 曾到上级目录查找 <code>AGENTS.md</code>，还有一个用了运行者 npm 缓存里的 Playwright。更强的隔离（单独的用户账号或容器）留待以后实现。",
+    "limit_fixed": "<strong>截图中的固定侧边栏。</strong>整页截图对尺寸为 <code>100vh</code> 的 <code>position: fixed</code> 或 <code>sticky</code> 元素，只按首屏高度绘制，所以看板的侧边栏可能看起来在 900 px 处就断了。这是截图方式造成的，不是页面本身的问题。",
+    "limit_once": "<strong>一次采样不等于基准测试。</strong>每格只生成一次。请把画廊当作 skill 大致效果的示例，而不是评分。"
+  },
+  "skill": {
+    "description": "Codex 和 Claude Code 在用与不用 {name} skill 时生成的页面。",
+    "source": "来源",
+    "path": "路径",
+    "pinned_commit": "固定 commit",
+    "upstream_commit": "上游 commit",
+    "reference": "（仅供参考）",
+    "installed_with": "安装方式",
+    "own_cli": "（该 skill 自己的 CLI）",
+    "license": "许可证",
+    "commit_in_runs": "运行时使用的 commit",
+    "layout_hint": "每道题目固定按 2×2 展示：Codex 原生、Codex + skill、Claude Code 原生、Claude Code + skill。点击截图可查看整页。",
+    "install_link": "安装与使用 ↓",
+    "jump_aria": "本页的题目"
+  },
+  "install": {
+    "h2": "安装与使用",
+    "intro_git": "项目级安装：把固定 commit 下的 skill 文件夹（包含 <code>SKILL.md</code> 的那个）复制到你的项目中。画廊运行时也是这样安装的。",
+    "intro_npm": "这个 skill 由它自己的 CLI（{pkg}）为每个 agent 分别生成。画廊运行时用的就是这份生成结果。",
+    "install_h": "安装",
+    "use_h": "使用",
+    "copy_to": "把文件夹复制到 {path}。",
+    "writes": "会在当前项目中写入 {path}。",
+    "home_hint": "如果想在所有项目中使用，改为把文件夹放到 {path}。",
+    "auto_claude": "当请求与 skill 的描述相符时，Claude Code 也会自行加载这个 skill。",
+    "auto_codex": "Codex 也会根据 skill 的描述自行选用它。",
+    "your_task": "<你的任务>",
+    "c_interactive": "交互模式",
+    "c_end_with": "或者在任意请求末尾加上",
+    "c_headless": "非交互模式，和画廊运行时一样",
+    "c_mention": "交互模式：在请求中提到它，或从 /skills 中选择",
+    "notes_h": "说明",
+    "metadata": "元数据：{file}"
+  },
+  "prompt": {
+    "description": "{title}：所有 skill 并排对比。",
+    "layout_hint": "所有 skill 并排展示：每列是一个 skill，每行是一个 agent。",
+    "text_h": "题目原文",
+    "text_note": "英文原文，与发给 agent 的内容完全一致，不做翻译。",
+    "skill_line_note": "skill 格子会在末尾加一句：<code>Use the &lt;name&gt; skill.</code>（Claude Code）或 <code>Use the $&lt;name&gt; skill.</code>（Codex）。",
+    "grid_aria": "对比表格，可横向滚动"
+  },
+  "viewer": {
+    "frame_title": "生成的页面：{title}",
+    "width_aria": "预览宽度",
+    "fit": "自适应",
+    "download": "下载 HTML",
+    "sandbox_note": "沙箱预览：页面的脚本会运行，但页面无法访问本站、cookie 或存储，所以依赖 <code>localStorage</code> 的功能可能表现不同。",
+    "no_index": "这次运行没有生成 index.html。",
+    "details_h": "运行详情",
+    "no_run_json": "这个格子还没有 <code>run.json</code>。"
+  },
+  "details": {
+    "status": "状态",
+    "agent": "Agent",
+    "model": "模型",
+    "effort": "Effort",
+    "prompt": "题目",
+    "file_changed": "（此后文件有改动）",
+    "skill_sentence": "Skill 附加句",
+    "skill_source": "Skill 来源",
+    "skill_commit": "Skill commit",
+    "dirty": "（有未提交的改动）",
+    "skill_fetched_by": "Skill 获取方式",
+    "installed_to": "安装位置",
+    "skill_triggered": "Skill 是否触发",
+    "evidence": "证据",
+    "bundled_skills": "用到的内置 skill",
+    "started": "开始时间",
+    "duration": "耗时",
+    "exit": "退出状态",
+    "exit_code": "退出码 {n}",
+    "timed_out": "超时",
+    "attempt": "尝试次数",
+    "earlier_attempts": "之前的尝试",
+    "tokens": "Token",
+    "turns": "轮数",
+    "cost": "费用",
+    "activity": "活动",
+    "isolation": "隔离",
+    "iso_ok": "全部检查通过",
+    "iso_fail": "有检查未通过",
+    "external_refs": "外部引用",
+    "refs_from_run": "对 <code>index.html</code> 的静态扫描结果，来自 <code>run.json</code>。",
+    "refs_parsed": "由站点构建脚本从 <code>index.html</code> 中解析。",
+    "rule_violations": "违反规则",
+    "output": "输出",
+    "no_index": "没有 index.html",
+    "other_files": "其他文件：{files}",
+    "screenshot": "截图（{kind}）",
+    "page_tall": "页面高 {h} px",
+    "overflow": "横向溢出（{w} px）",
+    "net_not_idle": "网络未空闲",
+    "console_errors": "{n} 个控制台错误",
+    "page_errors": "{n} 个页面错误",
+    "failed_requests": "{n} 个失败的请求",
+    "remote_requests": "{n} 个远程请求",
+    "fonts_failed": "字体加载失败：{list}",
+    "host": "主机"
+  },
+  "skills": {
+    "frontend-design": {
+      "summary": "Anthropic 官方的前端设计 skill。它要求 agent 在写代码之前先确定设计方向（配色、字体、布局、原则），并对照常见的 AI 默认风格做检查。只有说明文字，没有脚本。",
+      "notes": [
+        "同一份 SKILL.md 也发布在 anthropics/claude-plugins-official 和 anthropics/claude-code 中；本画廊使用的是 anthropics/skills 里的版本。",
+        "上游在 2026 年多次重写过这个 skill，所以请始终使用固定 commit。"
+      ]
+    },
+    "ui-ux-pro-max": {
+      "summary": "一个社区维护的 UI/UX 知识库 skill：本地 CSV 数据（风格、配色、字体搭配、UX 规则、图表类型、技术栈），外加一个 Python 搜索脚本，在 agent 写页面之前先生成一套设计系统。",
+      "notes": [
+        "运行它的搜索脚本需要 python3（只用到标准库）。",
+        "上游 README 推荐使用 `npm i -g ui-ux-pro-max-cli`；画廊改用固定版本的 npx，不做任何全局安装。"
+      ]
+    },
+    "web-design-engineer": {
+      "summary": "一个前端设计 skill，输出总是 HTML（页面、看板、原型、幻灯片、数据可视化）。它先确定设计方向，并自带 25 套风格配方。只有说明文字，没有脚本。",
+      "notes": [
+        "在 v0 中替代 OpenAI 的 frontend-skill，因为那个 skill 已从 OpenAI 官方目录中移除，读者已无法安装。",
+        "它的 React 路径会从 CDN 加载 React 和 Babel；默认的手写 CSS 路径不需要联网。"
+      ]
+    }
+  },
+  "prompts": {
+    "landing-saas": {
+      "title": "SaaS 落地页",
+      "summary": "Rotaline 的营销页面，这是一个虚构的值班排班工具。页面包括带产品插图的首屏、功能、步骤、成效、用户评价、可切换月付/年付的价格、FAQ 和页脚。"
+    },
+    "dashboard": {
+      "title": "数据看板",
+      "summary": "Kestrel Coffee Roasters 的销售与运营看板：KPI 卡片、可按渠道筛选的月度营收图、品类占比、可排序的咖啡馆表格、最近订单和库存预警，数据全部固定。"
+    },
+    "blog-portfolio": {
+      "title": "个人博客与作品集",
+      "summary": "虚构产品设计师 Maya Lindqvist 的单页网站：四个案例研究、可筛选的文章列表、一篇完整文章、带时间线的个人简介、邮件订阅表单和浅色/深色切换。"
+    }
+  }
+}

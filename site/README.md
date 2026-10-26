@@ -16,13 +16,16 @@ Use a local server rather than opening the files directly: links point at direct
 
 | Path | What it is |
 | --- | --- |
-| `config.json` | Site title, optional `repo_url` (in CI it falls back to `$GITHUB_REPOSITORY`), prompt and skill order, agent labels with the configured model and effort |
+| `config.json` | Site title, `site_url` (used for `hreflang` and canonical links), `repo_url`, `languages` (the first one is served at the root), prompt and skill order, agent labels with the configured model and effort |
+| `i18n/<lang>.json` | Every interface string, plus skill summaries and notes (`skills.<name>`), and prompt titles and summaries (`prompts.<id>`). The READMEs have their own strings in `scripts/build-readme.strings.json`. Strings are trusted HTML; `{placeholders}` are filled and escaped by the build; `_one`/`_other` keys are plural forms. A missing string falls back to English and the build lists it |
 | `assets/site.css`, `assets/site.js` | Gallery styles and the small script for the theme toggle, desktop/mobile switch, lightbox and preview sizing. Pages work without the script |
 | `dist/` | Build output, git-ignored |
 
 ## Pages
 
-| Output | Content |
+Each language gets its own page tree: English at the root, the others under `/zh-CN/`, `/zh-TW/`, `/ja/`, `/ko/`, `/es/`. Every page has `<html lang>`, `hreflang` alternates (plus `x-default`), a canonical link and a language menu that keeps you on the same page. Assets, run files and thumbnails are shared at the root. The prompt texts are shown in English in every language, because they are the exact input the agents received.
+
+| Output (per language) | Content |
 | --- | --- |
 | `index.html` | Overview grid (prompt × skill, Codex and Claude Code thumbnails per square), skills, prompts, method |
 | `skills/<name>/` | One 2×2 per prompt (Codex native, Codex + skill, Claude Code native, Claude Code + skill), then install and use for both agents |

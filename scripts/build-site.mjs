@@ -7,7 +7,10 @@
 //
 // Inputs: runs/<prompt>/<agent>__<variant>/{index.html,desktop.png,mobile.png,run.json},
 // prompts/*.md, skills/<name>/meta.yaml (falls back to skills/<name>/source.json and
-// research/candidates.json), site/config.json and site/assets/.
+// research/candidates.json), site/config.json, site/i18n/<lang>.json and site/assets/.
+//
+// One page tree per language in site/config.json "languages": the first one at the
+// root, the others under /<code>/. Prompt texts are never translated.
 //
 // Cell files are copied into <out>/runs/ byte for byte. Thumbnails are cropped and
 // scaled into <out>/thumbs/ with the small PNG codec below, so no dependencies are
@@ -663,40 +666,142 @@ function externalRefs(html) {
   return [...refs.values()];
 }
 
-// ---------------------------------------------------------------- page parts
+// ---------------------------------------------------------------- i18n
 
+// UI strings live in site/i18n/<lang>.json. They are trusted HTML; values put into
+// {placeholders} are escaped unless passed as html(...). A key missing from a
+// language falls back to English. Plural keys end in _one/_other (Intl.PluralRules).
+const I18N_DIR = path.join(SITE_SRC, 'i18n');
 const AGENT_ORDER = ['codex', 'claude'];
 let CONFIG;
 let AGENTS;
+let LANGS;
+let CUR;
+let BUILD;
+
+const getPath = (obj, key) => key.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
+
+function flatten(obj, prefix = '', out = {}) {
+  for (const [k, v] of Object.entries(obj || {})) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, key, out);
+    else out[key] = v;
+  }
+  return out;
+}
+
+function loadLanguages(codes) {
+  const en = readJson(path.join(I18N_DIR, 'en.json')) || {};
+  const enKeys = Object.keys(flatten(en));
+  return codes.map((code, i) => {
+    const dict = code === 'en' ? en : readJson(path.join(I18N_DIR, `${code}.json`)) || {};
+    if (code !== 'en' && !Object.keys(dict).length) warn(`site/i18n/${code}.json missing or empty; English text is used`);
+    const have = flatten(dict);
+    const missing = enKeys.filter((k) => !(k in have));
+    return { code, dict, en, missing, name: dict.meta?.name || code, prefix: i === 0 ? '' : `${code}/` };
+  });
+}
+
+const html = (s) => ({ html: s });
+// Only real inline tags are stripped for plain text, so "<your task>" survives.
+const INLINE_TAG = /<\/?(?:a|b|i|em|strong|code|span|small|br|kbd)\b[^>]*>/gi;
+const lookup = (key) => {
+  const v = getPath(CUR.dict, key);
+  return v !== undefined ? v : getPath(CUR.en, key);
+};
+const missingStrings = new Set();
+
+function fill(s, vars, escape) {
+  return s.replace(/\{(\w+)\}/g, (m, k) => {
+    if (!vars || !(k in vars)) return m;
+    const v = vars[k];
+    if (v && typeof v === 'object' && 'html' in v) return escape ? v.html : v.html.replace(INLINE_TAG, '');
+    return escape ? esc(v) : String(v);
+  });
+}
+
+// HTML string for element content.
+function t(key, vars) {
+  const s = lookup(key);
+  if (typeof s !== 'string') {
+    missingStrings.add(key);
+    return esc(key);
+  }
+  return fill(s, vars, true);
+}
+
+// Plain text (tags removed), for attributes and <title>; escape with esc() when inserting.
+function tText(key, vars) {
+  const s = lookup(key);
+  if (typeof s !== 'string') {
+    missingStrings.add(key);
+    return key;
+  }
+  return fill(s, vars, false)
+    .replace(INLINE_TAG, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+const ta = (key, vars) => esc(tText(key, vars));
+
+// Sentence joins: Chinese and Japanese end with 。 and need no space between sentences.
+const isCjk = () => /^(zh|ja)\b/.test(CUR.code);
+const stop = () => (isCjk() ? '。' : '. ');
+const gap = () => (isCjk() ? '' : ' ');
+const paren = (s) => (isCjk() ? `（${s}）` : ` (${s})`);
+
+function pluralKey(key, n) {
+  const cat = new Intl.PluralRules(CUR.code).select(n);
+  return typeof lookup(`${key}_${cat}`) === 'string' ? `${key}_${cat}` : `${key}_other`;
+}
+const tn = (key, n, vars) => t(pluralKey(key, n), { n, ...vars });
+
+// Page addresses. Every language has its own tree (English at the root, the
+// others under /<code>/); assets, runs and thumbnails are shared at the root.
+function setPage(lang, rel) {
+  const depth = (lang.prefix ? 1 : 0) + rel.split('/').filter(Boolean).length;
+  CUR = { lang, code: lang.code, dict: lang.dict, en: lang.en, R: '../'.repeat(depth), rel };
+}
+const pageHref = (rel, lang = CUR.lang) => `${CUR.R}${lang.prefix}${rel}` || './';
+const assetHref = (rel) => `${CUR.R}${rel}`;
+const absUrl = (lang, rel) => (CONFIG.site_url ? `${CONFIG.site_url.replace(/\/?$/, '/')}${lang.prefix}${rel}` : null);
+
+// ---------------------------------------------------------------- page parts
+
 const agentLabel = (id) => AGENTS.find((a) => a.id === id)?.label || id;
-const variantLabel = (v) => (v === 'native' ? 'native' : `+ ${v}`);
-const cellTitle = (agent, variant) => `${agentLabel(agent)} ${variant === 'native' ? '· native' : `+ ${variant}`}`;
+const variantLabel = (v) => (v === 'native' ? t('cell.native') : `+ ${esc(v)}`);
+const cellTitleText = (agent, variant) => (variant === 'native' ? `${agentLabel(agent)} · ${tText('cell.native')}` : `${agentLabel(agent)} + ${variant}`);
+const promptTitle = (p) => (typeof lookup(`prompts.${p.id}.title`) === 'string' ? lookup(`prompts.${p.id}.title`) : p.title);
+const promptSummary = (p) => (typeof lookup(`prompts.${p.id}.summary`) === 'string' ? lookup(`prompts.${p.id}.summary`) : null);
+const skillSummary = (s) => (typeof lookup(`skills.${s.name}.summary`) === 'string' ? lookup(`skills.${s.name}.summary`) : s.summary);
+const skillNotes = (s) => (Array.isArray(lookup(`skills.${s.name}.notes`)) ? lookup(`skills.${s.name}.notes`).map(String) : s.notes);
 
 function cellStatus(c) {
-  if (!c) return { key: 'pending', label: 'Pending', zh: '待运行' };
-  if (!c.run) return c.runInvalid ? { key: 'partial', label: 'Bad run.json', zh: 'run.json 无法解析' } : { key: 'partial', label: 'No run.json', zh: '缺少 run.json' };
-  if (c.run.success === true) return { key: 'ok', label: 'OK', zh: '成功' };
-  if (c.run.success === false) return { key: 'failed', label: 'Failed', zh: '失败' };
-  return { key: 'partial', label: 'Unknown', zh: '状态未知' };
+  if (!c) return { key: 'pending', label: t('status.pending') };
+  if (!c.run) return { key: 'partial', label: t(c.runInvalid ? 'status.bad_run_json' : 'status.no_run_json') };
+  if (c.run.success === true) return { key: 'ok', label: t('status.ok') };
+  if (c.run.success === false) return { key: 'failed', label: t('status.failed') };
+  return { key: 'partial', label: t('status.unknown') };
 }
 
-function badge(st) {
-  return `<span class="badge badge-${st.key}" title="${esc(st.zh)}">${esc(st.label)}</span>`;
-}
+const badge = (st) => `<span class="badge badge-${st.key}">${st.label}</span>`;
 
 function tokenParts(run) {
   const u = run?.usage;
   if (!u || typeof u !== 'object') return null;
-  const t = fmtTokens;
+  const f = fmtTokens;
   if (run.agent === 'claude') {
     const cache = (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
     return {
-      short: [t(u.input_tokens) && `in ${t(u.input_tokens)}`, cache ? `cache ${t(cache)}` : null, t(u.output_tokens) && `out ${t(u.output_tokens)}`].filter(Boolean).join(' · '),
+      short: [f(u.input_tokens) && `in ${f(u.input_tokens)}`, cache ? `cache ${f(cache)}` : null, f(u.output_tokens) && `out ${f(u.output_tokens)}`].filter(Boolean).join(' · '),
       long: `input ${u.input_tokens ?? '?'}, cache write ${u.cache_creation_input_tokens ?? '?'}, cache read ${u.cache_read_input_tokens ?? '?'}, output ${u.output_tokens ?? '?'}`,
     };
   }
   return {
-    short: [t(u.input_tokens) && `in ${t(u.input_tokens)}`, t(u.output_tokens) && `out ${t(u.output_tokens)}`].filter(Boolean).join(' · '),
+    short: [f(u.input_tokens) && `in ${f(u.input_tokens)}`, f(u.output_tokens) && `out ${f(u.output_tokens)}`].filter(Boolean).join(' · '),
     long: `input ${u.input_tokens ?? '?'} (cached ${u.cached_input_tokens ?? '?'}), output ${u.output_tokens ?? '?'} (reasoning ${u.reasoning_output_tokens ?? '?'})`,
   };
 }
@@ -725,107 +830,114 @@ const refsFromRun = (c) => Boolean(c.run?.external_refs ?? c.run?.output?.extern
 const violations = (r) => [...new Set([...(Array.isArray(r?.rule_violations) ? r.rule_violations : []), ...(Array.isArray(r?.external_refs?.violations) ? r.external_refs.violations : [])])];
 
 function hostsSummary(refs, max = 2) {
-  if (!refs.length) return 'none';
+  if (!refs.length) return tText('cell.none');
   const hosts = [...new Set(refs.map((r) => r.host))];
   return hosts.length > max ? `${hosts.slice(0, max).join(', ')} +${hosts.length - max}` : hosts.join(', ');
 }
 
-function thumbBlock(c, R, { caption, mini = false } = {}) {
+function thumbBlock(c, { caption, mini = false } = {}) {
   const st = cellStatus(c);
   if (!c || (!c.thumbs.desktop && !c.thumbs.mobile)) {
-    const msg = !c ? ['Pending', '待运行'] : !c.files['index.html'] ? ['No page', '没有生成页面'] : c.badShot ? ['Screenshot unreadable', '截图无法读取'] : ['No screenshot yet', '截图待生成'];
-    return `<div class="thumb thumb-empty" data-status="${st.key}"><span>${msg[0]}</span><span lang="zh-CN">${msg[1]}</span></div>`;
+    const msg = !c ? 'status.pending' : !c.files['index.html'] ? 'thumb.no_page' : c.badShot ? 'thumb.unreadable' : 'thumb.no_screenshot';
+    return `<div class="thumb thumb-empty" data-status="${st.key}"><span>${t(msg)}</span></div>`;
   }
   const img = (kind, src) =>
     src
-      ? `<img class="shot shot-${kind}" src="${R}${esc(src)}" alt="${esc(`${caption}, ${kind} screenshot (top of page)`)}" loading="lazy" decoding="async">`
-      : `<span class="shot shot-${kind} shot-missing">No ${kind} screenshot</span>`;
+      ? `<img class="shot shot-${kind}" src="${esc(assetHref(src))}" alt="${ta('thumb.alt', { caption, kind: tText(`view.${kind}`) })}" loading="lazy" decoding="async">`
+      : `<span class="shot shot-${kind} shot-missing">${t(`thumb.no_${kind}`)}</span>`;
   if (mini) return `<span class="thumb thumb-mini">${img('desktop', c.thumbs.desktopSmall || c.thumbs.desktop)}</span>`;
-  return `<a class="thumb" href="${R}${esc(c.href.desktop || c.href.mobile)}"${c.href.desktop ? ` data-full-desktop="${R}${esc(c.href.desktop)}"` : ''}${
-    c.href.mobile ? ` data-full-mobile="${R}${esc(c.href.mobile)}"` : ''
-  } data-caption="${esc(caption)}" aria-label="${esc(`Enlarge full-page screenshot: ${caption}`)}">${img('desktop', c.thumbs.desktop)}${img('mobile', c.thumbs.mobile)}</a>`;
+  const full = (k) => (c.href[k] ? ` data-full-${k}="${esc(assetHref(c.href[k]))}"` : '');
+  return `<a class="thumb" href="${esc(assetHref(c.href.desktop || c.href.mobile))}"${full('desktop')}${full('mobile')} data-caption="${esc(caption)}" data-label-desktop="${ta('lightbox.desktop')}" data-label-mobile="${ta('lightbox.mobile')}" aria-label="${ta('thumb.enlarge', { caption })}">${img('desktop', c.thumbs.desktop)}${img('mobile', c.thumbs.mobile)}</a>`;
 }
 
-function metaRow(label, value, title) {
-  return `<div class="kv"><dt>${label}</dt><dd${title ? ` title="${esc(title)}"` : ''}>${value ?? DASH}</dd></div>`;
-}
+const metaRow = (label, value, title) => `<div class="kv"><dt>${label}</dt><dd${title ? ` title="${esc(title)}"` : ''}>${value ?? DASH}</dd></div>`;
 
-function cellCard(c, R, { agent, variant, prompt, heading }) {
+function cellCard(c, { agent, variant, prompt }) {
   const st = cellStatus(c);
-  const caption = `${cellTitle(agent, variant)} — ${prompt.title}`;
-  const head = `<header class="cell-head"><h4 class="cell-title">${heading || `<b>${esc(agentLabel(agent))}</b> <span>${esc(variantLabel(variant))}</span>`}</h4>${badge(st)}</header>`;
-  if (!c) return `<article class="cell" data-status="pending">${head}${thumbBlock(null, R)}<p class="cell-note">Not run yet. <span lang="zh-CN">还没有运行。</span></p></article>`;
+  const caption = `${cellTitleText(agent, variant)} — ${promptTitle(prompt)}`;
+  const head = `<header class="cell-head"><h4 class="cell-title"><b>${esc(agentLabel(agent))}</b> <span>${variantLabel(variant)}</span></h4>${badge(st)}</header>`;
+  if (!c) return `<article class="cell" data-status="pending">${head}${thumbBlock(null)}<p class="cell-note">${t('cell.not_run')}</p></article>`;
   const r = c.run || {};
   const tok = tokenParts(r);
   const refs = cellExternal(c);
-  const trig = variant === 'native' ? '<span class="na">n/a</span>' : r.skill_triggered === true ? '<span class="yes">Yes</span>' : r.skill_triggered === false ? '<span class="no">No</span>' : null;
+  const trig = variant === 'native' ? `<span class="na">${t('cell.na')}</span>` : r.skill_triggered === true ? `<span class="yes">${t('cell.yes')}</span>` : r.skill_triggered === false ? `<span class="no">${t('cell.no')}</span>` : null;
   const notes = [];
   if (st.key === 'failed' && Array.isArray(r.failure_reasons) && r.failure_reasons.length) notes.push(`<p class="cell-note cell-fail">${esc(r.failure_reasons.join('; '))}</p>`);
-  if (r.prompt?.file_sha256 && prompt.file_sha256 && r.prompt.file_sha256 !== prompt.file_sha256) notes.push('<p class="cell-note cell-warn">Prompt file changed since this run. <span lang="zh-CN">题目在这次运行之后改过。</span></p>');
+  if (r.prompt?.file_sha256 && prompt.file_sha256 && r.prompt.file_sha256 !== prompt.file_sha256) notes.push(`<p class="cell-note cell-warn">${t('cell.prompt_changed')}</p>`);
   const v = violations(r);
-  if (v.length) notes.push(`<p class="cell-note cell-warn">Breaks a prompt rule: ${esc(v.join(', ').replace(/_/g, ' '))}. <span lang="zh-CN">违反题目规则。</span></p>`);
-  if (isNum(r.attempt) && r.attempt > 1) notes.push(`<p class="cell-note">Attempt ${r.attempt}; earlier attempts are kept in <code>runs/${esc(c.prompt)}/_attempts/</code>.</p>`);
+  if (v.length) notes.push(`<p class="cell-note cell-warn">${t('cell.breaks_rule', { rules: v.join(', ').replace(/_/g, ' ') })}</p>`);
+  if (isNum(r.attempt) && r.attempt > 1) notes.push(`<p class="cell-note">${t('cell.attempt', { n: r.attempt, path: html(`<code>runs/${esc(c.prompt)}/_attempts/</code>`) })}</p>`);
   const meta = `<dl class="meta">
-${metaRow('Model', r.model ? `<code>${esc(r.model)}</code>${r.effort ? ` · ${esc(r.effort)}` : ''}` : null)}
-${metaRow('Time', fmtDuration(r.duration_ms))}
-${metaRow('Tokens', tok?.short ? esc(tok.short) : null, tok?.long)}
-${metaRow('Skill used', trig, variant === 'native' ? null : 'skill_triggered, from the agent’s own logs')}
-${metaRow('External', esc(hostsSummary(refs)), refs.map((x) => x.url).join('\n'))}
-${metaRow('Run date', fmtDate(r.started_at))}
+${metaRow(t('cell.model'), r.model ? `<code>${esc(r.model)}</code>${r.effort ? ` · ${esc(r.effort)}` : ''}` : null)}
+${metaRow(t('cell.time'), fmtDuration(r.duration_ms))}
+${metaRow(t('cell.tokens'), tok?.short ? esc(tok.short) : null, tok?.long)}
+${metaRow(t('cell.skill_used'), trig, variant === 'native' ? null : 'skill_triggered')}
+${metaRow(t('cell.external'), esc(hostsSummary(refs)), refs.map((x) => x.url).join('\n'))}
+${metaRow(t('cell.run_date'), fmtDate(r.started_at))}
 </dl>`;
   const links = [
-    c.files['index.html'] ? `<a href="${R}${esc(c.href.viewer)}">Open page</a>` : `<a href="${R}${esc(c.href.viewer)}">Details</a>`,
-    c.files['run.json'] ? `<a href="${R}${esc(c.href.run)}">run.json</a>` : null,
+    `<a href="${esc(pageHref(c.href.viewer))}">${t(c.files['index.html'] ? 'cell.open_page' : 'cell.details')}</a>`,
+    c.files['run.json'] ? `<a href="${esc(assetHref(c.href.run))}">run.json</a>` : null,
   ].filter(Boolean);
-  return `<article class="cell" data-status="${st.key}">${head}${thumbBlock(c, R, { caption })}${meta}${notes.join('')}<p class="cell-links">${links.join('<span aria-hidden="true"> · </span>')}</p></article>`;
+  return `<article class="cell" data-status="${st.key}">${head}${thumbBlock(c, { caption })}${meta}${notes.join('')}<p class="cell-links">${links.join('<span aria-hidden="true"> · </span>')}</p></article>`;
 }
 
-function viewToggle() {
-  return `<div class="seg" role="group" aria-label="Screenshot size">
-<button type="button" data-set-view="desktop" aria-pressed="true">Desktop <small>1440</small></button>
-<button type="button" data-set-view="mobile" aria-pressed="false">Mobile <small>390</small></button>
+const viewToggle = () => `<div class="seg" role="group" aria-label="${ta('view.aria')}">
+<button type="button" data-set-view="desktop" aria-pressed="true">${t('view.desktop')} <small>1440</small></button>
+<button type="button" data-set-view="mobile" aria-pressed="false">${t('view.mobile')} <small>390</small></button>
 </div>`;
-}
 
-const LIGHTBOX = `<dialog id="lightbox" class="lightbox" aria-label="Full-page screenshot">
-<div class="lightbox-bar"><span data-caption></span><button type="button" class="btn" data-close>Close</button></div>
-<div class="lightbox-body"><img alt=""></div>
+const lightbox = () => `<dialog id="lightbox" class="lightbox" aria-label="${ta('lightbox.aria')}">
+<div class="lightbox-bar"><span data-caption></span><button type="button" class="btn" data-close>${t('lightbox.close')}</button></div>
+<div class="lightbox-body"><img alt="" data-alt-template="${ta('lightbox.full_alt', { caption: '{caption}', kind: '{kind}' })}"></div>
 </dialog>`;
 
-function layout({ depth, title, description, body, current }) {
-  const R = depth ? '../'.repeat(depth) : '';
+function langMenu() {
+  const items = LANGS.map(
+    (l) =>
+      `<li><a href="${esc(pageHref(CUR.rel, l))}" hreflang="${esc(l.code)}" lang="${esc(l.code)}"${l === CUR.lang ? ' aria-current="true"' : ''}>${esc(l.name)}</a></li>`,
+  ).join('');
+  return `<details class="lang-menu"><summary><span class="vh">${t('nav.language')}: </span><span aria-hidden="true">🌐</span> ${esc(CUR.lang.name)}</summary><ul>${items}</ul></details>`;
+}
+
+function layout({ title, description, body, current }) {
   const nav = [
-    ['Overview', `${R}index.html#overview`, 'overview'],
-    ['Skills', `${R}index.html#skills`, 'skills'],
-    ['Prompts', `${R}index.html#prompts`, 'prompts'],
-    ['Method', `${R}index.html#method`, 'method'],
+    ['nav.overview', `${pageHref('')}#overview`, 'overview'],
+    ['nav.skills', `${pageHref('')}#skills`, 'skills'],
+    ['nav.prompts', `${pageHref('')}#prompts`, 'prompts'],
+    ['nav.method', `${pageHref('')}#method`, 'method'],
   ];
+  const alternates = LANGS.map((l) => absUrl(l, CUR.rel) && `<link rel="alternate" hreflang="${esc(l.code)}" href="${esc(absUrl(l, CUR.rel))}">`).filter(Boolean);
+  if (alternates.length) alternates.push(`<link rel="alternate" hreflang="x-default" href="${esc(absUrl(LANGS[0], CUR.rel))}">`);
+  const canonical = absUrl(CUR.lang, CUR.rel);
   const repo = CONFIG.repo_url ? `<a href="${esc(CONFIG.repo_url)}">GitHub</a>` : '';
   return `<!doctype html>
-<html lang="en">
+<html lang="${esc(CUR.code)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <meta name="color-scheme" content="light dark">
+${canonical ? `<link rel="canonical" href="${esc(canonical)}">\n` : ''}${alternates.join('\n')}
 <script>try{var t=localStorage.getItem('sg-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
-<link rel="stylesheet" href="${R}assets/site.css">
-<script src="${R}assets/site.js" defer></script>
+<link rel="stylesheet" href="${esc(assetHref('assets/site.css'))}">
+<script src="${esc(assetHref('assets/site.js'))}" defer></script>
 </head>
 <body data-view="desktop">
-<a class="skip" href="#main">Skip to content</a>
+<a class="skip" href="#main">${t('nav.skip')}</a>
 <header class="site-head"><div class="wrap site-head-inner">
-<a class="brand" href="${R}index.html">${esc(CONFIG.site_title)}</a>
-<nav class="site-nav" aria-label="Site">${nav.map(([l, h, k]) => `<a href="${h}"${k === current ? ' aria-current="page"' : ''}>${l}</a>`).join('')}${repo}</nav>
-<button type="button" class="btn theme-btn" data-theme-toggle aria-label="Toggle dark theme">Theme</button>
+<a class="brand" href="${esc(pageHref(''))}">${esc(CONFIG.site_title)}</a>
+<nav class="site-nav" aria-label="${ta('nav.aria')}">${nav.map(([k, h, id]) => `<a href="${esc(h)}"${id === current ? ' aria-current="page"' : ''}>${t(k)}</a>`).join('')}${repo}</nav>
+<div class="head-tools">${langMenu()}<button type="button" class="btn theme-btn" data-theme-toggle data-label-dark="${ta('nav.theme_dark')}" data-label-light="${ta('nav.theme_light')}" data-aria-dark="${ta('nav.theme_to_dark')}" data-aria-light="${ta('nav.theme_to_light')}">${t('nav.theme_dark')}</button></div>
 </div></header>
 <main id="main" class="wrap">
 ${body}
 </main>
 <footer class="site-foot"><div class="wrap">
-<p>Built ${esc(BUILD.date)}${BUILD.sha ? ` from <code>${esc(BUILD.sha.slice(0, 10))}</code>` : ''}. Gallery code: MIT. Each skill keeps its own license. Pages under <code>runs/</code> are unedited model outputs.</p>
-<p lang="zh-CN">本站代码 MIT 许可；各 skill 保留各自许可；<code>runs/</code> 下的页面是模型原样输出，未经修改。</p>
+<p>${t('footer.built', { date: BUILD.date })}${BUILD.sha ? ` <code>${esc(BUILD.sha.slice(0, 10))}</code>` : ''}${stop()}${t('footer.license', { runs: html('<code>runs/</code>') })}</p>
+${CUR.lang.prefix ? `<p>${t('footer.ai_translation')}</p>` : ''}
+<p>${t('footer.disclaimer')}</p>
 </div></footer>
 </body>
 </html>
@@ -834,74 +946,74 @@ ${body}
 
 // ---------------------------------------------------------------- pages
 
-let BUILD;
-
 function homePage(ctx) {
-  const R = '';
   const { prompts, skills, cells, stats } = ctx;
   const cols = ['native', ...skills.map((s) => s.name)];
-  const matrixHead = `<div class="mx-corner">Prompt <span lang="zh-CN">题目</span></div>${cols
-    .map((v) => (v === 'native' ? '<div class="mx-col">Native <span lang="zh-CN">原生</span><small>baseline, shared</small></div>' : `<div class="mx-col"><a href="skills/${esc(v)}/">${esc(v)}</a><small>with skill</small></div>`))
+  const matrixHead = `<div class="mx-corner">${t('home.col_prompt')}</div>${cols
+    .map((v) => (v === 'native' ? `<div class="mx-col">${t('home.col_native')}<small>${t('home.col_native_sub')}</small></div>` : `<div class="mx-col"><a href="${esc(pageHref(`skills/${v}/`))}">${esc(v)}</a><small>${t('home.col_skill_sub')}</small></div>`))
     .join('')}`;
   const matrixRows = [...prompts.values()]
     .map((p) => {
       const cellsHtml = cols
         .map((v) => {
-          const href = v === 'native' ? `prompts/${p.id}/` : `skills/${v}/#${p.id}`;
+          const href = v === 'native' ? pageHref(`prompts/${p.id}/`) : `${pageHref(`skills/${v}/`)}#${p.id}`;
           const minis = AGENT_ORDER.map((a) => {
             const c = cells.get(`${p.id}/${a}__${v}`) || null;
             const st = cellStatus(c);
-            return `<a class="mini" href="${esc(href)}" data-status="${st.key}">${thumbBlock(c, R, { caption: cellTitle(a, v), mini: true })}<span class="mini-label"><span class="dot dot-${st.key}" aria-hidden="true"></span>${esc(agentLabel(a))}<span class="vh"> ${esc(variantLabel(v))}: ${esc(st.label)}</span></span></a>`;
+            return `<a class="mini" href="${esc(href)}" data-status="${st.key}">${thumbBlock(c, { caption: cellTitleText(a, v), mini: true })}<span class="mini-label"><span class="dot dot-${st.key}" aria-hidden="true"></span>${esc(agentLabel(a))}<span class="vh"> ${variantLabel(v)}: ${st.label}</span></span></a>`;
           }).join('');
           return `<div class="mx-cell">${minis}</div>`;
         })
         .join('');
-      return `<div class="mx-row"><a href="prompts/${esc(p.id)}/">${esc(p.title)}</a><small><code>${esc(p.id)}</code></small></div>${cellsHtml}`;
+      return `<div class="mx-row"><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a><small><code>${esc(p.id)}</code></small></div>${cellsHtml}`;
     })
     .join('');
 
+  const perSkill = prompts.size * AGENTS.length;
   const skillCards = skills
     .map((s) => {
       const done = [...cells.values()].filter((c) => c.variant === s.name).length;
-      return `<li class="card"><h3><a href="skills/${esc(s.name)}/">${esc(s.title)}</a></h3>
-${s.summary ? `<p>${esc(s.summary)}</p>` : s.summary_zh ? `<p lang="zh-CN" class="muted">${esc(s.summary_zh)}</p>` : ''}
-<p class="facts">${[s.repo ? `<a href="${esc(s.repo)}">${esc(s.repo.replace(/^https:\/\/github\.com\//, ''))}</a>` : null, s.license ? esc(s.license) : null, `${done} of ${prompts.size * AGENTS.length} cells`].filter(Boolean).join(' · ')}</p></li>`;
+      const summary = skillSummary(s);
+      return `<li class="card"><h3><a href="${esc(pageHref(`skills/${s.name}/`))}">${esc(s.title)}</a></h3>
+${summary ? `<p>${esc(summary)}</p>` : ''}
+<p class="facts">${[s.repo ? `<a href="${esc(s.repo)}">${esc(s.repo.replace(/^https:\/\/github\.com\//, ''))}</a>` : null, s.license ? esc(s.license) : null, t('home.cells_count', { done, total: perSkill })].filter(Boolean).join(' · ')}</p></li>`;
     })
     .join('');
 
+  const perPrompt = (skills.length + 1) * AGENTS.length;
   const promptCards = [...prompts.values()]
     .map((p) => {
       const done = [...cells.values()].filter((c) => c.prompt === p.id).length;
-      return `<li class="card"><h3><a href="prompts/${esc(p.id)}/">${esc(p.title)}</a></h3><p class="facts"><code>${esc(p.id)}</code>${p.version != null ? ` · version ${esc(p.version)}` : ''} · ${done} of ${(skills.length + 1) * AGENTS.length} cells</p></li>`;
+      const summary = promptSummary(p);
+      return `<li class="card"><h3><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a></h3>${summary ? `<p>${esc(summary)}</p>` : ''}<p class="facts"><code>${esc(p.id)}</code>${p.version != null ? ` · ${t('home.version', { v: p.version })}` : ''} · ${t('home.cells_count', { done, total: perPrompt })}</p></li>`;
     })
     .join('');
 
   const body = `
 <section class="intro">
-<h1>What agent skills do to a web page</h1>
-<p class="lead">The same prompts, built by <strong>Codex</strong> and <strong>Claude Code</strong>, each with and without a web-design skill (<code>SKILL.md</code>). Every prompt runs as a 2×2: Codex native, Codex + skill, Claude native, Claude + skill. The native cells are shared by all skills.</p>
-<p lang="zh-CN" class="muted">同一道题，分别由 Codex 和 Claude Code 在“原生”和“加 skill”两种条件下完成。每道题是一组 2×2：Codex 原生、Codex + skill、Claude 原生、Claude + skill；两个原生格所有 skill 共用。</p>
-<p class="progress">${stats.done} of ${stats.total} cells run${stats.failed ? ` · ${stats.failed} failed` : ''}. <span lang="zh-CN">已运行 ${stats.done} / ${stats.total} 格。</span> Cells not run yet show <em>Pending · 待运行</em>.</p>
+<h1>${t('home.h1')}</h1>
+<p class="lead">${t('home.lead')}</p>
+<p class="progress">${t('home.progress', { done: stats.done, total: stats.total })}${stats.failed ? ` · ${tn('home.failed', stats.failed)}` : ''}${stats.done < stats.total ? `${stop()}${t('home.pending_hint')}` : isCjk() ? '。' : '.'}</p>
 </section>
 
 <section id="overview" class="block">
-<h2>Overview <span lang="zh-CN">总览</span></h2>
-<p class="muted">Rows are prompts, columns are skills. Each square shows the Codex and Claude Code result (top of page, desktop width). <span lang="zh-CN">行是题目，列是 skill；每格左边 Codex，右边 Claude Code。</span></p>
-<div class="scroll-x" tabindex="0" role="region" aria-label="Overview grid, scrolls sideways"><div class="matrix" style="--cols:${cols.length}">${matrixHead}${matrixRows}</div></div>
+<h2>${t('home.overview_h2')}</h2>
+<p class="muted">${t('home.overview_hint')}</p>
+<div class="scroll-x" tabindex="0" role="region" aria-label="${ta('home.grid_aria')}"><div class="matrix" style="--cols:${cols.length}">${matrixHead}${matrixRows}</div></div>
 </section>
 
 <section id="skills" class="block">
-<h2>Skills <span lang="zh-CN">被测 skill</span></h2>
+<h2>${t('home.skills_h2')}</h2>
 <ul class="cards">${skillCards}</ul>
 </section>
 
 <section id="prompts" class="block">
-<h2>Prompts <span lang="zh-CN">题目</span></h2>
+<h2>${t('home.prompts_h2')}</h2>
 <ul class="cards">${promptCards}</ul>
 </section>
 
 ${methodSection(ctx)}`;
-  return layout({ depth: 0, title: `${CONFIG.site_title}: agent skills compared`, description: 'Web pages built by Codex and Claude Code with and without agent skills, side by side.', body, current: 'overview' });
+  return layout({ title: tText('home.title', { site: CONFIG.site_title }), description: tText('home.description'), body, current: 'overview' });
 }
 
 function methodSection({ cells, stats }) {
@@ -911,50 +1023,44 @@ function methodSection({ cells, stats }) {
     const models = [...new Set(rs.map((r) => r.model).filter(Boolean))];
     const efforts = [...new Set(rs.map((r) => r.effort).filter(Boolean))];
     const clis = [...new Set(rs.map((r) => r.cli?.version).filter(Boolean))];
-    const observed = rs.length > 0;
-    return `<tr><th scope="row">${esc(a.cli || a.label)}</th><td><code>${esc((models.length ? models : [a.model]).join(', '))}</code></td><td>${esc((efforts.length ? efforts : [a.effort]).join(', '))}</td><td>${clis.length ? clis.map((v) => `<code>${esc(v)}</code>`).join(', ') : DASH}</td><td>${observed ? `${rs.length} run${rs.length === 1 ? '' : 's'}` : '<span class="muted">configured, no runs yet</span>'}</td></tr>`;
+    return `<tr><th scope="row">${esc(a.cli || a.label)}</th><td><code>${esc((models.length ? models : [a.model]).join(', '))}</code></td><td>${esc((efforts.length ? efforts : [a.effort]).join(', '))}</td><td>${clis.length ? clis.map((v) => `<code>${esc(v)}</code>`).join(', ') : DASH}</td><td>${rs.length ? tn('method.runs', rs.length) : `<span class="muted">${t('method.no_runs')}</span>`}</td></tr>`;
   }).join('');
   const dates = runs.map((r) => fmtDate(r.started_at)).filter(Boolean).sort();
-  const dateText = dates.length ? (dates[0] === dates[dates.length - 1] ? dates[0] : `${dates[0]} to ${dates[dates.length - 1]}`) : null;
+  const range = dates.length ? (dates[0] === dates[dates.length - 1] ? dates[0] : `${dates[0]} – ${dates[dates.length - 1]}`) : null;
   const shotTools = [...new Set(runs.map((r) => r.screenshots && [r.screenshots.tool, r.screenshots.browser].filter(Boolean).join(', ')).filter(Boolean))];
+  const item = (k, vars) => `<div><dt>${t(`method.${k}_title`)}</dt><dd>${t(`method.${k}_body`, vars)}</dd></div>`;
   return `<section id="method" class="block method">
-<h2>Method <span lang="zh-CN">方法</span></h2>
+<h2>${t('method.h2')}</h2>
 <div class="table-wrap"><table class="table">
-<thead><tr><th scope="col">Agent</th><th scope="col">Model</th><th scope="col">Effort</th><th scope="col">CLI version</th><th scope="col">Runs</th></tr></thead>
+<thead><tr><th scope="col">${t('method.th_agent')}</th><th scope="col">${t('method.th_model')}</th><th scope="col">${t('method.th_effort')}</th><th scope="col">${t('method.th_cli')}</th><th scope="col">${t('method.th_runs')}</th></tr></thead>
 <tbody>${rows}</tbody></table></div>
-<p class="muted">Model and effort are fixed in the run scripts; the table shows what the <code>run.json</code> files record. <span lang="zh-CN">模型和 effort 写死在运行脚本里，表里是 run.json 实际记录的值。</span></p>
-
+<p class="muted">${t('method.table_note')}</p>
 <dl class="method-list">
-<div><dt>One sample per cell, no picking <span lang="zh-CN">每格只采样一次，不挑图</span></dt>
-<dd>Each cell is generated once, in one pass, with no follow-up turns. The result is shown as it came out, including failed runs; reruns are kept as earlier attempts in <code>runs/&lt;prompt&gt;/_attempts/</code>.
-<span lang="zh-CN">每格只生成一次，不追问、不挑选；失败的结果照样展示，重跑时旧结果保留在 <code>_attempts/</code>。</span></dd></div>
-<div><dt>Same prompt in all four cells <span lang="zh-CN">四格题目相同</span></dt>
-<dd>The prompts use neutral wording with no style adjectives. Skill cells add one closing sentence that names the skill: <code>Use the &lt;name&gt; skill.</code> for Claude Code, <code>Use the $&lt;name&gt; skill.</code> for Codex.
-<span lang="zh-CN">题目措辞中立；带 skill 的格子只在末尾多一句显式点名。</span></dd></div>
-<div><dt>Isolation <span lang="zh-CN">隔离</span></dt>
-<dd>Every run starts in a fresh throwaway directory outside the repository, with an empty <code>HOME</code>, its own config home (<code>CLAUDE_CONFIG_DIR</code> or <code>CODEX_HOME</code>) and an environment built from scratch. No user settings, plugins, user-level skills, MCP servers or memories are visible. The skill under test is copied only into that throwaway project's skill folder (<code>.claude/skills/</code> or <code>.agents/skills/</code>). Skills bundled with each CLI stay available and count as native. The checks behind this come from each agent's own logs and are stored in <code>run.json</code> under <code>isolation</code>.
-<span lang="zh-CN">每次运行都在仓库外的全新临时目录里进行：空的 HOME、独立的配置目录、从零构建的环境变量，看不到操作者的设置、插件、用户级 skill、MCP 和记忆。被测 skill 只复制到这个临时项目的 skill 目录。CLI 自带的 skill 仍然可见，算作“原生”。隔离检查的证据取自 agent 自己的日志，写在 run.json 的 isolation 字段。</span></dd></div>
-<div><dt>The skill has to fire <span lang="zh-CN">skill 必须真的被调用</span></dt>
-<dd>For skill cells the logs must show the skill being loaded (<code>skill_triggered</code>). If it was not, the cell is marked Failed rather than shown as a skill result.
-<span lang="zh-CN">带 skill 的格子必须能从日志证明 skill 被加载，否则判为失败。</span></dd></div>
-<div><dt>Screenshots <span lang="zh-CN">截图</span></dt>
-<dd>Full-page captures at 1440 and 390 CSS px wide after network idle and font loading, with animations disabled${shotTools.length ? ` (${esc(shotTools.join('; '))})` : ''}. Thumbnails show the top of the page. “Open page” loads the original <code>index.html</code> in a sandboxed iframe (<code>sandbox="allow-scripts"</code>, no same-origin access).
-<span lang="zh-CN">截图为整页，宽 1440 和 390；缩略图只截页面顶部。“Open page”用沙箱 iframe 打开原始 index.html。</span></dd></div>
-<div><dt>Run dates <span lang="zh-CN">运行日期</span></dt>
-<dd>${dateText ? `${esc(dateText)} (UTC), ${stats.done} cell${stats.done === 1 ? '' : 's'}.` : 'No cells have run yet.'} <span lang="zh-CN">${dateText ? `运行于 ${esc(dateText)}（UTC）。` : '还没有运行任何格子。'}</span></dd></div>
+${item('sample')}
+${item('prompt')}
+${item('isolation')}
+${item('fire')}
+${item('shots', { tools: shotTools.length ? paren(shotTools.join('; ')) : '' })}
+<div><dt>${t('method.dates_title')}</dt><dd>${range ? tn('method.dates_body', stats.done, { range }) : t('method.dates_none')}</dd></div>
 </dl>
+<h3 class="limits-h">${t('method.limits_h')}</h3>
+<ul class="limits">
+<li>${t('method.limit_native')}</li>
+<li>${t('method.limit_disk')}</li>
+<li>${t('method.limit_fixed')}</li>
+<li>${t('method.limit_once')}</li>
+</ul>
 </section>`;
 }
 
 function skillPage(skill, ctx) {
-  const R = '../../';
   const { prompts, cells } = ctx;
   const groups = [...prompts.values()]
     .map((p) => {
-      const cards = AGENT_ORDER.flatMap((a) => ['native', skill.name].map((v) => cellCard(cells.get(`${p.id}/${a}__${v}`) || null, R, { agent: a, variant: v, prompt: p }))).join('');
+      const cards = AGENT_ORDER.flatMap((a) => ['native', skill.name].map((v) => cellCard(cells.get(`${p.id}/${a}__${v}`) || null, { agent: a, variant: v, prompt: p }))).join('');
       return `<section class="block group" id="${esc(p.id)}">
-<div class="group-head"><h2><a href="${R}prompts/${esc(p.id)}/">${esc(p.title)}</a></h2><code class="muted">${esc(p.id)}</code></div>
-<div class="quad" role="list">${cards}</div>
+<div class="group-head"><h2><a href="${esc(pageHref(`prompts/${p.id}/`))}">${esc(promptTitle(p))}</a></h2><code class="muted">${esc(p.id)}</code></div>
+<div class="quad">${cards}</div>
 </section>`;
     })
     .join('');
@@ -963,206 +1069,217 @@ function skillPage(skill, ctx) {
   const gh = githubRepo(skill.repo);
   const treeUrl = gh && skill.commit && /^[0-9a-f]{7,40}$/i.test(skill.commit) ? `${gh}/tree/${skill.commit}${skill.path ? `/${skill.path.replace(/^\/+/, '')}` : ''}` : null;
   const npm = skill.fetch.method === 'npm-cli';
+  const sha = skill.commit ? `<code>${esc(shortSha(skill.commit))}</code>` : null;
   const facts = `<dl class="facts-grid">
-${metaRow('Source', skill.repo ? `<a href="${esc(skill.repo)}">${esc(repoShort)}</a>` : null)}
-${metaRow('Path', skill.path ? `<code>${esc(skill.path)}</code>${skill.skill_md ? ` · <a href="${esc(skill.skill_md)}">SKILL.md</a>` : ''}` : null)}
-${metaRow(npm ? 'Upstream commit' : 'Pinned commit', skill.commit ? `${treeUrl ? `<a href="${esc(treeUrl)}"><code>${esc(shortSha(skill.commit))}</code></a>` : `<code>${esc(shortSha(skill.commit))}</code>`}${npm ? ' <span class="muted">(reference)</span>' : ''}` : null)}
-${npm ? metaRow('Installed with', `<code>${esc(skill.fetch.package || '?')}${skill.fetch.version ? `@${esc(skill.fetch.version)}` : ''}</code> <span class="muted">(the skill's own CLI)</span>`) : ''}
-${metaRow('License', skill.license ? (skill.license_url ? `<a href="${esc(skill.license_url)}">${esc(skill.license)}</a>` : esc(skill.license)) : null)}
-${skill.run_commits.length && skill.run_commits.some((c) => c !== skill.commit) ? metaRow('Commit used in runs', skill.run_commits.map((c) => `<code>${esc(shortSha(c))}</code>`).join(', ')) : ''}
+${metaRow(t('skill.source'), skill.repo ? `<a href="${esc(skill.repo)}">${esc(repoShort)}</a>` : null)}
+${metaRow(t('skill.path'), skill.path ? `<code>${esc(skill.path)}</code>${skill.skill_md ? ` · <a href="${esc(skill.skill_md)}">SKILL.md</a>` : ''}` : null)}
+${metaRow(t(npm ? 'skill.upstream_commit' : 'skill.pinned_commit'), sha ? `${treeUrl ? `<a href="${esc(treeUrl)}">${sha}</a>` : sha}${npm ? ` <span class="muted">${t('skill.reference')}</span>` : ''}` : null)}
+${npm ? metaRow(t('skill.installed_with'), `<code>${esc(skill.fetch.package || '?')}${skill.fetch.version ? `@${esc(skill.fetch.version)}` : ''}</code> <span class="muted">${t('skill.own_cli')}</span>`) : ''}
+${metaRow(t('skill.license'), skill.license ? (skill.license_url ? `<a href="${esc(skill.license_url)}">${esc(skill.license)}</a>` : esc(skill.license)) : null)}
+${skill.run_commits.length && skill.run_commits.some((c) => c !== skill.commit) ? metaRow(t('skill.commit_in_runs'), skill.run_commits.map((c) => `<code>${esc(shortSha(c))}</code>`).join(', ')) : ''}
 </dl>`;
 
+  const summary = skillSummary(skill);
   const body = `
-<nav class="crumbs" aria-label="Breadcrumb"><a href="${R}index.html">Gallery</a> / <a href="${R}index.html#skills">Skills</a> / <span>${esc(skill.name)}</span></nav>
+<nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(''))}#skills">${t('nav.skills')}</a> / <span>${esc(skill.name)}</span></nav>
 <section class="intro">
 <h1>${esc(skill.title)}</h1>
-${skill.summary ? `<p class="lead">${esc(skill.summary)}</p>` : ''}${skill.summary_zh ? `<p lang="zh-CN" class="muted">${esc(skill.summary_zh)}</p>` : ''}
+${summary ? `<p class="lead">${esc(summary)}</p>` : ''}
 ${facts}
-<p class="muted small">Each prompt shows a fixed 2×2: Codex native, Codex + skill, Claude Code native, Claude Code + skill. Click a screenshot to see the full page. <span lang="zh-CN">每道题固定 2×2 排列；点截图看整页大图。</span> <a href="#install">Install and use ↓</a></p>
+<p class="muted small">${t('skill.layout_hint')}${gap()}<a href="#install">${t('skill.install_link')}</a></p>
 </section>
-<div class="toolbar">${viewToggle()}<nav class="jump" aria-label="Prompts on this page">${[...prompts.values()].map((p) => `<a href="#${esc(p.id)}">${esc(p.title)}</a>`).join('')}</nav></div>
+<div class="toolbar">${viewToggle()}<nav class="jump" aria-label="${ta('skill.jump_aria')}">${[...prompts.values()].map((p) => `<a href="#${esc(p.id)}">${esc(promptTitle(p))}</a>`).join('')}</nav></div>
 ${groups}
 ${installSection(skill, ctx)}
-${LIGHTBOX}`;
-  return layout({ depth: 2, title: `${skill.name} · ${CONFIG.site_title}`, description: `Pages built by Codex and Claude Code with and without the ${skill.name} skill.`, body, current: 'skills' });
+${lightbox()}`;
+  return layout({ title: `${skill.name} · ${CONFIG.site_title}`, description: tText('skill.description', { name: skill.name }), body, current: 'skills' });
 }
 
 const looksLikeCommand = (s) => /^(npx|npm|pnpm|yarn|bunx|git|cp|mkdir|curl|uipro|claude|codex|\/plugin)\b/.test(s.trim());
 
-// Install commands and invocation lines for both agents (also used by scripts/build-readme.mjs).
+// Install and use text for both agents. Exported for the README builder.
 function installInfo(skill, cells) {
   const n = skill.name;
   const gh = githubRepo(skill.repo);
   const known = skill.repo && skill.path;
-  const lines = (cmds) => cmds.filter((x) => x != null).join('\n');
-  const cloneCmds = known
-    ? [`git clone ${skill.repo}${gh && !skill.repo.endsWith('.git') ? '.git' : ''} /tmp/${n}-src`, skill.commit ? `git -C /tmp/${n}-src checkout ${skill.commit}` : null]
-    : ['# source repository not recorded yet'];
+  const cloneCmds = known ? [`git clone ${skill.repo}${gh && !skill.repo.endsWith('.git') ? '.git' : ''} /tmp/${n}-src`, skill.commit ? `git -C /tmp/${n}-src checkout ${skill.commit}` : null] : [];
   const srcDir = known ? `/tmp/${n}-src/${skill.path.replace(/^\/+|\/+$/g, '')}` : '<skill-folder>';
-  // meta.yaml may give a command (shown as is) or a sentence (shown above generated copy commands).
-  const install = (given, dir) =>
-    given && looksLikeCommand(given)
-      ? { text: null, cmds: given }
-      : { text: given, cmds: lines([...cloneCmds, `mkdir -p ${dir}`, `cp -R ${srcDir} ${dir}/${n}`]) };
-  const ic = install(skill.install_claude, '.claude/skills');
-  const ix = install(skill.install_codex, '.agents/skills');
-
+  // meta.yaml may give a command (shown as is) or a sentence (replaced by generated copy commands).
+  const install = (given, dir) => (given && looksLikeCommand(given) ? { command: true, cmds: [given] } : { command: false, dir: `<project>/${dir}/${n}/`, cmds: [...cloneCmds.filter(Boolean), `mkdir -p ${dir}`, `cp -R ${srcDir} ${dir}/${n}`] });
   // The closing sentence the runs actually used, else the one meta.yaml gives.
   const runLine = (agent) => [...cells.values()].find((c) => c.variant === n && c.agent === agent && c.run?.prompt?.skill_line)?.run.prompt.skill_line;
   const claudeLine = runLine('claude') || (skill.usage_claude && !skill.usage_claude.startsWith('/') ? skill.usage_claude : `Use the ${n} skill.`);
   const codexMention = skill.usage_codex?.startsWith('$') ? skill.usage_codex.split(/\s/)[0] : `$${n}`;
   const codexLine = runLine('codex') || `Use the ${codexMention} skill.`;
-  return { n, ic, ix, claudeLine, codexMention, codexLine, lines };
+  return {
+    claude: { install: install(skill.install_claude, '.claude/skills'), line: claudeLine, slash: `/${n}`, writes: skill.fetch.output_path.claude, home: `~/.claude/skills/${n}/` },
+    codex: { install: install(skill.install_codex, '.agents/skills'), line: codexLine, mention: codexMention, writes: skill.fetch.output_path.codex, home: `~/.agents/skills/${n}/` },
+  };
 }
 
-function installSection(skill, ctx) {
-  const { n, ic, ix, claudeLine, codexMention, codexLine, lines } = installInfo(skill, ctx.cells);
-  // Single quotes, so the shell leaves Codex's $name mention alone.
-  const sq = (s) => `'${s.replace(/'/g, `'\\''`)}'`;
-  const claudeUse = lines(['# interactive', `/${n} <your task>`, '', '# or end any request with', claudeLine, '', '# headless, as in the gallery runs', `claude -p ${sq(`<your task> ${claudeLine}`)}`]);
-  const codexUse = lines(['# interactive: mention it, or pick it from /skills', `${codexMention} <your task>`, '', '# headless, as in the gallery runs', `codex exec -s workspace-write ${sq(`<your task> ${codexLine}`)}`]);
+// Single quotes, so the shell leaves Codex's $name mention alone.
+const sq = (s) => `'${s.replace(/'/g, `'\\''`)}'`;
 
-  const panel = (title, inst, use, outPath, home, auto) => `<div class="panel"><h3>${title}</h3>
-<h4>Install <span lang="zh-CN">安装</span></h4>${inst.text ? `<p class="small">${esc(inst.text)}</p>` : ''}<pre><code>${esc(inst.cmds)}</code></pre>
-${outPath ? `<p class="small muted">Writes <code>${esc(outPath)}/</code> in the current project.</p>` : ''}
-<h4>Use <span lang="zh-CN">调用</span></h4><pre><code>${esc(use)}</code></pre>
-<p class="small muted">To make it available in every project, put the folder in <code>${esc(home)}</code> instead. ${auto}</p></div>`;
-  const notes = [...skill.notes.map((t) => ({ label: null, text: t })), ...skill.research_notes];
+function installSection(skill, ctx) {
+  const info = installInfo(skill, ctx.cells);
+  const task = tText('install.your_task');
+  const comment = (k) => `# ${tText(k)}`;
+  const claudeUse = [comment('install.c_interactive'), `${info.claude.slash} ${task}`, '', comment('install.c_end_with'), info.claude.line, '', comment('install.c_headless'), `claude -p ${sq(`${task} ${info.claude.line}`)}`].join('\n');
+  const codexUse = [comment('install.c_mention'), `${info.codex.mention} ${task}`, '', comment('install.c_headless'), `codex exec -s workspace-write ${sq(`${task} ${info.codex.line}`)}`].join('\n');
+  const panel = (title, a, use, auto) => `<div class="panel"><h3>${title}</h3>
+<h4>${t('install.install_h')}</h4>${a.install.command ? '' : `<p class="small">${t('install.copy_to', { path: html(`<code>${esc(a.install.dir)}</code>`) })}</p>`}<pre><code>${esc(a.install.cmds.join('\n'))}</code></pre>
+${a.writes ? `<p class="small muted">${t('install.writes', { path: html(`<code>${esc(a.writes)}/</code>`) })}</p>` : ''}
+<h4>${t('install.use_h')}</h4><pre><code>${esc(use)}</code></pre>
+<p class="small muted">${t('install.home_hint', { path: html(`<code>${esc(a.home)}</code>`) })}${gap()}${t(auto)}</p></div>`;
+  const notes = [...skillNotes(skill).map((x) => ({ label: null, text: x })), ...skill.research_notes];
   const npm = skill.fetch.method === 'npm-cli';
   return `<section id="install" class="block install">
-<h2>Install and use <span lang="zh-CN">安装与使用</span></h2>
-<p class="muted">${
-    npm
-      ? `This skill is generated per agent by its own CLI (<code>${esc(skill.fetch.package || 'npm package')}${skill.fetch.version ? `@${esc(skill.fetch.version)}` : ''}</code>); the gallery runs used that output.`
-      : 'Project-level install: copy the skill folder (the one with <code>SKILL.md</code>) into your project, at the pinned commit. The gallery runs installed it the same way.'
-  } <span lang="zh-CN">${npm ? '这个 skill 由它自己的 CLI 按 agent 生成，本站运行用的就是 CLI 生成的版本。' : '项目级安装：把含 SKILL.md 的整个目录按固定 commit 复制进项目，本站运行时也是这样装的。'}</span></p>
+<h2>${t('install.h2')}</h2>
+<p class="muted">${npm ? t('install.intro_npm', { pkg: html(`<code>${esc(skill.fetch.package || 'npm')}${skill.fetch.version ? `@${esc(skill.fetch.version)}` : ''}</code>`) }) : t('install.intro_git')}</p>
 <div class="two-col">
-${panel('Claude Code', ic, claudeUse, skill.fetch.output_path.claude, `~/.claude/skills/${n}/`, 'Claude Code can also load the skill on its own when a request matches its description.')}
-${panel('Codex', ix, codexUse, skill.fetch.output_path.codex, `~/.agents/skills/${n}/`, 'Codex can also pick the skill on its own from its description.')}
+${panel('Claude Code', info.claude, claudeUse, 'install.auto_claude')}
+${panel('Codex', info.codex, codexUse, 'install.auto_codex')}
 </div>
-${notes.length ? `<h3>Notes <span lang="zh-CN">说明</span></h3><ul class="notes">${notes.map((x) => `<li>${x.label ? `<strong>${esc(x.label)}:</strong> ` : ''}<span${/[一-鿿]/.test(x.text) ? ' lang="zh-CN"' : ''}>${esc(x.text).replace(/`([^`]+)`/g, '<code>$1</code>')}</span></li>`).join('')}</ul>` : ''}
-<p class="small muted">Metadata: <code>${esc(skill.from || 'none')}</code>${skill.copyright ? ` · ${esc(skill.copyright)}` : ''}.</p>
+${notes.length ? `<h3>${t('install.notes_h')}</h3><ul class="notes">${notes.map((x) => `<li>${x.label ? `<strong>${esc(x.label)}:</strong> ` : ''}${esc(x.text).replace(/`([^`]+)`/g, '<code>$1</code>')}</li>`).join('')}</ul>` : ''}
+<p class="small muted">${t('install.metadata', { file: html(`<code>${esc(skill.from || '—')}</code>`) })}${skill.copyright ? ` · ${esc(skill.copyright)}` : ''}</p>
 </section>`;
 }
 
 function promptPage(prompt, ctx) {
-  const R = '../../';
   const { skills, cells } = ctx;
   const cols = ['native', ...skills.map((s) => s.name)];
-  const head = cols.map((v) => `<div class="cmp-col">${v === 'native' ? 'Native <span lang="zh-CN">原生</span>' : `<a href="${R}skills/${esc(v)}/">${esc(v)}</a>`}</div>`).join('');
-  const rows = AGENT_ORDER.map(
-    (a) =>
-      `<div class="cmp-row-label">${esc(agentLabel(a))}</div>` +
-      cols.map((v) => cellCard(cells.get(`${prompt.id}/${a}__${v}`) || null, R, { agent: a, variant: v, prompt, heading: `<b>${esc(agentLabel(a))}</b> <span>${esc(variantLabel(v))}</span>` })).join(''),
-  ).join('');
+  const head = cols.map((v) => `<div class="cmp-col">${v === 'native' ? t('home.col_native') : `<a href="${esc(pageHref(`skills/${v}/`))}">${esc(v)}</a>`}</div>`).join('');
+  const rows = AGENT_ORDER.map((a) => `<div class="cmp-row-label">${esc(agentLabel(a))}</div>${cols.map((v) => cellCard(cells.get(`${prompt.id}/${a}__${v}`) || null, { agent: a, variant: v, prompt })).join('')}`).join('');
+  const summary = promptSummary(prompt);
   const body = `
-<nav class="crumbs" aria-label="Breadcrumb"><a href="${R}index.html">Gallery</a> / <a href="${R}index.html#prompts">Prompts</a> / <span>${esc(prompt.id)}</span></nav>
+<nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(''))}#prompts">${t('nav.prompts')}</a> / <span>${esc(prompt.id)}</span></nav>
 <section class="intro">
-<h1>${esc(prompt.title)}</h1>
-<p class="muted"><code>${esc(prompt.file)}</code>${prompt.version != null ? ` · version ${esc(prompt.version)}` : ''}. All skills side by side; each column is one skill, each row one agent. <span lang="zh-CN">同一道题下所有 skill 横向对比：每列一个 skill，每行一个 agent。</span></p>
-<details class="prompt-text"><summary>Prompt text <span lang="zh-CN">题目原文</span></summary><pre>${esc(prompt.body)}</pre>
-<p class="small muted">Skill cells add one sentence at the end: <code>Use the &lt;name&gt; skill.</code> (Claude Code) or <code>Use the $&lt;name&gt; skill.</code> (Codex).</p></details>
+<h1>${esc(promptTitle(prompt))}</h1>
+${summary ? `<p class="lead">${esc(summary)}</p>` : ''}
+<p class="muted"><code>${esc(prompt.file)}</code>${prompt.version != null ? ` · ${t('home.version', { v: prompt.version })}` : ''}${stop()}${t('prompt.layout_hint')}</p>
+<details class="prompt-text"><summary>${t('prompt.text_h')}</summary>
+<p class="small muted">${t('prompt.text_note')}</p><pre lang="en">${esc(prompt.body)}</pre>
+<p class="small muted">${t('prompt.skill_line_note')}</p></details>
 </section>
 <div class="toolbar">${viewToggle()}</div>
-<div class="scroll-x" tabindex="0" role="region" aria-label="Comparison grid, scrolls sideways"><div class="compare" style="--cols:${cols.length}"><div class="cmp-corner"></div>${head}${rows}</div></div>
-${LIGHTBOX}`;
-  return layout({ depth: 2, title: `${prompt.title} · ${CONFIG.site_title}`, description: `${prompt.title}: every skill side by side.`, body, current: 'prompts' });
+<div class="scroll-x" tabindex="0" role="region" aria-label="${ta('prompt.grid_aria')}"><div class="compare" style="--cols:${cols.length}"><div class="cmp-corner"></div>${head}${rows}</div></div>
+${lightbox()}`;
+  return layout({ title: `${promptTitle(prompt)} · ${CONFIG.site_title}`, description: tText('prompt.description', { title: promptTitle(prompt) }), body, current: 'prompts' });
 }
 
 function detailRows(c, prompt) {
   const r = c.run || {};
   const rows = [];
-  const add = (k, v) => rows.push(metaRow(esc(k), v));
+  const add = (k, v) => rows.push(metaRow(t(`details.${k}`), v));
   const code = (v) => (v == null || v === '' ? null : `<code>${esc(v)}</code>`);
   const st = cellStatus(c);
-  add('Status', `${badge(st)}${Array.isArray(r.failure_reasons) && r.failure_reasons.length ? ` <span class="small">${esc(r.failure_reasons.join('; '))}</span>` : ''}`);
-  add('Agent', r.cli ? `${esc(r.cli.name || '')} ${code(r.cli.version) || ''}` : esc(agentLabel(c.agent)));
-  add('Model', code(r.model));
-  add('Effort', r.effort ? esc(r.effort) : null);
-  add('Prompt', r.prompt ? `${code(r.prompt.id)}${r.prompt.version != null ? ` v${esc(r.prompt.version)}` : ''}${r.prompt.file_sha256 && prompt?.file_sha256 && r.prompt.file_sha256 !== prompt.file_sha256 ? ' <span class="no">(file changed since)</span>' : ''}` : null);
-  if (r.prompt?.skill_line) add('Skill sentence', code(r.prompt.skill_line));
+  add('status', `${badge(st)}${Array.isArray(r.failure_reasons) && r.failure_reasons.length ? ` <span class="small">${esc(r.failure_reasons.join('; '))}</span>` : ''}`);
+  add('agent', r.cli ? `${esc(r.cli.name || '')} ${code(r.cli.version) || ''}` : esc(agentLabel(c.agent)));
+  add('model', code(r.model));
+  add('effort', r.effort ? esc(r.effort) : null);
+  add('prompt', r.prompt ? `${code(r.prompt.id)}${r.prompt.version != null ? ` v${esc(r.prompt.version)}` : ''}${r.prompt.file_sha256 && prompt?.file_sha256 && r.prompt.file_sha256 !== prompt.file_sha256 ? ` <span class="no">${t('details.file_changed')}</span>` : ''}` : null);
+  if (r.prompt?.skill_line) add('skill_sentence', code(r.prompt.skill_line));
   if (c.variant !== 'native') {
     const s = r.skill || {};
-    add('Skill source', s.source_url ? `<a href="${esc(safeUrl(s.source_url) || '#')}">${esc(s.source_url)}</a>${s.source_path ? ` <code>${esc(s.source_path)}</code>` : ''}` : null);
-    add('Skill commit', s.source_commit ? `${code(shortSha(s.source_commit))}${s.source_dirty ? ' <span class="no">(dirty)</span>' : ''}` : null);
-    if (s.fetch && typeof s.fetch === 'object') add('Skill fetched by', esc([s.fetch.method, s.fetch.cli && [s.fetch.cli.package, s.fetch.cli.version].filter(Boolean).join('@'), fmtDate(s.fetch.fetched_at)].filter(Boolean).join(', ')));
-    add('Installed to', code(s.installed_to));
-    add('Skill triggered', r.skill_triggered === true ? '<span class="yes">Yes</span>' : r.skill_triggered === false ? '<span class="no">No</span>' : null);
+    add('skill_source', s.source_url ? `${safeUrl(s.source_url) ? `<a href="${esc(s.source_url)}">${esc(s.source_url)}</a>` : esc(s.source_url)}${s.source_path ? ` <code>${esc(s.source_path)}</code>` : ''}` : null);
+    add('skill_commit', s.source_commit ? `${code(shortSha(s.source_commit))}${s.source_dirty ? ` <span class="no">${t('details.dirty')}</span>` : ''}` : null);
+    if (s.fetch && typeof s.fetch === 'object') add('skill_fetched_by', esc([s.fetch.method, s.fetch.cli && [s.fetch.cli.package, s.fetch.cli.version].filter(Boolean).join('@'), fmtDate(s.fetch.fetched_at)].filter(Boolean).join(', ')));
+    add('installed_to', code(s.installed_to));
+    add('skill_triggered', r.skill_triggered === true ? `<span class="yes">${t('cell.yes')}</span>` : r.skill_triggered === false ? `<span class="no">${t('cell.no')}</span>` : null);
     const ev = r.skill_evidence;
-    if (ev && typeof ev === 'object') add('Evidence', esc(Object.entries(ev).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.length : v ? 1 : 0}`).join(', ')));
+    if (ev && typeof ev === 'object') add('evidence', esc(Object.entries(ev).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.length : v ? 1 : 0}`).join(', ')));
   }
-  if (Array.isArray(r.builtin_skills_used)) add('Bundled skills used', r.builtin_skills_used.length ? esc(r.builtin_skills_used.map((x) => x?.skill || x?.name || JSON.stringify(x)).join(', ')) : 'none');
-  add('Started', r.started_at ? esc(r.started_at.replace('T', ' ').replace(/\.\d+Z$/, 'Z')) : null);
-  add('Duration', fmtDuration(r.duration_ms));
-  add('Exit', r.exit_code != null || r.timed_out != null ? `${r.exit_code != null ? `code ${esc(r.exit_code)}` : ''}${r.timed_out ? ' · timed out' : ''}` : null);
-  add('Attempt', isNum(r.attempt) ? esc(r.attempt) : null);
+  if (Array.isArray(r.builtin_skills_used)) add('bundled_skills', r.builtin_skills_used.length ? esc(r.builtin_skills_used.map((x) => x?.skill || x?.name || JSON.stringify(x)).join(', ')) : t('cell.none'));
+  add('started', r.started_at ? esc(r.started_at.replace('T', ' ').replace(/\.\d+Z$/, 'Z')) : null);
+  add('duration', fmtDuration(r.duration_ms));
+  add('exit', r.exit_code != null || r.timed_out != null ? `${r.exit_code != null ? t('details.exit_code', { n: r.exit_code }) : ''}${r.timed_out ? ` · ${t('details.timed_out')}` : ''}` : null);
+  add('attempt', isNum(r.attempt) ? esc(r.attempt) : null);
   if (Array.isArray(r.previous_attempts) && r.previous_attempts.length) {
-    add('Earlier attempts', `<ul class="refs">${r.previous_attempts.map((a) => `<li>#${esc(a.attempt ?? '?')} ${esc(fmtDate(a.started_at) || '')} · ${a.success ? 'OK' : `failed${Array.isArray(a.failure_reasons) && a.failure_reasons.length ? `: ${esc(a.failure_reasons.join('; '))}` : ''}`}${a.archived_to ? ` · <code>${esc(a.archived_to)}</code>` : ''}</li>`).join('')}</ul>`);
+    add('earlier_attempts', `<ul class="refs">${r.previous_attempts.map((a) => `<li>#${esc(a.attempt ?? '?')} ${esc(fmtDate(a.started_at) || '')} · ${a.success ? t('status.ok') : `${t('status.failed')}${Array.isArray(a.failure_reasons) && a.failure_reasons.length ? `: ${esc(a.failure_reasons.join('; '))}` : ''}`}${a.archived_to ? ` · <code>${esc(a.archived_to)}</code>` : ''}</li>`).join('')}</ul>`);
   }
   const u = r.usage && typeof r.usage === 'object' ? r.usage : null;
-  add('Tokens', u ? esc(Object.entries(u).filter(([k, v]) => k.endsWith('_tokens') && isNum(v)).map(([k, v]) => `${k}: ${v.toLocaleString('en-US')}`).join(', ')) || null : null);
-  if (isNum(u?.num_turns)) add('Turns', esc(u.num_turns));
-  if (isNum(u?.total_cost_usd)) add('Cost', `$${u.total_cost_usd.toFixed(2)}`);
-  add('Activity', r.activity && typeof r.activity === 'object' && Object.keys(r.activity).length ? esc(Object.entries(r.activity).map(([k, v]) => `${k} ${v}`).join(', ')) : null);
+  add('tokens', u ? esc(Object.entries(u).filter(([k, v]) => k.endsWith('_tokens') && isNum(v)).map(([k, v]) => `${k}: ${v.toLocaleString('en-US')}`).join(', ')) || null : null);
+  if (isNum(u?.num_turns)) add('turns', esc(u.num_turns));
+  if (isNum(u?.total_cost_usd)) add('cost', `$${u.total_cost_usd.toFixed(2)}`);
+  add('activity', r.activity && typeof r.activity === 'object' && Object.keys(r.activity).length ? esc(Object.entries(r.activity).map(([k, v]) => `${k} ${v}`).join(', ')) : null);
   const iso = r.isolation;
   if (iso && typeof iso === 'object') {
     const checks = iso.checks && typeof iso.checks === 'object' ? Object.entries(iso.checks) : [];
-    add('Isolation', `${iso.ok === true ? '<span class="yes">all checks passed</span>' : iso.ok === false ? '<span class="no">check failed</span>' : ''}${checks.length ? `<ul class="checks">${checks.map(([k, v]) => `<li class="${v ? 'yes' : 'no'}">${v ? '✓' : '✗'} <code>${esc(k)}</code></li>`).join('')}</ul>` : ''}`);
+    add('isolation', `${iso.ok === true ? `<span class="yes">${t('details.iso_ok')}</span>` : iso.ok === false ? `<span class="no">${t('details.iso_fail')}</span>` : ''}${checks.length ? `<ul class="checks">${checks.map(([k, v]) => `<li class="${v ? 'yes' : 'no'}">${v ? '✓' : '✗'} <code>${esc(k)}</code></li>`).join('')}</ul>` : ''}`);
   }
   const refs = cellExternal(c);
-  add('External refs', `${refs.length ? `<ul class="refs">${refs.map((x) => `<li><code>${esc(x.url)}</code>${x.context || x.kind ? ` <span class="small muted">${esc(x.context || x.kind)}</span>` : ''}</li>`).join('')}</ul>` : 'none '}<span class="small muted">${refsFromRun(c) ? 'Static scan of <code>index.html</code>, from <code>run.json</code>.' : 'Parsed from <code>index.html</code> by the site build.'}</span>`);
+  add('external_refs', `${refs.length ? `<ul class="refs">${refs.map((x) => `<li><code>${esc(x.url)}</code>${x.context || x.kind ? ` <span class="small muted">${esc(x.context || x.kind)}</span>` : ''}</li>`).join('')}</ul>` : `${t('cell.none')} `}<span class="small muted">${t(refsFromRun(c) ? 'details.refs_from_run' : 'details.refs_parsed')}</span>`);
   const v = violations(r);
-  add('Rule violations', v.length ? `<span class="no">${esc(v.join(', '))}</span>${Array.isArray(r.runtime_remote_images) && r.runtime_remote_images.length ? ` <span class="small">(${esc(r.runtime_remote_images.join(', '))})</span>` : ''}` : 'none');
+  add('rule_violations', v.length ? `<span class="no">${esc(v.join(', '))}</span>${Array.isArray(r.runtime_remote_images) && r.runtime_remote_images.length ? ` <span class="small">(${esc(r.runtime_remote_images.join(', '))})</span>` : ''}` : t('cell.none'));
   const o = r.output;
-  if (o && typeof o === 'object') add('Output', `${o.index_html ? `index.html, ${isNum(o.index_html_bytes) ? `${(o.index_html_bytes / 1024).toFixed(1)} KB` : '?'}` : 'no index.html'}${Array.isArray(o.other_files) && o.other_files.length ? `; other files: ${esc(o.other_files.map((f) => (typeof f === 'string' ? f : f?.path || '')).join(', '))}` : ''}`);
+  if (o && typeof o === 'object') {
+    const others = Array.isArray(o.other_files) && o.other_files.length ? `; ${t('details.other_files', { files: o.other_files.map((f) => (typeof f === 'string' ? f : f?.path || '')).join(', ') })}` : '';
+    add('output', `${o.index_html ? `index.html, ${isNum(o.index_html_bytes) ? `${(o.index_html_bytes / 1024).toFixed(1)} KB` : '?'}` : t('details.no_index')}${others}`);
+  }
   const sh = r.screenshots;
   if (sh && typeof sh === 'object') {
     for (const k of ['desktop', 'mobile']) {
       const s = sh[k];
       if (!s) continue;
-      const bits = [s.viewport ? `${s.viewport.width}×${s.viewport.height}` : null, isNum(s.page_height) ? `page ${s.page_height}px tall` : null, s.horizontal_overflow ? `horizontal overflow (${s.scroll_width}px)` : null, s.network_idle === false ? 'network not idle' : null, s.console_errors?.length ? `${s.console_errors.length} console error(s)` : null, s.page_errors?.length ? `${s.page_errors.length} page error(s)` : null, s.failed_requests?.length ? `${s.failed_requests.length} failed request(s)` : null, Array.isArray(s.remote_requests) ? `${s.remote_requests.length} remote request(s)` : null, s.fonts_failed?.length ? `fonts failed: ${s.fonts_failed.join(', ')}` : null].filter(Boolean);
-      add(`Screenshot (${k})`, esc(bits.join(', ')));
+      const n = (arr) => (Array.isArray(arr) ? arr.length : 0);
+      const bits = [
+        s.viewport ? `${s.viewport.width}×${s.viewport.height}` : null,
+        isNum(s.page_height) ? tText('details.page_tall', { h: s.page_height }) : null,
+        s.horizontal_overflow ? tText('details.overflow', { w: s.scroll_width }) : null,
+        s.network_idle === false ? tText('details.net_not_idle') : null,
+        n(s.console_errors) ? tText('details.console_errors', { n: n(s.console_errors) }) : null,
+        n(s.page_errors) ? tText('details.page_errors', { n: n(s.page_errors) }) : null,
+        n(s.failed_requests) ? tText('details.failed_requests', { n: n(s.failed_requests) }) : null,
+        Array.isArray(s.remote_requests) ? tText('details.remote_requests', { n: s.remote_requests.length }) : null,
+        n(s.fonts_failed) ? tText('details.fonts_failed', { list: s.fonts_failed.join(', ') }) : null,
+      ].filter(Boolean);
+      rows.push(metaRow(t('details.screenshot', { kind: tText(`view.${k}`) }), esc(bits.join(', '))));
     }
   }
-  if (r.host) add('Host', esc([r.host.os, r.host.arch, r.host.node && `node ${r.host.node}`].filter(Boolean).join(', ')));
+  if (r.host) add('host', esc([r.host.os, r.host.arch, r.host.node && `node ${r.host.node}`].filter(Boolean).join(', ')));
   return rows.join('\n');
 }
 
 function viewerPage(c, ctx) {
-  const R = '../../../';
   const prompt = ctx.prompts.get(c.prompt) || { id: c.prompt, title: c.prompt };
-  const title = `${cellTitle(c.agent, c.variant)} — ${prompt.title}`;
+  const title = `${cellTitleText(c.agent, c.variant)} — ${promptTitle(prompt)}`;
   const frame = c.files['index.html']
-    ? `<div class="frame-wrap" data-frame-wrap><iframe sandbox="allow-scripts" src="${R}${esc(c.href.html)}" title="${esc(`Generated page: ${title}`)}" referrerpolicy="no-referrer"></iframe></div>`
-    : `<div class="thumb thumb-empty frame-empty"><span>This run produced no index.html.</span><span lang="zh-CN">这次运行没有生成 index.html。</span></div>`;
+    ? `<div class="frame-wrap" data-frame-wrap><iframe sandbox="allow-scripts" src="${esc(assetHref(c.href.html))}" title="${ta('viewer.frame_title', { title })}" referrerpolicy="no-referrer"></iframe></div>`
+    : `<div class="thumb thumb-empty frame-empty"><span>${t('viewer.no_index')}</span></div>`;
   const body = `
-<nav class="crumbs" aria-label="Breadcrumb"><a href="${R}index.html">Gallery</a> / <a href="${R}prompts/${esc(prompt.id)}/">${esc(prompt.title)}</a>${c.variant !== 'native' ? ` / <a href="${R}skills/${esc(c.variant)}/#${esc(prompt.id)}">${esc(c.variant)}</a>` : ''} / <span>${esc(cellTitle(c.agent, c.variant))}</span></nav>
+<nav class="crumbs" aria-label="${ta('crumbs.aria')}"><a href="${esc(pageHref(''))}">${t('crumbs.gallery')}</a> / <a href="${esc(pageHref(`prompts/${prompt.id}/`))}">${esc(promptTitle(prompt))}</a>${c.variant !== 'native' ? ` / <a href="${esc(pageHref(`skills/${c.variant}/`))}#${esc(prompt.id)}">${esc(c.variant)}</a>` : ''} / <span>${esc(cellTitleText(c.agent, c.variant))}</span></nav>
 <div class="viewer-head">
-<h1>${esc(cellTitle(c.agent, c.variant))} <span class="muted">· ${esc(prompt.title)}</span></h1>
+<h1>${esc(cellTitleText(c.agent, c.variant))} <span class="muted">· ${esc(promptTitle(prompt))}</span></h1>
 <div class="viewer-tools">
-${c.files['index.html'] ? `<div class="seg" role="group" aria-label="Preview width"><button type="button" data-frame="fit" aria-pressed="true">Fit</button><button type="button" data-frame="1440" aria-pressed="false">Desktop <small>1440</small></button><button type="button" data-frame="390" aria-pressed="false">Mobile <small>390</small></button></div>` : ''}
-${c.files['index.html'] ? `<a class="btn" href="${R}${esc(c.href.html)}" download="index.html">Download HTML</a>` : ''}
-${c.files['run.json'] ? `<a class="btn" href="${R}${esc(c.href.run)}">run.json</a>` : ''}
+${c.files['index.html'] ? `<div class="seg" role="group" aria-label="${ta('viewer.width_aria')}"><button type="button" data-frame="fit" aria-pressed="true">${t('viewer.fit')}</button><button type="button" data-frame="1440" aria-pressed="false">${t('view.desktop')} <small>1440</small></button><button type="button" data-frame="390" aria-pressed="false">${t('view.mobile')} <small>390</small></button></div>` : ''}
+${c.files['index.html'] ? `<a class="btn" href="${esc(assetHref(c.href.html))}" download="index.html">${t('viewer.download')}</a>` : ''}
+${c.files['run.json'] ? `<a class="btn" href="${esc(assetHref(c.href.run))}">run.json</a>` : ''}
 </div>
 </div>
-<p class="small muted">Sandboxed preview: the page's scripts run, but it cannot reach this site, cookies or storage, so features that rely on <code>localStorage</code> may behave differently. <span lang="zh-CN">沙箱预览：页面脚本可以运行，但无法访问本站、cookie 和本地存储，依赖 localStorage 的功能可能表现不同。</span></p>
+<p class="small muted">${t('viewer.sandbox_note')}</p>
 ${frame}
 <section class="block">
-<h2>Run details <span lang="zh-CN">运行信息</span></h2>
-${c.run ? `<dl class="details">${detailRows(c, ctx.prompts.get(c.prompt))}</dl>` : '<p>No <code>run.json</code> for this cell yet. <span lang="zh-CN">这一格还没有 run.json。</span></p>'}
+<h2>${t('viewer.details_h')}</h2>
+${c.run ? `<dl class="details">${detailRows(c, ctx.prompts.get(c.prompt))}</dl>` : `<p>${t('viewer.no_run_json')}</p>`}
 </section>`;
-  return layout({ depth: 3, title: `${title} · ${CONFIG.site_title}`, description: title, body, current: null });
+  return layout({ title: `${title} · ${CONFIG.site_title}`, description: title, body, current: null });
 }
 
 // ---------------------------------------------------------------- main
 
-// Config, prompts, cells and skills, without writing anything (also used by scripts/build-readme.mjs).
-function loadInputs(runsDir) {
-  CONFIG = { site_title: 'skill-gallery', prompts: [], skills: [], agents: [], ...(readJson(path.join(SITE_SRC, 'config.json')) || {}) };
-  if (!CONFIG.repo_url && process.env.GITHUB_REPOSITORY) CONFIG.repo_url = `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${process.env.GITHUB_REPOSITORY}`;
+function loadConfig() {
+  const config = { site_title: 'skill-gallery', prompts: [], skills: [], agents: [], languages: ['en'], ...(readJson(path.join(SITE_SRC, 'config.json')) || {}) };
+  if (!config.repo_url && process.env.GITHUB_REPOSITORY) config.repo_url = `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${process.env.GITHUB_REPOSITORY}`;
+  if (!Array.isArray(config.languages) || !config.languages.length) config.languages = ['en'];
+  return config;
+}
+
+// Everything both builders need: prompts, cells (with hrefs, refs and thumbnails) and skills.
+async function loadGallery({ runs, thumbsOut }) {
+  CONFIG = loadConfig();
   AGENTS = AGENT_ORDER.map((id) => ({ id, label: id, ...(CONFIG.agents || []).find((a) => a.id === id) }));
   const prompts = loadPrompts(CONFIG.prompts || []);
-  const cells = scanRuns(runsDir, AGENT_ORDER);
+  const cells = scanRuns(runs, AGENT_ORDER);
   for (const c of cells.values()) {
     if (!prompts.has(c.prompt)) {
       warn(`runs/${c.prompt}: no prompts/${c.prompt}.md, listing it by id`);
@@ -1171,22 +1288,8 @@ function loadInputs(runsDir) {
   }
   const candidates = loadCandidates();
   const skills = listSkills(CONFIG, cells).map((n) => loadSkill(n, candidates, cells));
-  return { config: CONFIG, agents: AGENTS, prompts, cells, skills };
-}
-
-async function main() {
-  const opts = parseArgs(process.argv.slice(2));
-  BUILD = { date: new Date().toISOString().slice(0, 10), sha: process.env.GITHUB_SHA || null };
-
-  prepareOutDir(opts.out);
-  const { prompts, cells, skills } = loadInputs(opts.runs);
-
-  // Copy cell files unchanged and make thumbnails.
   for (const c of cells.values()) {
     const rel = `runs/${c.prompt}/${c.name}`;
-    const dest = path.join(opts.out, rel);
-    fs.mkdirSync(dest, { recursive: true });
-    for (const f of CELL_FILES) if (c.files[f]) fs.copyFileSync(path.join(c.dir, f), path.join(dest, f));
     c.href = {
       html: c.files['index.html'] ? `${rel}/index.html` : null,
       desktop: c.files['desktop.png'] ? `${rel}/desktop.png` : null,
@@ -1196,7 +1299,8 @@ async function main() {
     };
     c.refs = c.files['index.html'] ? externalRefs(fs.readFileSync(path.join(c.dir, 'index.html'), 'utf8')) : [];
     c.thumbs = {};
-    const tdir = path.join(opts.out, 'thumbs', c.prompt, c.name);
+    if (!thumbsOut) continue;
+    const tdir = path.join(thumbsOut, c.prompt, c.name);
     const shots = c.run?.screenshots || {};
     const jobs = [
       ['desktop', shots.desktop?.viewport?.width || 1440, 0.75, [['desktop', 720], ['desktopSmall', 360]]],
@@ -1205,12 +1309,7 @@ async function main() {
     for (const [kind, vw, aspect, targets] of jobs) {
       if (!c.files[`${kind}.png`]) continue;
       try {
-        await writeThumbs(
-          path.join(c.dir, `${kind}.png`),
-          vw,
-          aspect,
-          targets.map(([key, width]) => ({ file: path.join(tdir, `${key}.png`), width })),
-        );
+        await writeThumbs(path.join(c.dir, `${kind}.png`), vw, aspect, targets.map(([key, width]) => ({ file: path.join(tdir, `${key}.png`), width })));
         for (const [key] of targets) c.thumbs[key] = `thumbs/${c.prompt}/${c.name}/${key}.png`;
       } catch (e) {
         // A PNG this codec cannot read (16-bit, interlaced) is shown at full size;
@@ -1225,25 +1324,46 @@ async function main() {
       }
     }
   }
-
   const total = prompts.size * (skills.length + 1) * AGENTS.length;
   const relevant = [...cells.values()].filter((c) => c.variant === 'native' || skills.some((s) => s.name === c.variant));
   const stats = { total, done: relevant.length, failed: relevant.filter((c) => c.run?.success === false).length };
-  const ctx = { prompts, skills, cells, stats };
+  return { config: CONFIG, agents: AGENTS, prompts, cells, skills, stats };
+}
 
+async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  BUILD = { date: new Date().toISOString().slice(0, 10), sha: process.env.GITHUB_SHA || null };
+  prepareOutDir(opts.out);
+  const ctx = await loadGallery({ runs: opts.runs, thumbsOut: path.join(opts.out, 'thumbs') });
+  const { prompts, cells, skills, stats } = ctx;
+  LANGS = loadLanguages(CONFIG.languages);
+
+  for (const c of cells.values()) {
+    const dest = path.join(opts.out, 'runs', c.prompt, c.name);
+    fs.mkdirSync(dest, { recursive: true });
+    for (const f of CELL_FILES) if (c.files[f]) fs.copyFileSync(path.join(c.dir, f), path.join(dest, f));
+  }
   const assets = path.join(SITE_SRC, 'assets');
   fs.mkdirSync(path.join(opts.out, 'assets'), { recursive: true });
   for (const f of fs.readdirSync(assets)) fs.copyFileSync(path.join(assets, f), path.join(opts.out, 'assets', f));
 
-  const write = (rel, html) => {
+  const write = (rel, content) => {
     const file = path.join(opts.out, rel);
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, html);
+    fs.writeFileSync(file, content);
   };
-  write('index.html', homePage(ctx));
-  for (const s of skills) write(`skills/${s.name}/index.html`, skillPage(s, ctx));
-  for (const p of prompts.values()) write(`prompts/${p.id}/index.html`, promptPage(p, ctx));
-  for (const c of cells.values()) write(`cells/${c.prompt}/${c.name}/index.html`, viewerPage(c, ctx));
+  let pages = 0;
+  for (const lang of LANGS) {
+    const render = (rel, fn) => {
+      setPage(lang, rel);
+      write(`${lang.prefix}${rel}index.html`, fn());
+      pages++;
+    };
+    render('', () => homePage(ctx));
+    for (const s of skills) render(`skills/${s.name}/`, () => skillPage(s, ctx));
+    for (const p of prompts.values()) render(`prompts/${p.id}/`, () => promptPage(p, ctx));
+    for (const c of cells.values()) render(`cells/${c.prompt}/${c.name}/`, () => viewerPage(c, ctx));
+  }
 
   // Fields the pages would use but the inputs do not provide yet.
   const missing = [];
@@ -1264,17 +1384,22 @@ async function main() {
     for (const f of ['desktop.png', 'mobile.png']) if (!c.files[f]) absent.push(f);
     if (absent.length) missing.push(`${rel}: no ${absent.join(', ')}`);
   }
+  for (const l of LANGS) {
+    const skip = l.missing.filter((k) => !k.startsWith('meta.'));
+    if (l.code !== 'en' && skip.length) missing.push(`site/i18n/${l.code}.json: ${skip.length} string(s) fall back to English (${skip.slice(0, 5).join(', ')}${skip.length > 5 ? ', …' : ''})`);
+  }
+  if (missingStrings.size) warn(`strings missing from en.json too: ${[...missingStrings].join(', ')}`);
 
   const shown = path.relative(process.cwd(), opts.out);
   console.log(`site written to ${shown && !shown.startsWith('..') ? shown : opts.out}`);
+  console.log(`  ${LANGS.length} languages (${LANGS.map((l) => l.code).join(', ')}), ${pages} pages`);
   console.log(`  ${prompts.size} prompts, ${skills.length} skills, ${cells.size} cell dirs with files (${stats.done} of ${stats.total} matrix cells)`);
   if (missing.length) console.log(`  not yet provided by the inputs:\n${missing.map((m) => `    - ${m}`).join('\n')}`);
   if (warnings.length) console.log(`  ${warnings.length} warning(s), see stderr`);
 }
 
-export { loadInputs, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings };
+export { loadGallery, loadLanguages, installInfo, readPngHeader, decodePngTop, resample, encodePng, writeThumbs, parseYaml, flatten, getPath, esc, fmtDate, shortSha, githubRepo, warnings };
 
-// Build only when run directly, not when imported by scripts/build-readme.mjs.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((e) => {
     console.error(`error: ${e.message}`);

@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "name": "繁體中文",
+    "readme_file": "README.zh-TW.md"
+  },
+  "nav": {
+    "aria": "網站",
+    "skip": "跳到主要內容",
+    "overview": "總覽",
+    "skills": "Skill",
+    "prompts": "題目",
+    "method": "方法",
+    "language": "語言",
+    "theme_dark": "深色",
+    "theme_light": "淺色",
+    "theme_to_dark": "切換為深色主題",
+    "theme_to_light": "切換為淺色主題"
+  },
+  "footer": {
+    "built": "建置於 {date}",
+    "license": "畫廊程式碼採 MIT 授權。各 skill 保有各自的授權。{runs} 底下的頁面是未經修改的模型輸出。",
+    "ai_translation": "本頁由 AI 翻譯。歡迎以 pull request 提出修正。",
+    "disclaimer": "本站與 Anthropic 或 OpenAI 沒有任何關聯。所有商標均屬其各自的擁有者。"
+  },
+  "status": {
+    "pending": "待執行",
+    "ok": "成功",
+    "failed": "失敗",
+    "no_run_json": "沒有 run.json",
+    "bad_run_json": "run.json 無效",
+    "unknown": "未知"
+  },
+  "thumb": {
+    "no_page": "沒有頁面",
+    "unreadable": "無法讀取截圖",
+    "no_screenshot": "尚無截圖",
+    "no_desktop": "沒有桌面版截圖",
+    "no_mobile": "沒有手機版截圖",
+    "alt": "{caption}，{kind}截圖（頁面頂端）",
+    "enlarge": "放大整頁截圖：{caption}"
+  },
+  "view": {
+    "aria": "截圖尺寸",
+    "desktop": "桌面版",
+    "mobile": "手機版"
+  },
+  "lightbox": {
+    "aria": "整頁截圖",
+    "close": "關閉",
+    "full_alt": "{caption}，{kind}整頁截圖",
+    "desktop": "桌面版 1440",
+    "mobile": "手機版 390"
+  },
+  "crumbs": {
+    "aria": "導覽路徑",
+    "gallery": "畫廊"
+  },
+  "cell": {
+    "native": "原生",
+    "not_run": "尚未執行。",
+    "na": "不適用",
+    "yes": "是",
+    "no": "否",
+    "none": "無",
+    "model": "模型",
+    "time": "時間",
+    "tokens": "Token 數",
+    "skill_used": "是否使用 skill",
+    "external": "外部資源",
+    "run_date": "執行日期",
+    "open_page": "開啟頁面",
+    "details": "詳細資訊",
+    "prompt_changed": "這次執行之後，題目檔案有變動。",
+    "breaks_rule": "違反題目規則：{rules}。",
+    "attempt": "第 {n} 次嘗試；先前的嘗試保存在 {path}。"
+  },
+  "home": {
+    "title": "{site}：agent skill 比較",
+    "description": "Codex 與 Claude Code 在使用和不使用 agent skill 時做出的網頁，並排比較。",
+    "h1": "Agent skill 對網頁有什麼影響",
+    "lead": "同樣的題目，由 <strong>Codex</strong> 和 <strong>Claude Code</strong> 分別製作，各自在使用與不使用網頁設計 skill（<code>SKILL.md</code>）的情況下各做一次。每個題目都以 2×2 的方式執行：Codex 原生、Codex + skill、Claude Code 原生、Claude Code + skill。原生格子由所有 skill 共用。",
+    "progress": "{total} 格中已執行 {done} 格",
+    "failed_one": "{n} 格失敗",
+    "failed_other": "{n} 格失敗",
+    "pending_hint": "尚未執行的格子會顯示「待執行」。",
+    "overview_h2": "總覽",
+    "overview_hint": "每一列是一個題目，每一欄是一個 skill。每個方格左邊是 Codex 的結果，右邊是 Claude Code 的結果（頁面頂端，桌面版寬度）。",
+    "grid_aria": "總覽表格，可左右捲動",
+    "col_prompt": "題目",
+    "col_native": "原生",
+    "col_native_sub": "不額外加 skill，共用基準",
+    "col_skill_sub": "使用 skill",
+    "skills_h2": "Skill",
+    "prompts_h2": "題目",
+    "cells_count": "{done} / {total} 格",
+    "version": "版本 {v}"
+  },
+  "method": {
+    "h2": "方法",
+    "th_agent": "Agent",
+    "th_model": "模型",
+    "th_effort": "Effort",
+    "th_cli": "CLI 版本",
+    "th_runs": "執行次數",
+    "runs_one": "{n} 次執行",
+    "runs_other": "{n} 次執行",
+    "no_runs": "已設定，尚未執行",
+    "table_note": "模型和 effort 都固定寫在執行腳本裡。表格顯示的是 <code>run.json</code> 檔案記錄的內容。",
+    "sample_title": "每格只取樣一次，不挑選結果",
+    "sample_body": "每個格子只生成一次，一次完成，沒有後續對話。結果照原樣呈現，失敗的執行也一樣。如果某格重新執行，先前的嘗試會保存在 <code>runs/&lt;prompt&gt;/_attempts/</code>。",
+    "prompt_title": "四個格子用同一個題目",
+    "prompt_body": "題目用字中性，不含風格形容詞。使用 skill 的格子會在結尾多加一句指名該 skill 的話：Claude Code 用 <code>Use the &lt;name&gt; skill.</code>，Codex 用 <code>Use the $&lt;name&gt; skill.</code>。",
+    "isolation_title": "隔離",
+    "isolation_body": "每次執行都從儲存庫外一個全新的拋棄式目錄開始，<code>HOME</code> 是空的，有自己的設定目錄（<code>CLAUDE_CONFIG_DIR</code> 或 <code>CODEX_HOME</code>），環境也是從頭建立。不會載入任何使用者設定、外掛、使用者層級的 skill、MCP 伺服器或記憶。受測的 skill 只會複製到這個拋棄式專案的 skill 資料夾（<code>.claude/skills/</code> 或 <code>.agents/skills/</code>）。各 CLI 內建的 skill 仍可使用，算作原生。證據來自各 agent 自己的日誌，存放在 <code>run.json</code> 的 <code>isolation</code> 底下。",
+    "fire_title": "Skill 必須真的觸發",
+    "fire_body": "對使用 skill 的格子來說，日誌必須顯示 skill 已被載入（<code>skill_triggered</code>）。如果沒有，該格會標為「失敗」，而不會當成 skill 的結果顯示。",
+    "shots_title": "截圖",
+    "shots_body": "整頁截圖的寬度為 1440 與 390 CSS px，在網路閒置、字型載入完成後擷取，並停用動畫{tools}。縮圖顯示頁面頂端。「開啟頁面」會在沙箱 iframe（<code>sandbox=\"allow-scripts\"</code>，沒有同源存取權）中載入原始的 <code>index.html</code>。",
+    "dates_title": "執行日期",
+    "dates_body_one": "{range}（UTC），共 {n} 格。",
+    "dates_body_other": "{range}（UTC），共 {n} 格。",
+    "dates_none": "還沒有任何格子執行過。",
+    "limits_h": "已知限制",
+    "limit_native": "<strong>「原生」指的是開箱即用的狀態，不是完全沒有 skill。</strong>每一格（包括原生格）都能使用 agent 內建的 skill：Claude Code 內建的 19 個 skill，以及 Codex 的系統 skill（<code>imagegen</code>、<code>openai-docs</code>、<code>skill-creator</code>、<code>skill-installer</code>）。在 <code>dashboard</code> 這道題目裡，Claude Code 內建的 <code>dataviz</code> skill 自行觸發了兩次，<code>claude__native</code> 一次、<code>claude__frontend-design</code> 一次，記錄在 <code>run.json</code> 的 <code>builtin_skills_used</code> 中。這是刻意保留的：比較的是讀者安裝 agent 之後實際得到的效果。",
+    "limit_disk": "<strong>隔離指的是「什麼都不載入」，不是「什麼都讀不到」。</strong>agent 仍然可以讀取磁碟上的其他內容：Codex 預設的 <code>workspace-write</code> 沙箱可以讀取 <code>/</code>，而使用 <code>bypassPermissions</code> 的 Claude Code 則沒有沙箱。在 v0 的執行中，有 agent 到上層目錄尋找 <code>AGENTS.md</code>，也有一個 agent 用了操作者 npm 快取裡的 Playwright。更嚴格的隔離（另開使用者帳號或使用容器）留待日後處理。",
+    "limit_fixed": "<strong>截圖中的固定側邊欄。</strong>整頁截圖只會以第一個畫面的高度繪製尺寸為 <code>100vh</code> 的 <code>position: fixed</code> 或 <code>sticky</code> 元素，所以儀表板的側邊欄看起來可能在 900 px 處就斷了。這是截圖造成的，不是頁面本身的問題。",
+    "limit_once": "<strong>單次取樣稱不上評測。</strong>每格都只生成一次。請把這個畫廊當成 skill 傾向產生什麼結果的範例，而不是分數。"
+  },
+  "skill": {
+    "description": "Codex 與 Claude Code 使用和不使用 {name} skill 時做出的頁面。",
+    "source": "來源",
+    "path": "路徑",
+    "pinned_commit": "固定 commit",
+    "upstream_commit": "上游 commit",
+    "reference": "（參考）",
+    "installed_with": "安裝方式",
+    "own_cli": "（該 skill 自己的 CLI）",
+    "license": "授權",
+    "commit_in_runs": "執行時使用的 commit",
+    "layout_hint": "每個題目固定以 2×2 顯示：Codex 原生、Codex + skill、Claude Code 原生、Claude Code + skill。點選截圖可查看整頁。",
+    "install_link": "安裝與使用 ↓",
+    "jump_aria": "本頁的題目"
+  },
+  "install": {
+    "h2": "安裝與使用",
+    "intro_git": "專案層級安裝：把 skill 資料夾（含有 <code>SKILL.md</code> 的那一個）以固定 commit 的版本複製到你的專案中。畫廊的執行也是用同樣的方式安裝。",
+    "intro_npm": "這個 skill 是由它自己的 CLI（{pkg}）為各個 agent 分別產生的。畫廊的執行用的就是這份輸出。",
+    "install_h": "安裝",
+    "use_h": "使用",
+    "copy_to": "把資料夾複製到 {path}。",
+    "writes": "會在目前的專案中寫入 {path}。",
+    "home_hint": "若要讓所有專案都能使用，請改把資料夾放到 {path}。",
+    "auto_claude": "當請求符合 skill 的描述時，Claude Code 也可以自行載入這個 skill。",
+    "auto_codex": "Codex 也可以依據 skill 的描述自行選用。",
+    "your_task": "<你的任務>",
+    "c_interactive": "互動模式",
+    "c_end_with": "或在任何請求的結尾加上",
+    "c_headless": "非互動模式，與畫廊的執行方式相同",
+    "c_mention": "互動模式：直接提到它，或從 /skills 選取",
+    "notes_h": "備註",
+    "metadata": "中繼資料：{file}"
+  },
+  "prompt": {
+    "description": "{title}：所有 skill 並排比較。",
+    "layout_hint": "所有 skill 並排比較：每一欄是一個 skill，每一列是一個 agent。",
+    "text_h": "題目原文",
+    "text_note": "英文原文，與送給 agent 的內容完全相同，不另行翻譯。",
+    "skill_line_note": "使用 skill 的格子會在結尾多加一句：<code>Use the &lt;name&gt; skill.</code>（Claude Code）或 <code>Use the $&lt;name&gt; skill.</code>（Codex）。",
+    "grid_aria": "比較表格，可左右捲動"
+  },
+  "viewer": {
+    "frame_title": "生成的頁面：{title}",
+    "width_aria": "預覽寬度",
+    "fit": "符合視窗",
+    "download": "下載 HTML",
+    "sandbox_note": "沙箱預覽：頁面的腳本會執行，但頁面無法存取本站、cookie 或儲存空間，因此依賴 <code>localStorage</code> 的功能可能會有不同的表現。",
+    "no_index": "這次執行沒有產生 index.html。",
+    "details_h": "執行詳細資訊",
+    "no_run_json": "這個格子還沒有 <code>run.json</code>。"
+  },
+  "details": {
+    "status": "狀態",
+    "agent": "Agent",
+    "model": "模型",
+    "effort": "Effort",
+    "prompt": "題目",
+    "file_changed": "（之後檔案有變動）",
+    "skill_sentence": "Skill 附加句",
+    "skill_source": "Skill 來源",
+    "skill_commit": "Skill commit",
+    "dirty": "（有尚未 commit 的變更）",
+    "skill_fetched_by": "Skill 取得方式",
+    "installed_to": "安裝位置",
+    "skill_triggered": "Skill 是否觸發",
+    "evidence": "證據",
+    "bundled_skills": "使用的內建 skill",
+    "started": "開始時間",
+    "duration": "耗時",
+    "exit": "結束狀態",
+    "exit_code": "代碼 {n}",
+    "timed_out": "逾時",
+    "attempt": "嘗試序號",
+    "earlier_attempts": "先前的嘗試",
+    "tokens": "Token 數",
+    "turns": "回合數",
+    "cost": "費用",
+    "activity": "活動統計",
+    "isolation": "隔離",
+    "iso_ok": "所有檢查都通過",
+    "iso_fail": "有檢查未通過",
+    "external_refs": "外部參照",
+    "refs_from_run": "對 <code>index.html</code> 的靜態掃描，取自 <code>run.json</code>。",
+    "refs_parsed": "由網站建置流程從 <code>index.html</code> 解析而來。",
+    "rule_violations": "違反的規則",
+    "output": "輸出",
+    "no_index": "沒有 index.html",
+    "other_files": "其他檔案：{files}",
+    "screenshot": "截圖（{kind}）",
+    "page_tall": "頁面高 {h} px",
+    "overflow": "橫向溢出（{w} px）",
+    "net_not_idle": "網路未閒置",
+    "console_errors": "{n} 個主控台錯誤",
+    "page_errors": "{n} 個頁面錯誤",
+    "failed_requests": "{n} 個失敗的請求",
+    "remote_requests": "{n} 個遠端請求",
+    "fonts_failed": "字型載入失敗：{list}",
+    "host": "主機"
+  },
+  "skills": {
+    "frontend-design": {
+      "summary": "Anthropic 官方的前端設計 skill。它要求 agent 在寫程式碼之前先確定設計方向（配色、字型、版面、原則），並對照 AI 常見的預設做法檢查一遍。只有指示，沒有腳本。",
+      "notes": [
+        "同一份 SKILL.md 也發布在 anthropics/claude-plugins-official 和 anthropics/claude-code；本畫廊使用的是 anthropics/skills。",
+        "上游在 2026 年多次改寫這個 skill，所以請務必使用固定 commit。"
+      ]
+    },
+    "ui-ux-pro-max": {
+      "summary": "社群製作的 UI/UX 知識庫 skill：包含本機 CSV 資料（風格、配色、字型搭配、UX 規則、圖表類型、技術堆疊），以及一支 Python 搜尋腳本，會在 agent 寫頁面之前先產出一套設計系統。",
+      "notes": [
+        "執行它的搜尋腳本需要 python3（只用到標準函式庫）。",
+        "上游 README 建議使用 `npm i -g ui-ux-pro-max-cli`；畫廊改用指定固定版本的 npx，因此不會做任何全域安裝。"
+      ]
+    },
+    "web-design-engineer": {
+      "summary": "一個輸出一律是 HTML 的前端設計 skill（網頁、儀表板、原型、簡報、資料視覺化）。它先從確定設計方向的步驟開始，並附帶 25 套風格範本。只有指示，沒有腳本。",
+      "notes": [
+        "在 v0 中取代 OpenAI 的 frontend-skill，因為該 skill 已從 OpenAI 的官方目錄移除，讀者已經無法安裝。",
+        "它的 React 做法會從 CDN 載入 React 和 Babel；預設的手寫 CSS 做法不需要網路。"
+      ]
+    }
+  },
+  "prompts": {
+    "landing-saas": {
+      "title": "SaaS 到達頁面",
+      "summary": "虛構值班排班工具 Rotaline 的行銷頁面：附產品插圖的主視覺區、功能、使用步驟、成效、客戶推薦、可切換月付／年付的價格方案、常見問題與頁尾。"
+    },
+    "dashboard": {
+      "title": "資料儀表板",
+      "summary": "Kestrel Coffee Roasters 的銷售與營運儀表板：KPI 卡片、可依通路篩選的每月營收圖表、各品類占比、可排序的咖啡館列表、最近訂單和庫存警示，全部使用固定資料。"
+    },
+    "blog-portfolio": {
+      "title": "個人部落格與作品集",
+      "summary": "虛構產品設計師 Maya Lindqvist 的單頁網站：四個案例研究、可篩選的文章列表、一篇完整文章、附時間軸的「關於我」區塊、電子報訂閱表單，以及淺色／深色切換。"
+    }
+  }
+}

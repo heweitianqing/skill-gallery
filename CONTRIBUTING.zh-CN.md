@@ -47,11 +47,12 @@ skill 必须是公开的，许可证要允许获取和运行。需要付费服�
 
 ## 翻译
 
-README 有六种语言；画廊以英文为主，关键说明附中文。
+README 和画廊都有六种语言：English、简体中文、繁體中文、日本語、한국어、Español。
 
 | 内容 | 文件 |
 | --- | --- |
 | README | `README.<lang>.md` |
+| 画廊页面 | `site/i18n/<lang>.json` |
 | README 里自动生成的表格文字 | `scripts/build-readme.strings.json` |
 | 本指南 | `CONTRIBUTING.zh-CN.md`（欢迎补充其他语言） |
 

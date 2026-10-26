@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "name": "Español",
+    "readme_file": "README.es.md"
+  },
+  "nav": {
+    "aria": "Sitio",
+    "skip": "Saltar al contenido",
+    "overview": "Resumen",
+    "skills": "Skills",
+    "prompts": "Prompts",
+    "method": "Método",
+    "language": "Idioma",
+    "theme_dark": "Oscuro",
+    "theme_light": "Claro",
+    "theme_to_dark": "Cambiar al tema oscuro",
+    "theme_to_light": "Cambiar al tema claro"
+  },
+  "footer": {
+    "built": "Generado el {date}",
+    "license": "Código de la galería: MIT. Cada skill conserva su propia licencia. Las páginas de {runs} son salidas de los modelos sin editar.",
+    "ai_translation": "Esta página se tradujo con IA. Las correcciones son bienvenidas como pull requests.",
+    "disclaimer": "Sin afiliación con Anthropic ni OpenAI. Todas las marcas comerciales pertenecen a sus propietarios."
+  },
+  "status": {
+    "pending": "Pendiente",
+    "ok": "OK",
+    "failed": "Fallida",
+    "no_run_json": "Sin run.json",
+    "bad_run_json": "run.json no válido",
+    "unknown": "Desconocido"
+  },
+  "thumb": {
+    "no_page": "Sin página",
+    "unreadable": "Captura ilegible",
+    "no_screenshot": "Aún no hay captura",
+    "no_desktop": "Sin captura de escritorio",
+    "no_mobile": "Sin captura móvil",
+    "alt": "{caption}, captura ({kind}, parte superior de la página)",
+    "enlarge": "Ampliar la captura de página completa: {caption}"
+  },
+  "view": {
+    "aria": "Tamaño de la captura",
+    "desktop": "Escritorio",
+    "mobile": "Móvil"
+  },
+  "lightbox": {
+    "aria": "Captura de página completa",
+    "close": "Cerrar",
+    "full_alt": "{caption}, captura de página completa ({kind})",
+    "desktop": "Escritorio 1440",
+    "mobile": "Móvil 390"
+  },
+  "crumbs": {
+    "aria": "Ruta de navegación",
+    "gallery": "Galería"
+  },
+  "cell": {
+    "native": "nativo",
+    "not_run": "Aún no se ha ejecutado.",
+    "na": "n/a",
+    "yes": "Sí",
+    "no": "No",
+    "none": "ninguno",
+    "model": "Modelo",
+    "time": "Tiempo",
+    "tokens": "Tokens",
+    "skill_used": "Skill usado",
+    "external": "Recursos externos",
+    "run_date": "Fecha de ejecución",
+    "open_page": "Abrir página",
+    "details": "Detalles",
+    "prompt_changed": "El archivo del prompt cambió después de esta ejecución.",
+    "breaks_rule": "Incumple una regla del prompt: {rules}.",
+    "attempt": "Intento {n}; los intentos anteriores se conservan en {path}."
+  },
+  "home": {
+    "title": "{site}: comparación de skills para agentes",
+    "description": "Páginas web creadas por Codex y Claude Code con y sin skills para agentes, lado a lado.",
+    "h1": "Qué hacen los skills para agentes con una página web",
+    "lead": "Los mismos prompts, construidos por <strong>Codex</strong> y <strong>Claude Code</strong>, cada uno con y sin un skill de diseño web (<code>SKILL.md</code>). Cada prompt se ejecuta como una matriz 2×2: Codex nativo, Codex + skill, Claude Code nativo, Claude Code + skill. Las celdas nativas son comunes a todos los skills.",
+    "progress": "Se han ejecutado {done} de {total} celdas",
+    "failed_one": "{n} fallida",
+    "failed_other": "{n} fallidas",
+    "pending_hint": "Las celdas que aún no se han ejecutado muestran “Pendiente”.",
+    "overview_h2": "Resumen",
+    "overview_hint": "Las filas son prompts y las columnas, skills. Cada cuadro muestra el resultado de Codex a la izquierda y el de Claude Code a la derecha (parte superior de la página, ancho de escritorio).",
+    "grid_aria": "Cuadrícula de resumen, se desplaza en horizontal",
+    "col_prompt": "Prompt",
+    "col_native": "Nativo",
+    "col_native_sub": "sin skill añadido, referencia común",
+    "col_skill_sub": "con skill",
+    "skills_h2": "Skills",
+    "prompts_h2": "Prompts",
+    "cells_count": "{done} de {total} celdas",
+    "version": "versión {v}"
+  },
+  "method": {
+    "h2": "Método",
+    "th_agent": "Agente",
+    "th_model": "Modelo",
+    "th_effort": "Effort",
+    "th_cli": "Versión de la CLI",
+    "th_runs": "Ejecuciones",
+    "runs_one": "{n} ejecución",
+    "runs_other": "{n} ejecuciones",
+    "no_runs": "configurado, aún sin ejecuciones",
+    "table_note": "El modelo y el effort están fijados en los scripts de ejecución. La tabla muestra lo que registran los archivos <code>run.json</code>.",
+    "sample_title": "Una sola muestra por celda, sin elegir los mejores resultados",
+    "sample_body": "Cada celda se genera una sola vez, de una pasada y sin turnos de seguimiento. El resultado se muestra tal como salió, incluidas las ejecuciones fallidas. Si una celda se vuelve a ejecutar, el intento anterior se conserva en <code>runs/&lt;prompt&gt;/_attempts/</code>.",
+    "prompt_title": "El mismo prompt en las cuatro celdas",
+    "prompt_body": "Los prompts usan una redacción neutra, sin adjetivos de estilo. Las celdas con skill añaden una frase final que nombra el skill: <code>Use the &lt;name&gt; skill.</code> para Claude Code y <code>Use the $&lt;name&gt; skill.</code> para Codex.",
+    "isolation_title": "Aislamiento",
+    "isolation_body": "Cada ejecución empieza en un directorio desechable nuevo, fuera del repositorio, con un <code>HOME</code> vacío, su propio directorio de configuración (<code>CLAUDE_CONFIG_DIR</code> o <code>CODEX_HOME</code>) y un entorno construido desde cero. No se carga ninguna configuración de usuario, plugin, skill de nivel de usuario, servidor MCP ni memoria. El skill que se prueba se copia solo en la carpeta de skills de ese proyecto desechable (<code>.claude/skills/</code> o <code>.agents/skills/</code>). Los skills incluidos en cada CLI siguen disponibles y cuentan como nativos. La evidencia sale de los propios registros de cada agente y se guarda en <code>run.json</code>, en <code>isolation</code>.",
+    "fire_title": "El skill tiene que activarse",
+    "fire_body": "En las celdas con skill, los registros deben mostrar que el skill se cargó (<code>skill_triggered</code>). Si no es así, la celda se marca como Fallida en lugar de mostrarse como resultado del skill.",
+    "shots_title": "Capturas",
+    "shots_body": "Capturas de página completa a 1440 y 390 px CSS de ancho, tomadas cuando la red está inactiva y las fuentes se han cargado, con las animaciones desactivadas{tools}. Las miniaturas muestran la parte superior de la página. “Abrir página” carga el <code>index.html</code> original en un iframe en sandbox (<code>sandbox=\"allow-scripts\"</code>, sin acceso de mismo origen).",
+    "dates_title": "Fechas de ejecución",
+    "dates_body_one": "{range} (UTC), {n} celda.",
+    "dates_body_other": "{range} (UTC), {n} celdas.",
+    "dates_none": "Aún no se ha ejecutado ninguna celda.",
+    "limits_h": "Limitaciones conocidas",
+    "limit_native": "<strong>Nativo significa tal como viene, no sin ningún skill.</strong> Todas las celdas, también las nativas, pueden usar los skills que trae su agente: los 19 skills integrados en Claude Code y los skills de sistema de Codex (<code>imagegen</code>, <code>openai-docs</code>, <code>skill-creator</code>, <code>skill-installer</code>). En el prompt <code>dashboard</code>, el skill integrado <code>dataviz</code> de Claude Code se activó por sí solo dos veces, una en <code>claude__native</code> y otra en <code>claude__frontend-design</code>; <code>run.json</code> lo registra en <code>builtin_skills_used</code>. Es intencionado: se compara lo que obtiene en la práctica quien instala el agente.",
+    "limit_disk": "<strong>Aislamiento significa “no se carga nada”, no “no se puede leer nada”.</strong> Los agentes todavía pueden leer el resto del disco: el sandbox <code>workspace-write</code> predeterminado de Codex puede leer <code>/</code>, y Claude Code con <code>bypassPermissions</code> no tiene sandbox. En las ejecuciones de v0, los agentes buscaron <code>AGENTS.md</code> en directorios superiores y uno usó Playwright desde la caché de npm del operador. Un aislamiento más fuerte (una cuenta de usuario aparte o un contenedor) queda como trabajo futuro.",
+    "limit_fixed": "<strong>Barras laterales fijas en las capturas.</strong> Las capturas de página completa dibujan los elementos <code>position: fixed</code> o <code>sticky</code> con altura <code>100vh</code> solo a la altura de la primera pantalla, así que la barra lateral de un panel puede parecer que termina a los 900 px. Esto se debe a la captura, no a la página.",
+    "limit_once": "<strong>Una sola muestra no es un benchmark.</strong> Cada celda es una única generación. Toma la galería como ejemplos de lo que un skill tiende a hacer, no como una puntuación."
+  },
+  "skill": {
+    "description": "Páginas creadas por Codex y Claude Code con y sin el skill {name}.",
+    "source": "Origen",
+    "path": "Ruta",
+    "pinned_commit": "Commit fijado",
+    "upstream_commit": "Commit upstream",
+    "reference": "(referencia)",
+    "installed_with": "Instalado con",
+    "own_cli": "(la CLI propia del skill)",
+    "license": "Licencia",
+    "commit_in_runs": "Commit usado en las ejecuciones",
+    "layout_hint": "Cada prompt muestra una matriz 2×2 fija: Codex nativo, Codex + skill, Claude Code nativo, Claude Code + skill. Haz clic en una captura para ver la página completa.",
+    "install_link": "Instalar y usar ↓",
+    "jump_aria": "Prompts de esta página"
+  },
+  "install": {
+    "h2": "Instalar y usar",
+    "intro_git": "Instalación a nivel de proyecto: copia la carpeta del skill (la que contiene <code>SKILL.md</code>) en tu proyecto, en el commit fijado. Las ejecuciones de la galería lo instalaron de la misma forma.",
+    "intro_npm": "La propia CLI del skill ({pkg}) genera este skill para cada agente. Las ejecuciones de la galería usaron esa salida.",
+    "install_h": "Instalar",
+    "use_h": "Usar",
+    "copy_to": "Copia la carpeta en {path}.",
+    "writes": "Genera {path} en el proyecto actual.",
+    "home_hint": "Para tenerlo disponible en todos los proyectos, coloca la carpeta en {path}.",
+    "auto_claude": "Claude Code también puede cargar el skill por sí solo cuando una solicitud coincide con la descripción del skill.",
+    "auto_codex": "Codex también puede elegir el skill por sí solo, según su descripción.",
+    "your_task": "<tu tarea>",
+    "c_interactive": "interactivo",
+    "c_end_with": "o termina cualquier solicitud con",
+    "c_headless": "no interactivo, como en las ejecuciones de la galería",
+    "c_mention": "interactivo: menciónalo o elígelo en /skills",
+    "notes_h": "Notas",
+    "metadata": "Metadatos: {file}"
+  },
+  "prompt": {
+    "description": "{title}: todos los skills lado a lado.",
+    "layout_hint": "Todos los skills lado a lado: cada columna es un skill y cada fila, un agente.",
+    "text_h": "Texto del prompt",
+    "text_note": "En inglés, tal como se envió a los agentes. No se traduce.",
+    "skill_line_note": "Las celdas con skill añaden una frase al final: <code>Use the &lt;name&gt; skill.</code> (Claude Code) o <code>Use the $&lt;name&gt; skill.</code> (Codex).",
+    "grid_aria": "Cuadrícula comparativa, se desplaza en horizontal"
+  },
+  "viewer": {
+    "frame_title": "Página generada: {title}",
+    "width_aria": "Ancho de la vista previa",
+    "fit": "Ajustar",
+    "download": "Descargar HTML",
+    "sandbox_note": "Vista previa en sandbox: los scripts de la página se ejecutan, pero la página no puede acceder a este sitio, a las cookies ni al almacenamiento, así que las funciones que dependen de <code>localStorage</code> pueden comportarse de otra manera.",
+    "no_index": "Esta ejecución no generó ningún index.html.",
+    "details_h": "Detalles de la ejecución",
+    "no_run_json": "Esta celda aún no tiene <code>run.json</code>."
+  },
+  "details": {
+    "status": "Estado",
+    "agent": "Agente",
+    "model": "Modelo",
+    "effort": "Effort",
+    "prompt": "Prompt",
+    "file_changed": "(el archivo cambió desde entonces)",
+    "skill_sentence": "Frase del skill",
+    "skill_source": "Origen del skill",
+    "skill_commit": "Commit del skill",
+    "dirty": "(cambios sin confirmar)",
+    "skill_fetched_by": "Skill obtenido con",
+    "installed_to": "Instalado en",
+    "skill_triggered": "Skill activado",
+    "evidence": "Evidencia",
+    "bundled_skills": "Skills incluidos usados",
+    "started": "Inicio",
+    "duration": "Duración",
+    "exit": "Salida",
+    "exit_code": "código {n}",
+    "timed_out": "tiempo agotado",
+    "attempt": "Intento",
+    "earlier_attempts": "Intentos anteriores",
+    "tokens": "Tokens",
+    "turns": "Turnos",
+    "cost": "Costo",
+    "activity": "Actividad",
+    "isolation": "Aislamiento",
+    "iso_ok": "se superaron todas las comprobaciones",
+    "iso_fail": "falló una comprobación",
+    "external_refs": "Referencias externas",
+    "refs_from_run": "Análisis estático de <code>index.html</code>, tomado de <code>run.json</code>.",
+    "refs_parsed": "Extraídas de <code>index.html</code> durante la compilación del sitio.",
+    "rule_violations": "Incumplimientos de reglas",
+    "output": "Resultado",
+    "no_index": "sin index.html",
+    "other_files": "otros archivos: {files}",
+    "screenshot": "Captura ({kind})",
+    "page_tall": "página de {h} px de alto",
+    "overflow": "desbordamiento horizontal ({w} px)",
+    "net_not_idle": "la red no quedó inactiva",
+    "console_errors": "{n} error(es) de consola",
+    "page_errors": "{n} error(es) de página",
+    "failed_requests": "{n} solicitud(es) fallida(s)",
+    "remote_requests": "{n} solicitud(es) remota(s)",
+    "fonts_failed": "fuentes que fallaron: {list}",
+    "host": "Host"
+  },
+  "skills": {
+    "frontend-design": {
+      "summary": "El skill oficial de Anthropic para diseño front-end. Pide al agente que se comprometa con una dirección de diseño (paleta, tipografía, maquetación, principios) y que la contraste con los valores por defecto habituales de la IA antes de escribir código. Solo instrucciones, sin scripts.",
+      "notes": [
+        "El mismo SKILL.md también se publica en anthropics/claude-plugins-official y anthropics/claude-code; esta galería usa anthropics/skills.",
+        "Este skill se reescribió varias veces en upstream durante 2026, así que usa siempre el commit fijado."
+      ]
+    },
+    "ui-ux-pro-max": {
+      "summary": "Un skill comunitario de base de conocimiento de UI/UX: datos CSV locales (estilos, paletas, combinaciones tipográficas, reglas de UX, tipos de gráficos, stacks) y un script de búsqueda en Python que genera un sistema de diseño antes de que el agente escriba la página.",
+      "notes": [
+        "Necesita python3 (solo la biblioteca estándar) para ejecutar sus scripts de búsqueda.",
+        "El README original recomienda `npm i -g ui-ux-pro-max-cli`; la galería usa en su lugar npx con una versión fijada, así que no se instala nada de forma global."
+      ]
+    },
+    "web-design-engineer": {
+      "summary": "Un skill de diseño front-end cuya salida es siempre HTML (páginas, paneles, prototipos, diapositivas, visualización de datos). Empieza con un paso de dirección de diseño e incluye 25 recetas de estilo. Solo instrucciones, sin scripts.",
+      "notes": [
+        "Ocupa en v0 el lugar del frontend-skill de OpenAI, porque ese skill se retiró del catálogo oficial de OpenAI y los lectores ya no pueden instalarlo.",
+        "Su modo React carga React y Babel desde una CDN; el modo predeterminado, con CSS escrito a mano, no necesita red."
+      ]
+    }
+  },
+  "prompts": {
+    "landing-saas": {
+      "title": "Landing page de SaaS",
+      "summary": "Una página de marketing para Rotaline, una herramienta ficticia de planificación de guardias: sección hero con una ilustración del producto, funcionalidades, pasos, resultados, testimonios, precios con selector mensual/anual, preguntas frecuentes y pie de página."
+    },
+    "dashboard": {
+      "title": "Panel de datos",
+      "summary": "Un panel de ventas y operaciones para Kestrel Coffee Roasters: tarjetas de KPI, un gráfico de ingresos mensuales con filtro por canal, reparto por categoría, una tabla de cafeterías ordenable, pedidos recientes y un aviso de stock, todo a partir de datos fijos."
+    },
+    "blog-portfolio": {
+      "title": "Blog y portafolio personal",
+      "summary": "Un sitio de una sola página para Maya Lindqvist, una diseñadora de producto ficticia: cuatro casos de estudio, una lista de artículos filtrable, un artículo completo, una sección “sobre mí” con cronología, un formulario de suscripción al boletín y un selector de tema claro/oscuro."
+    }
+  }
+}

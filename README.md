@@ -131,6 +131,6 @@ The skills belong to their authors and keep their own licenses. This repository 
 
 This project is not affiliated with, endorsed by, or sponsored by Anthropic or OpenAI. Claude, Claude Code, Codex and other names are trademarks of their respective owners. The pages in `runs/` are unedited model outputs, and the fictional companies and people in them are made up.
 
-The translations of this README were made with AI. Corrections are welcome as pull requests.
+The translations of this README and of the gallery were made with AI. Corrections are welcome as pull requests.
 
 The code and documentation in this repository are released under the [MIT License](LICENSE).

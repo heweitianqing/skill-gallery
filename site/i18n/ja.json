@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "name": "日本語",
+    "readme_file": "README.ja.md"
+  },
+  "nav": {
+    "aria": "サイト",
+    "skip": "本文へスキップ",
+    "overview": "概要",
+    "skills": "Skill",
+    "prompts": "プロンプト",
+    "method": "手法",
+    "language": "言語",
+    "theme_dark": "ダーク",
+    "theme_light": "ライト",
+    "theme_to_dark": "ダークテーマに切り替え",
+    "theme_to_light": "ライトテーマに切り替え"
+  },
+  "footer": {
+    "built": "ビルド：{date}",
+    "license": "ギャラリーのコード：MIT。各 skill にはそれぞれのライセンスが適用されます。{runs} 内のページは、モデルの出力を編集せずに掲載したものです。",
+    "ai_translation": "このページは AI によって翻訳されました。修正のプルリクエストを歓迎します。",
+    "disclaimer": "Anthropic および OpenAI とは提携関係にありません。すべての商標はそれぞれの所有者に帰属します。"
+  },
+  "status": {
+    "pending": "未実行",
+    "ok": "成功",
+    "failed": "失敗",
+    "no_run_json": "run.json なし",
+    "bad_run_json": "run.json が不正",
+    "unknown": "不明"
+  },
+  "thumb": {
+    "no_page": "ページなし",
+    "unreadable": "スクリーンショットを読み込めません",
+    "no_screenshot": "スクリーンショットはまだありません",
+    "no_desktop": "デスクトップのスクリーンショットなし",
+    "no_mobile": "モバイルのスクリーンショットなし",
+    "alt": "{caption}、{kind}のスクリーンショット（ページ上部）",
+    "enlarge": "ページ全体のスクリーンショットを拡大：{caption}"
+  },
+  "view": {
+    "aria": "スクリーンショットのサイズ",
+    "desktop": "デスクトップ",
+    "mobile": "モバイル"
+  },
+  "lightbox": {
+    "aria": "ページ全体のスクリーンショット",
+    "close": "閉じる",
+    "full_alt": "{caption}、ページ全体のスクリーンショット（{kind}）",
+    "desktop": "デスクトップ 1440",
+    "mobile": "モバイル 390"
+  },
+  "crumbs": {
+    "aria": "パンくずリスト",
+    "gallery": "ギャラリー"
+  },
+  "cell": {
+    "native": "ネイティブ",
+    "not_run": "まだ実行されていません。",
+    "na": "該当なし",
+    "yes": "はい",
+    "no": "いいえ",
+    "none": "なし",
+    "model": "モデル",
+    "time": "所要時間",
+    "tokens": "トークン",
+    "skill_used": "Skill の使用",
+    "external": "外部参照",
+    "run_date": "実行日",
+    "open_page": "ページを開く",
+    "details": "詳細",
+    "prompt_changed": "この実行の後にプロンプトファイルが変更されました。",
+    "breaks_rule": "プロンプトのルールに違反しています：{rules}。",
+    "attempt": "{n} 回目の試行です。以前の試行は {path} に保存されています。"
+  },
+  "home": {
+    "title": "{site}：エージェント skill の比較",
+    "description": "Codex と Claude Code が、エージェント skill を使った場合と使わない場合に作成した Web ページを並べて比較します。",
+    "h1": "エージェント skill で Web ページはどう変わるか",
+    "lead": "同じプロンプトを <strong>Codex</strong> と <strong>Claude Code</strong> で、Web デザイン用の skill（<code>SKILL.md</code>）ありとなしの両方で生成しました。各プロンプトは Codex ネイティブ、Codex + skill、Claude Code ネイティブ、Claude Code + skill の 2×2 で実行します。ネイティブのセルはすべての skill で共通です。",
+    "progress": "{total} セル中 {done} セルを実行済み",
+    "failed_one": "{n} 件失敗",
+    "failed_other": "{n} 件失敗",
+    "pending_hint": "まだ実行されていないセルには「未実行」と表示されます。",
+    "overview_h2": "概要",
+    "overview_hint": "行がプロンプト、列が skill です。各マスの左が Codex、右が Claude Code の結果です（ページ上部、デスクトップ幅）。",
+    "grid_aria": "概要グリッド（横スクロール）",
+    "col_prompt": "プロンプト",
+    "col_native": "ネイティブ",
+    "col_native_sub": "skill 追加なし、共通のベースライン",
+    "col_skill_sub": "skill あり",
+    "skills_h2": "Skill",
+    "prompts_h2": "プロンプト",
+    "cells_count": "{total} セル中 {done} セル",
+    "version": "バージョン {v}"
+  },
+  "method": {
+    "h2": "手法",
+    "th_agent": "エージェント",
+    "th_model": "モデル",
+    "th_effort": "Effort",
+    "th_cli": "CLI バージョン",
+    "th_runs": "実行数",
+    "runs_one": "{n} 回",
+    "runs_other": "{n} 回",
+    "no_runs": "設定済み、未実行",
+    "table_note": "モデルと effort は実行スクリプトで固定しています。表には <code>run.json</code> ファイルに記録された値を示しています。",
+    "sample_title": "各セル 1 回だけ生成、結果の選り好みなし",
+    "sample_body": "各セルは追加のやり取りなしで、1 回の実行で 1 度だけ生成します。結果は失敗した実行も含め、出力されたままの状態で掲載しています。セルを再実行した場合、以前の試行は <code>runs/&lt;prompt&gt;/_attempts/</code> に残します。",
+    "prompt_title": "4 つのセルすべてで同じプロンプト",
+    "prompt_body": "プロンプトは、スタイルを表す形容詞を含まない中立的な表現で書いています。skill のセルでは、末尾に skill 名を指定する 1 文を追加します。Claude Code では <code>Use the &lt;name&gt; skill.</code>、Codex では <code>Use the $&lt;name&gt; skill.</code> です。",
+    "isolation_title": "隔離",
+    "isolation_body": "各実行は、リポジトリ外に新しく作成した使い捨てのディレクトリで開始します。<code>HOME</code> は空で、専用の設定ディレクトリ（<code>CLAUDE_CONFIG_DIR</code> または <code>CODEX_HOME</code>）を使い、環境は一から構築します。ユーザー設定、プラグイン、ユーザーレベルの skill、MCP サーバー、メモリは一切読み込みません。テスト対象の skill は、その使い捨てプロジェクトの skill フォルダ（<code>.claude/skills/</code> または <code>.agents/skills/</code>）にのみコピーします。各 CLI に同梱されている skill はそのまま利用でき、ネイティブの一部として扱います。その根拠は各エージェント自身のログから取得し、<code>run.json</code> の <code>isolation</code> に保存しています。",
+    "fire_title": "skill が発動していること",
+    "fire_body": "skill のセルでは、skill が読み込まれたことがログで確認できる必要があります（<code>skill_triggered</code>）。確認できない場合、そのセルは skill の結果としては表示せず、失敗として扱います。",
+    "shots_title": "スクリーンショット",
+    "shots_body": "幅 1440 CSS px と 390 CSS px でページ全体をキャプチャしています。ネットワークがアイドルになり、フォントが読み込まれた後に、アニメーションを無効にした状態で撮影しています{tools}。サムネイルにはページ上部を表示します。「ページを開く」では、元の <code>index.html</code> をサンドボックス化した iframe（<code>sandbox=\"allow-scripts\"</code>、同一オリジンへのアクセスなし）で読み込みます。",
+    "dates_title": "実行日",
+    "dates_body_one": "{range}（UTC）、{n} セル。",
+    "dates_body_other": "{range}（UTC）、{n} セル。",
+    "dates_none": "まだ実行されたセルはありません。",
+    "limits_h": "既知の制限",
+    "limit_native": "<strong>ネイティブとはインストールしたままの状態のことで、skill がゼロという意味ではありません。</strong>ネイティブを含むすべてのセルで、各エージェントに同梱の skill を使えます。Claude Code に組み込まれた 19 個の skill と、Codex のシステム skill（<code>imagegen</code>、<code>openai-docs</code>、<code>skill-creator</code>、<code>skill-installer</code>）です。<code>dashboard</code> のプロンプトでは、Claude Code 組み込みの <code>dataviz</code> skill が自動で 2 回発動しました（<code>claude__native</code> と <code>claude__frontend-design</code> で 1 回ずつ）。これは <code>run.json</code> の <code>builtin_skills_used</code> に記録されています。読者がエージェントをインストールしたときに実際に得られる結果を比べるため、意図的にそのままにしています。",
+    "limit_disk": "<strong>隔離とは「何も読み込まない」ことであり、「何も読めない」ことではありません。</strong>エージェントはディスク上の他の場所を引き続き読み取れます。Codex 標準の <code>workspace-write</code> サンドボックスは <code>/</code> を読み取ることができ、<code>bypassPermissions</code> を指定した Claude Code にはサンドボックスがありません。v0 の実行では、エージェントが親ディレクトリの <code>AGENTS.md</code> を探したほか、あるエージェントは実行者の npm キャッシュにある Playwright を使用しました。より強力な隔離（別のユーザーアカウントやコンテナ）は今後の課題です。",
+    "limit_fixed": "<strong>スクリーンショット内の固定サイドバー。</strong>ページ全体のキャプチャでは、<code>100vh</code> のサイズを持つ <code>position: fixed</code> または <code>sticky</code> の要素が最初の画面の高さでしか描画されないため、ダッシュボードのサイドバーが 900 px で途切れているように見えることがあります。これはキャプチャによるもので、ページ自体の問題ではありません。",
+    "limit_once": "<strong>1 回の生成はベンチマークではありません。</strong>各セルは 1 回だけ生成したものです。このギャラリーは、skill がどのような傾向を持つかを示す例として見てください。スコアではありません。"
+  },
+  "skill": {
+    "description": "Codex と Claude Code が、{name} skill を使った場合と使わない場合に作成したページです。",
+    "source": "ソース",
+    "path": "パス",
+    "pinned_commit": "固定したコミット",
+    "upstream_commit": "上流のコミット",
+    "reference": "（参考）",
+    "installed_with": "インストール方法",
+    "own_cli": "（skill 独自の CLI）",
+    "license": "ライセンス",
+    "commit_in_runs": "実行で使用したコミット",
+    "layout_hint": "各プロンプトを、Codex ネイティブ、Codex + skill、Claude Code ネイティブ、Claude Code + skill の固定 2×2 で表示します。スクリーンショットをクリックするとページ全体を表示できます。",
+    "install_link": "インストールと使い方 ↓",
+    "jump_aria": "このページのプロンプト"
+  },
+  "install": {
+    "h2": "インストールと使い方",
+    "intro_git": "プロジェクト単位のインストール：固定したコミットの skill フォルダ（<code>SKILL.md</code> を含むフォルダ）をプロジェクトにコピーします。ギャラリーの実行でも同じ方法でインストールしました。",
+    "intro_npm": "この skill は、skill 独自の CLI（{pkg}）がエージェントごとに生成します。ギャラリーの実行ではその出力を使用しました。",
+    "install_h": "インストール",
+    "use_h": "使い方",
+    "copy_to": "フォルダを {path} にコピーします。",
+    "writes": "現在のプロジェクトに {path} を書き込みます。",
+    "home_hint": "すべてのプロジェクトで使えるようにするには、代わりにフォルダを {path} に置いてください。",
+    "auto_claude": "Claude Code は、リクエストが skill の説明に一致すると、skill を自動的に読み込むこともあります。",
+    "auto_codex": "Codex も、skill の説明に基づいて skill を自動的に選ぶことがあります。",
+    "your_task": "<タスク>",
+    "c_interactive": "対話モード",
+    "c_end_with": "または、任意のリクエストの末尾に次の 1 文を付ける",
+    "c_headless": "ヘッドレス（ギャラリーの実行と同じ）",
+    "c_mention": "対話モード：メンションするか、/skills から選ぶ",
+    "notes_h": "補足",
+    "metadata": "メタデータ：{file}"
+  },
+  "prompt": {
+    "description": "{title}：すべての skill を並べて比較します。",
+    "layout_hint": "すべての skill を並べて表示します。各列が 1 つの skill、各行が 1 つのエージェントです。",
+    "text_h": "プロンプト本文",
+    "text_note": "エージェントに送信したとおりの英語の原文です。翻訳はしていません。",
+    "skill_line_note": "skill のセルでは、末尾に 1 文を追加します：<code>Use the &lt;name&gt; skill.</code>（Claude Code）または <code>Use the $&lt;name&gt; skill.</code>（Codex）。",
+    "grid_aria": "比較グリッド（横スクロール）"
+  },
+  "viewer": {
+    "frame_title": "生成されたページ：{title}",
+    "width_aria": "プレビューの幅",
+    "fit": "フィット",
+    "download": "HTML をダウンロード",
+    "sandbox_note": "サンドボックス化されたプレビューです。ページのスクリプトは実行されますが、ページからこのサイト、Cookie、ストレージにはアクセスできないため、<code>localStorage</code> に依存する機能は動作が異なる場合があります。",
+    "no_index": "この実行では index.html が生成されませんでした。",
+    "details_h": "実行の詳細",
+    "no_run_json": "このセルにはまだ <code>run.json</code> がありません。"
+  },
+  "details": {
+    "status": "ステータス",
+    "agent": "エージェント",
+    "model": "モデル",
+    "effort": "Effort",
+    "prompt": "プロンプト",
+    "file_changed": "（その後ファイルが変更されています）",
+    "skill_sentence": "Skill の指定文",
+    "skill_source": "Skill のソース",
+    "skill_commit": "Skill のコミット",
+    "dirty": "（未コミットの変更あり）",
+    "skill_fetched_by": "Skill の取得方法",
+    "installed_to": "インストール先",
+    "skill_triggered": "Skill の発動",
+    "evidence": "根拠",
+    "bundled_skills": "使用した同梱 skill",
+    "started": "開始",
+    "duration": "所要時間",
+    "exit": "終了状態",
+    "exit_code": "コード {n}",
+    "timed_out": "タイムアウト",
+    "attempt": "試行",
+    "earlier_attempts": "以前の試行",
+    "tokens": "トークン",
+    "turns": "ターン数",
+    "cost": "コスト",
+    "activity": "アクティビティ",
+    "isolation": "隔離",
+    "iso_ok": "すべてのチェックに合格",
+    "iso_fail": "失敗したチェックあり",
+    "external_refs": "外部参照",
+    "refs_from_run": "<code>index.html</code> の静的スキャン結果（<code>run.json</code> より）。",
+    "refs_parsed": "サイトのビルド時に <code>index.html</code> から解析。",
+    "rule_violations": "ルール違反",
+    "output": "出力",
+    "no_index": "index.html なし",
+    "other_files": "その他のファイル：{files}",
+    "screenshot": "スクリーンショット（{kind}）",
+    "page_tall": "ページの高さ {h} px",
+    "overflow": "横方向のはみ出し（{w} px）",
+    "net_not_idle": "ネットワークがアイドルになっていない",
+    "console_errors": "コンソールエラー {n} 件",
+    "page_errors": "ページエラー {n} 件",
+    "failed_requests": "失敗したリクエスト {n} 件",
+    "remote_requests": "リモートリクエスト {n} 件",
+    "fonts_failed": "フォントの読み込み失敗：{list}",
+    "host": "ホスト"
+  },
+  "skills": {
+    "frontend-design": {
+      "summary": "Anthropic 公式のフロントエンドデザイン skill です。コードを書く前に、エージェントにデザインの方向性（配色、タイポグラフィ、レイアウト、原則）を決めさせ、それを AI にありがちなデフォルトと照らし合わせて確認させます。指示のみで、スクリプトは含みません。",
+      "notes": [
+        "同じ SKILL.md は anthropics/claude-plugins-official と anthropics/claude-code でも公開されていますが、このギャラリーでは anthropics/skills のものを使用しています。",
+        "上流ではこの skill が 2026 年に何度か書き直されているため、必ず固定したコミットを使用してください。"
+      ]
+    },
+    "ui-ux-pro-max": {
+      "summary": "コミュニティ製の UI/UX ナレッジベース skill です。ローカルの CSV データ（スタイル、配色、フォントの組み合わせ、UX ルール、チャートの種類、技術スタック）と Python の検索スクリプトで構成され、エージェントがページを書く前にデザインシステムを生成します。",
+      "notes": [
+        "検索スクリプトの実行には python3（標準ライブラリのみ）が必要です。",
+        "上流の README では `npm i -g ui-ux-pro-max-cli` を推奨していますが、ギャラリーでは代わりにバージョンを固定して npx を使うため、グローバルには何もインストールしません。"
+      ]
+    },
+    "web-design-engineer": {
+      "summary": "出力が常に HTML（ページ、ダッシュボード、プロトタイプ、スライド、データ可視化）になるフロントエンドデザイン skill です。最初にデザインの方向性を決めるステップがあり、25 種類のスタイルレシピを同梱しています。指示のみで、スクリプトは含みません。",
+      "notes": [
+        "v0 では OpenAI の frontend-skill の代わりに採用しました。frontend-skill は OpenAI の公式カタログから削除され、読者がインストールできなくなったためです。",
+        "React を使う場合は CDN から React と Babel を読み込みます。デフォルトの手書き CSS の場合はネットワークを必要としません。"
+      ]
+    }
+  },
+  "prompts": {
+    "landing-saas": {
+      "title": "SaaS のランディングページ",
+      "summary": "架空のオンコール当番管理ツール Rotaline のマーケティングページ。製品イラスト付きのヒーロー、機能紹介、導入ステップ、導入効果、利用者の声、月額・年額の切り替え付きの料金、FAQ、フッターで構成されます。"
+    },
+    "dashboard": {
+      "title": "データダッシュボード",
+      "summary": "Kestrel Coffee Roasters の売上・運営ダッシュボード。KPI カード、チャネルで絞り込める月次売上グラフ、カテゴリ別の構成比、並べ替え可能なカフェ一覧表、最近の注文、在庫の警告を、すべて固定データで表示します。"
+    },
+    "blog-portfolio": {
+      "title": "個人ブログとポートフォリオ",
+      "summary": "架空のプロダクトデザイナー Maya Lindqvist の 1 ページサイト。4 つのケーススタディ、絞り込み可能な記事一覧、記事 1 本の全文、経歴タイムライン付きの自己紹介、ニュースレター登録フォーム、ライト・ダークの切り替えで構成されます。"
+    }
+  }
+}

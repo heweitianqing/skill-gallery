@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "name": "English",
+    "readme_file": "README.md"
+  },
+  "nav": {
+    "aria": "Site",
+    "skip": "Skip to content",
+    "overview": "Overview",
+    "skills": "Skills",
+    "prompts": "Prompts",
+    "method": "Method",
+    "language": "Language",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "theme_to_dark": "Switch to dark theme",
+    "theme_to_light": "Switch to light theme"
+  },
+  "footer": {
+    "built": "Built {date}",
+    "license": "Gallery code: MIT. Each skill keeps its own license. Pages under {runs} are unedited model outputs.",
+    "ai_translation": "This page was translated with AI. Corrections are welcome as pull requests.",
+    "disclaimer": "Not affiliated with Anthropic or OpenAI. All trademarks belong to their owners."
+  },
+  "status": {
+    "pending": "Pending",
+    "ok": "OK",
+    "failed": "Failed",
+    "no_run_json": "No run.json",
+    "bad_run_json": "Bad run.json",
+    "unknown": "Unknown"
+  },
+  "thumb": {
+    "no_page": "No page",
+    "unreadable": "Screenshot unreadable",
+    "no_screenshot": "No screenshot yet",
+    "no_desktop": "No desktop screenshot",
+    "no_mobile": "No mobile screenshot",
+    "alt": "{caption}, {kind} screenshot (top of page)",
+    "enlarge": "Enlarge full-page screenshot: {caption}"
+  },
+  "view": {
+    "aria": "Screenshot size",
+    "desktop": "Desktop",
+    "mobile": "Mobile"
+  },
+  "lightbox": {
+    "aria": "Full-page screenshot",
+    "close": "Close",
+    "full_alt": "{caption}, full-page {kind} screenshot",
+    "desktop": "Desktop 1440",
+    "mobile": "Mobile 390"
+  },
+  "crumbs": {
+    "aria": "Breadcrumb",
+    "gallery": "Gallery"
+  },
+  "cell": {
+    "native": "native",
+    "not_run": "Not run yet.",
+    "na": "n/a",
+    "yes": "Yes",
+    "no": "No",
+    "none": "none",
+    "model": "Model",
+    "time": "Time",
+    "tokens": "Tokens",
+    "skill_used": "Skill used",
+    "external": "External",
+    "run_date": "Run date",
+    "open_page": "Open page",
+    "details": "Details",
+    "prompt_changed": "The prompt file changed after this run.",
+    "breaks_rule": "Breaks a prompt rule: {rules}.",
+    "attempt": "Attempt {n}; earlier attempts are kept in {path}."
+  },
+  "home": {
+    "title": "{site}: agent skills compared",
+    "description": "Web pages built by Codex and Claude Code with and without agent skills, side by side.",
+    "h1": "What agent skills do to a web page",
+    "lead": "The same prompts, built by <strong>Codex</strong> and <strong>Claude Code</strong>, each with and without a web-design skill (<code>SKILL.md</code>). Every prompt runs as a 2×2: Codex native, Codex + skill, Claude Code native, Claude Code + skill. The native cells are shared by all skills.",
+    "progress": "{done} of {total} cells have run",
+    "failed_one": "{n} failed",
+    "failed_other": "{n} failed",
+    "pending_hint": "Cells that have not run yet show “Pending”.",
+    "overview_h2": "Overview",
+    "overview_hint": "Rows are prompts, columns are skills. Each square shows the Codex result on the left and the Claude Code result on the right (top of the page, desktop width).",
+    "grid_aria": "Overview grid, scrolls sideways",
+    "col_prompt": "Prompt",
+    "col_native": "Native",
+    "col_native_sub": "no added skill, shared baseline",
+    "col_skill_sub": "with skill",
+    "skills_h2": "Skills",
+    "prompts_h2": "Prompts",
+    "cells_count": "{done} of {total} cells",
+    "version": "version {v}"
+  },
+  "method": {
+    "h2": "Method",
+    "th_agent": "Agent",
+    "th_model": "Model",
+    "th_effort": "Effort",
+    "th_cli": "CLI version",
+    "th_runs": "Runs",
+    "runs_one": "{n} run",
+    "runs_other": "{n} runs",
+    "no_runs": "configured, no runs yet",
+    "table_note": "The model and effort are fixed in the run scripts. The table shows what the <code>run.json</code> files record.",
+    "sample_title": "One sample per cell, no picking",
+    "sample_body": "Each cell is generated once, in one pass, with no follow-up turns. The result is shown as it came out, failed runs included. If a cell is rerun, the earlier attempt is kept in <code>runs/&lt;prompt&gt;/_attempts/</code>.",
+    "prompt_title": "Same prompt in all four cells",
+    "prompt_body": "The prompts use neutral wording with no style adjectives. Skill cells add one closing sentence that names the skill: <code>Use the &lt;name&gt; skill.</code> for Claude Code and <code>Use the $&lt;name&gt; skill.</code> for Codex.",
+    "isolation_title": "Isolation",
+    "isolation_body": "Every run starts in a fresh throwaway directory outside the repository, with an empty <code>HOME</code>, its own config home (<code>CLAUDE_CONFIG_DIR</code> or <code>CODEX_HOME</code>) and an environment built from scratch. No user settings, plugins, user-level skills, MCP servers or memories are loaded. The skill under test is copied only into that throwaway project's skill folder (<code>.claude/skills/</code> or <code>.agents/skills/</code>). Skills bundled with each CLI stay available and count as native. The evidence comes from each agent's own logs and is stored in <code>run.json</code> under <code>isolation</code>.",
+    "fire_title": "The skill has to fire",
+    "fire_body": "For skill cells, the logs must show that the skill was loaded (<code>skill_triggered</code>). If it was not, the cell is marked Failed instead of being shown as a skill result.",
+    "shots_title": "Screenshots",
+    "shots_body": "Full-page captures at 1440 and 390 CSS px wide, taken after the network is idle and fonts have loaded, with animations disabled{tools}. Thumbnails show the top of the page. “Open page” loads the original <code>index.html</code> in a sandboxed iframe (<code>sandbox=\"allow-scripts\"</code>, no same-origin access).",
+    "dates_title": "Run dates",
+    "dates_body_one": "{range} (UTC), {n} cell.",
+    "dates_body_other": "{range} (UTC), {n} cells.",
+    "dates_none": "No cells have run yet.",
+    "limits_h": "Known limitations",
+    "limit_native": "<strong>Native means out of the box, not zero skills.</strong> Every cell, native ones included, can use the skills that ship with its agent: the 19 skills bundled with Claude Code, and Codex's system skills (<code>imagegen</code>, <code>openai-docs</code>, <code>skill-creator</code>, <code>skill-installer</code>). In the <code>dashboard</code> prompt, Claude Code's bundled <code>dataviz</code> skill fired on its own twice, once in <code>claude__native</code> and once in <code>claude__frontend-design</code>; <code>run.json</code> records this under <code>builtin_skills_used</code>. This is on purpose: the comparison is about what a reader actually gets after installing the agent.",
+    "limit_disk": "<strong>Isolation means “nothing loaded”, not “nothing readable”.</strong> The agents can still read the rest of the disk: Codex's stock <code>workspace-write</code> sandbox can read <code>/</code>, and Claude Code with <code>bypassPermissions</code> has no sandbox. In the v0 runs, agents looked for <code>AGENTS.md</code> in parent directories and one used Playwright from the operator's npm cache. Stronger isolation (a separate user account or a container) is future work.",
+    "limit_fixed": "<strong>Fixed sidebars in screenshots.</strong> Full-page captures draw <code>position: fixed</code> or <code>sticky</code> elements sized <code>100vh</code> at the first screen's height only, so a dashboard sidebar can look as if it stops at 900 px. This comes from the capture, not from the page.",
+    "limit_once": "<strong>One sample is not a benchmark.</strong> Each cell is a single generation. Treat the gallery as examples of what a skill tends to do, not as a score."
+  },
+  "skill": {
+    "description": "Pages built by Codex and Claude Code with and without the {name} skill.",
+    "source": "Source",
+    "path": "Path",
+    "pinned_commit": "Pinned commit",
+    "upstream_commit": "Upstream commit",
+    "reference": "(reference)",
+    "installed_with": "Installed with",
+    "own_cli": "(the skill's own CLI)",
+    "license": "License",
+    "commit_in_runs": "Commit used in runs",
+    "layout_hint": "Each prompt shows a fixed 2×2: Codex native, Codex + skill, Claude Code native, Claude Code + skill. Click a screenshot to see the full page.",
+    "install_link": "Install and use ↓",
+    "jump_aria": "Prompts on this page"
+  },
+  "install": {
+    "h2": "Install and use",
+    "intro_git": "Project-level install: copy the skill folder (the one that contains <code>SKILL.md</code>) into your project at the pinned commit. The gallery runs installed it the same way.",
+    "intro_npm": "This skill is generated for each agent by its own CLI ({pkg}). The gallery runs used that output.",
+    "install_h": "Install",
+    "use_h": "Use",
+    "copy_to": "Copy the folder to {path}.",
+    "writes": "Writes {path} in the current project.",
+    "home_hint": "To make it available in every project, put the folder in {path} instead.",
+    "auto_claude": "Claude Code can also load the skill by itself when a request matches the skill's description.",
+    "auto_codex": "Codex can also pick the skill by itself, based on its description.",
+    "your_task": "<your task>",
+    "c_interactive": "interactive",
+    "c_end_with": "or end any request with",
+    "c_headless": "headless, as in the gallery runs",
+    "c_mention": "interactive: mention it, or pick it from /skills",
+    "notes_h": "Notes",
+    "metadata": "Metadata: {file}"
+  },
+  "prompt": {
+    "description": "{title}: every skill side by side.",
+    "layout_hint": "All skills side by side: each column is one skill, each row one agent.",
+    "text_h": "Prompt text",
+    "text_note": "In English, exactly as it was sent to the agents. It is not translated.",
+    "skill_line_note": "Skill cells add one sentence at the end: <code>Use the &lt;name&gt; skill.</code> (Claude Code) or <code>Use the $&lt;name&gt; skill.</code> (Codex).",
+    "grid_aria": "Comparison grid, scrolls sideways"
+  },
+  "viewer": {
+    "frame_title": "Generated page: {title}",
+    "width_aria": "Preview width",
+    "fit": "Fit",
+    "download": "Download HTML",
+    "sandbox_note": "Sandboxed preview: the page's scripts run, but the page cannot reach this site, cookies or storage, so features that rely on <code>localStorage</code> may behave differently.",
+    "no_index": "This run produced no index.html.",
+    "details_h": "Run details",
+    "no_run_json": "No <code>run.json</code> for this cell yet."
+  },
+  "details": {
+    "status": "Status",
+    "agent": "Agent",
+    "model": "Model",
+    "effort": "Effort",
+    "prompt": "Prompt",
+    "file_changed": "(file changed since)",
+    "skill_sentence": "Skill sentence",
+    "skill_source": "Skill source",
+    "skill_commit": "Skill commit",
+    "dirty": "(uncommitted changes)",
+    "skill_fetched_by": "Skill fetched by",
+    "installed_to": "Installed to",
+    "skill_triggered": "Skill triggered",
+    "evidence": "Evidence",
+    "bundled_skills": "Bundled skills used",
+    "started": "Started",
+    "duration": "Duration",
+    "exit": "Exit",
+    "exit_code": "code {n}",
+    "timed_out": "timed out",
+    "attempt": "Attempt",
+    "earlier_attempts": "Earlier attempts",
+    "tokens": "Tokens",
+    "turns": "Turns",
+    "cost": "Cost",
+    "activity": "Activity",
+    "isolation": "Isolation",
+    "iso_ok": "all checks passed",
+    "iso_fail": "a check failed",
+    "external_refs": "External refs",
+    "refs_from_run": "Static scan of <code>index.html</code>, from <code>run.json</code>.",
+    "refs_parsed": "Parsed from <code>index.html</code> by the site build.",
+    "rule_violations": "Rule violations",
+    "output": "Output",
+    "no_index": "no index.html",
+    "other_files": "other files: {files}",
+    "screenshot": "Screenshot ({kind})",
+    "page_tall": "page {h} px tall",
+    "overflow": "horizontal overflow ({w} px)",
+    "net_not_idle": "network not idle",
+    "console_errors": "{n} console error(s)",
+    "page_errors": "{n} page error(s)",
+    "failed_requests": "{n} failed request(s)",
+    "remote_requests": "{n} remote request(s)",
+    "fonts_failed": "fonts failed: {list}",
+    "host": "Host"
+  },
+  "skills": {
+    "frontend-design": {
+      "summary": "Anthropic's official front-end design skill. It asks the agent to commit to a design direction (palette, type, layout, principles) and to check it against common AI defaults before writing code. Instructions only, no scripts.",
+      "notes": [
+        "The same SKILL.md is also published in anthropics/claude-plugins-official and anthropics/claude-code; this gallery uses anthropics/skills.",
+        "Upstream rewrote this skill several times in 2026, so always use the pinned commit."
+      ]
+    },
+    "ui-ux-pro-max": {
+      "summary": "A community UI/UX knowledge-base skill: local CSV data (styles, palettes, font pairings, UX rules, chart types, stacks) plus a Python search script that produces a design system before the agent writes the page.",
+      "notes": [
+        "Needs python3 (standard library only) to run its search scripts.",
+        "The upstream README recommends `npm i -g ui-ux-pro-max-cli`; the gallery uses npx with a pinned version instead, so nothing is installed globally."
+      ]
+    },
+    "web-design-engineer": {
+      "summary": "A front-end design skill whose output is always HTML (pages, dashboards, prototypes, slides, data visualization). It starts with a design-direction step and ships 25 style recipes. Instructions only, no scripts.",
+      "notes": [
+        "Takes the place of OpenAI's frontend-skill in v0, because that skill was removed from OpenAI's official catalog and readers can no longer install it.",
+        "Its React path loads React and Babel from a CDN; the default hand-written CSS path needs no network."
+      ]
+    }
+  },
+  "prompts": {
+    "landing-saas": {
+      "title": "SaaS landing page",
+      "summary": "A marketing page for Rotaline, a fictional on-call scheduling tool: hero with a product illustration, features, steps, results, testimonials, pricing with a monthly/annual toggle, FAQ and footer."
+    },
+    "dashboard": {
+      "title": "Data dashboard",
+      "summary": "A sales and operations dashboard for Kestrel Coffee Roasters: KPI cards, a monthly revenue chart with a channel filter, category shares, a sortable café table, recent orders and a stock warning, all from fixed data."
+    },
+    "blog-portfolio": {
+      "title": "Personal blog and portfolio",
+      "summary": "A one-page site for Maya Lindqvist, a fictional product designer: four case studies, a filterable post list, one full article, an about section with a timeline, a newsletter form and a light/dark switch."
+    }
+  }
+}

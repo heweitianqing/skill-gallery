@@ -13,15 +13,16 @@
 //   <!-- skills:start -->  … <!-- skills:end -->    install and invoke, per agent
 //   <!-- credits:start --> … <!-- credits:end -->   source, license, pinned commit
 //
-// Text outside the blocks is left alone. Thumbnails go to docs/launch/assets/. The gallery
-// itself is English only, so every README links to the same pages (SG_GALLERY_URL overrides).
+// Text outside the blocks is left alone. Thumbnails go to docs/launch/assets/. Each README
+// links to the gallery in its own language when the site has it (site/config.json
+// "languages"; the first one is at the root), else to the root. SG_GALLERY_URL overrides the base.
 // With Playwright installed (a dev dependency of the repo), the script also renders
 // docs/launch/overview.png and docs/launch/social-preview.png (1280×640).
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadInputs, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings } from './build-site.mjs';
+import { loadGallery, installInfo, writeThumbs, encodePng, shortSha, githubRepo, warnings } from './build-site.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LAUNCH = path.join(REPO_ROOT, 'docs', 'launch');
@@ -76,7 +77,7 @@ function fillBlock(text, name, content, file) {
 }
 
 async function main() {
-  const g = loadInputs(path.join(REPO_ROOT, 'runs'));
+  const g = await loadGallery({ runs: path.join(REPO_ROOT, 'runs'), thumbsOut: null });
   const { prompts, cells, skills } = g;
   const agentLabel = (id) => g.agents.find((a) => a.id === id)?.label || id;
   const relevant = [...cells.values()].filter((c) => c.variant === 'native' || skills.some((s) => s.name === c.variant));
@@ -115,7 +116,8 @@ async function main() {
       console.error(`warn: ${file} does not exist, skipped`);
       continue;
     }
-    const gallery = GALLERY;
+    const siteLangs = g.config.languages || ['en'];
+    const gallery = `${GALLERY}${siteLangs.includes(code) && code !== siteLangs[0] ? `${code}/` : ''}`;
     const promptTitle = (p) => STRINGS[code].prompts?.[p.id] || STRINGS.en.prompts?.[p.id] || p.title;
     const nativeLabel = t('native');
 
@@ -155,10 +157,10 @@ async function main() {
     // Install and invoke, one row per skill.
     const skillRows = skills.map((s) => {
       const info = installInfo(s, cells);
-      // installInfo gives a command when meta.yaml has one (text is null), else copy commands.
-      const how = (inst, dir, invoke) => `${inst.text === null ? t('install_run', { cmd: mdCode(inst.cmds) }) : t('install_copy', { path: mdCode(`${dir}/${s.name}/`) })}${t('then_sep')}${invoke}`;
-      const claude = how(info.ic, '.claude/skills', t('invoke_claude', { line: mdCode(info.claudeLine), slash: mdCode(`/${s.name} …`) }));
-      const codex = how(info.ix, '.agents/skills', t('invoke_codex', { mention: mdCode(info.codexMention) }));
+      // install.command is true when meta.yaml gives a command; otherwise the folder is copied.
+      const how = (a, invoke) => `${a.install.command ? t('install_run', { cmd: mdCode(a.install.cmds[0]) }) : t('install_copy', { path: mdCode(a.install.dir.replace(/^<project>\//, '')) })}${t('then_sep')}${invoke}`;
+      const claude = how(info.claude, t('invoke_claude', { line: mdCode(info.claude.line), slash: mdCode(`${info.claude.slash} …`) }));
+      const codex = how(info.codex, t('invoke_codex', { mention: mdCode(info.codex.mention) }));
       return `| [${s.name}](${gallery}skills/${s.name}/#install) | ${claude} | ${codex} |`;
     });
     const skillsBlock = [`| ${t('th_skill')} | ${t('th_claude')} | ${t('th_codex')} |`, '| --- | --- | --- |', ...skillRows].join('\n');

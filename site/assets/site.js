@@ -21,11 +21,13 @@
   const themeBtn = document.querySelector('[data-theme-toggle]');
   const dark = matchMedia('(prefers-color-scheme: dark)');
   const effective = () => root.dataset.theme || (dark.matches ? 'dark' : 'light');
+  // Button labels come from the page (data-label-*, data-aria-*) so they follow its language.
   const syncTheme = () => {
     if (!themeBtn) return;
-    const t = effective();
-    themeBtn.textContent = t === 'dark' ? 'Light' : 'Dark';
-    themeBtn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    const d = themeBtn.dataset;
+    const isDark = effective() === 'dark';
+    themeBtn.textContent = isDark ? d.labelLight : d.labelDark;
+    themeBtn.setAttribute('aria-label', isDark ? d.ariaLight : d.ariaDark);
   };
   themeBtn?.addEventListener('click', () => {
     const next = effective() === 'dark' ? 'light' : 'dark';
@@ -66,9 +68,10 @@
       const src = mode === 'mobile' ? a.dataset.fullMobile : a.dataset.fullDesktop;
       if (!src) return;
       e.preventDefault();
+      const label = mode === 'mobile' ? a.dataset.labelMobile : a.dataset.labelDesktop;
       img.src = src;
-      img.alt = `${a.dataset.caption}, full-page ${mode} screenshot`;
-      cap.textContent = `${a.dataset.caption} · ${mode === 'mobile' ? 'Mobile 390' : 'Desktop 1440'}`;
+      img.alt = (img.dataset.altTemplate || '{caption}').replace('{caption}', a.dataset.caption).replace('{kind}', label || mode);
+      cap.textContent = `${a.dataset.caption} · ${label || mode}`;
       dlg.dataset.mode = mode;
       dlg.showModal();
       body.scrollTop = 0;
@@ -78,6 +81,20 @@
     });
     dlg.querySelector('[data-close]').addEventListener('click', () => dlg.close());
     dlg.addEventListener('close', () => img.removeAttribute('src'));
+  }
+
+  // Language menu: close it on Escape or a click elsewhere.
+  const langMenu = document.querySelector('.lang-menu');
+  if (langMenu) {
+    document.addEventListener('click', (e) => {
+      if (langMenu.open && !langMenu.contains(e.target)) langMenu.open = false;
+    });
+    langMenu.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && langMenu.open) {
+        langMenu.open = false;
+        langMenu.querySelector('summary').focus();
+      }
+    });
   }
 
   // Sandboxed preview: render at a fixed CSS width and scale down to fit.

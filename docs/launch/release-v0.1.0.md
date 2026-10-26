@@ -15,7 +15,7 @@ The first public version: three web-design agent skills, each run on the same th
 - **3 prompts:** a SaaS landing page, a data dashboard, and a personal blog and portfolio. Neutral wording, no style adjectives; the prompt files are the exact text the agents received.
 - **2 agents:** Codex CLI with `gpt-6.1-sol` and Claude Code with `claude-opus-5-5`, both at high effort.
 - **24 cells:** every prompt × (native + 3 skills) × 2 agents, each generated once and published as it came out. All 24 passed their checks (a failed run would have been published too).
-- **A gallery** (English, with key notes in Chinese): an overview grid, a 2×2 page per skill, a side-by-side page per prompt, a sandboxed preview of every original page, and the full run record behind each cell.
+- **A gallery** in six languages (English, 简体中文, 繁體中文, 日本語, 한국어, Español): an overview grid, a 2×2 page per skill, a side-by-side page per prompt, a sandboxed preview of every original page, and the full run record behind each cell.
 - **The README in six languages:** English, 简体中文, 繁體中文, 日本語, 한국어 and Español.
 - **Install and usage notes** for every skill in both agents.
 - **Reproducible runs:** `scripts/run-claude.mjs` and `scripts/run-codex.mjs` run each cell in a throwaway environment and record the CLI version, model, effort, prompt hash, skill source, timing, token usage and isolation evidence in `run.json`.
@@ -50,7 +50,7 @@ Not affiliated with Anthropic or OpenAI.
 - **3 道题：** SaaS 落地页、数据看板、个人博客和作品集。措辞中立，不带风格形容词；题目文件就是 agent 实际收到的原文。
 - **2 个 agent：** Codex CLI 用 `gpt-6.1-sol`，Claude Code 用 `claude-opus-5-5`，effort 都是 high。
 - **24 个格子：** 每道题 ×（原生 + 3 个 skill）× 2 个 agent。每格只生成一次，结果原样公开。24 格全部通过检查（如果有失败的，也会照样公开）。
-- **画廊**（以英文为主，关键说明附中文）：总览网格、每个 skill 一页 2×2、每道题一页横向对比、每个原始页面的沙箱预览，以及每格背后完整的运行记录。
+- **画廊**（六种语言：English、简体中文、繁體中文、日本語、한국어、Español）：总览网格、每个 skill 一页 2×2、每道题一页横向对比、每个原始页面的沙箱预览，以及每格背后完整的运行记录。
 - **六种语言的 README：** English、简体中文、繁體中文、日本語、한국어、Español。
 - **每个 skill 在两个 agent 里的安装和调用说明。**
 - **可复现：** `scripts/run-claude.mjs` 和 `scripts/run-codex.mjs` 在一次性的隔离环境里运行每一格，并把 CLI 版本、模型、effort、题目哈希、skill 来源、耗时、token 用量和隔离证据写进 `run.json`。
